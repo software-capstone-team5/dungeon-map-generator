@@ -4,7 +4,13 @@ This project was bootstrapped with [Create React App](https://github.com/faceboo
 
 ## Frontend Setup
 
-In the `frontend` directory, you can run:
+Dependencies:
+- `Node.js/npm`
+   - Download [here](https://nodejs.org/en/download/)
+
+In the `frontend` directory, run `npm install` to install the dependencies.
+
+To start the react app, run
 
 #### `npm start`
 
@@ -26,6 +32,12 @@ In the `backend` directory, run `pipenv install` to install the project dependen
 To start the server, run
 
 #### `pipenv run flask run`
+
+## Adding dependencies
+
+To add frontend dependencies, add them to the `package.json`.
+
+To add backend dependencies, add them to `Pipfile` and run `pipenv install` to install them.
 
 ## Learn More
 
