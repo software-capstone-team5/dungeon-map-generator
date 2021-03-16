@@ -41,6 +41,8 @@ To add backend dependencies, add them to `Pipfile` and run `pipenv install` to i
 
 ## Learn More
 
+Application created following [these](https://blog.miguelgrinberg.com/post/how-to-create-a-react--flask-project) instructions.
+
 You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
 
 To learn React, check out the [React documentation](https://reactjs.org/).
