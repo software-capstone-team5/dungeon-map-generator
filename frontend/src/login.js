@@ -1,8 +1,7 @@
 import React from 'react';
 import GoogleLogin from 'react-google-login';
 
-// REQ-1: Request.Registration - The system will allow the user to register a DMG account through a linked Google Account.
-
+// REQ - 2: Request.Login - The system will compare the provided Google Account login with the database to see if there is a matching registered user.
 const clientId = "1090934025997-97s914sitcfv4sj9hicuves3c0rvskkh.apps.googleusercontent.com";
 
 function Login() {
