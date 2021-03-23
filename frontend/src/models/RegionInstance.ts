@@ -3,7 +3,6 @@ import { Coordinates } from "./Coordinates";
 import { Entrance } from "./Entrance";
 import { Item } from "./Item";
 import { Monster } from "./Monster";
-import { RegionCategory } from "./RegionCategory";
 import { TileSet } from "./TileSet";
 import { Trap } from "./Trap";
 

@@ -1,3 +1,5 @@
+import { Direction } from "../constants/Direction";
+
 export class Coordinates {
 	x: number;
 	y: number;
@@ -17,5 +19,22 @@ export class Coordinates {
 
 	offset(offset: number): Coordinates{
 		return new Coordinates(this.x + offset, this.y + offset);
+	}
+
+	getDirectionTo(rhs: Coordinates): Direction {
+		if (this.x == rhs.x){
+			if (this.y > rhs.y){
+				return Direction.up;
+			}
+			else{
+				return Direction.down;
+			}
+		}
+		else if (this.x > rhs.x){
+			return Direction.right;
+		}
+		else{
+			return Direction.left;
+		}
 	}
 }

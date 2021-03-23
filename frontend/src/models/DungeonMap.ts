@@ -12,22 +12,23 @@ export class DungeonMap {
 	private map: Map<Coordinates, RegionInstance[]>;
 	private config: Configuration;
 
+	// possible alternative to current map is to map corridates to key 
+	// which maps to region instance. Avoids large map with duplicate instances
+
 	constructor(config: Configuration){
 		this.config = config;
 
-		// TODO: Chose actual values
-		switch(this.config.mapSize){
-			case Size.small:
-				this.width = this.height = 10;
-				break;
-			case Size.medium:
-				this.width = this.height = 20;
-				break;
-			case Size.medium:
-				this.width = this.height = 30;
-		}
+		this.width = this.height = this.config.getMapSizeNum();
 
 		this.map = new Map;
+	}
+
+	getWidth() {
+		return this.width;
+	}
+
+	getHeight() {
+		return this.height;
 	}
 
 	getSingleImage() {
@@ -42,17 +43,17 @@ export class DungeonMap {
 		// TODO
 	}
 
-	addCorridor(corridor: CorridorInstance, locations: Coordinates[]){
-		this.addRegion(corridor, locations);
+	addCorridor(corridor: CorridorInstance){
+		this.addRegion(corridor);
 	}
 
 	removeCorridor(corridor: CorridorInstance) {
 		this.removeRegion(corridor);
 	}
 
-	addRoom(room: RoomInstance, start: Coordinates, locations: Coordinates[]) {
-		room.start = start;
-		this.addRegion(room, locations);
+	addRoom(room: RoomInstance) {
+		this.addRegion(room);
+		return room;
 	}
 
 	removeRoom(room: RoomInstance) {
@@ -75,9 +76,8 @@ export class DungeonMap {
 		room.start = newStart;
 	}
 
-	addEntrance(entrance: Entrance, location:Coordinates){
-		if (this.map.has(location)){
-			entrance.location = location;
+	addEntrance(entrance: Entrance){
+		if (this.map.has(entrance.location)){
 			this.map.get(entrance.location)[0].entrances.push(entrance);
 		}
 		// TODO: Else throw error ?
@@ -97,15 +97,34 @@ export class DungeonMap {
 		}
 	}
 
+	getRegionBorder(region: RegionInstance): Coordinates[] {
+		var border: Coordinates[] = [];
+		region.locations.forEach((location) => {
+			if (this.map.has(location) && this.map.get(location)[0] == region){
+				var adjacent = [new Coordinates(location.x + 1, location.y),
+								new Coordinates(location.x - 1, location.y),
+								new Coordinates(location.x, location.y + 1),
+								new Coordinates(location.x, location.y - 1)];
+				for (var i = 0; i < adjacent.length; i++){
+					var point = adjacent[i];
+					if (!this.map.has(point) || this.map.get(point)[0] != region){
+						border.push(point);
+						break;
+					}
+				}
+			}
+		})
+		return border;
+	}
+
 	// Note, if a location is already occupied then it will not be 
 	// changed, which may result is strangely shaped regions. The
 	// location will remain in this region though, and if the overlapping
 	// region is later removed then this region can be made visible again
 	// Also, if a location is out of map bounds then the locations will remain
 	// in the region in case it is moved, but won't be added to the map
-	private addRegion(region: RegionInstance, locations: Coordinates[]) {
-		locations.forEach((location) => {
-			region.locations.push(location);
+	private addRegion(region: RegionInstance) {
+		region.locations.forEach((location) => {
 			this.addLocationToMap(region, location);
 		});
 	}
@@ -118,7 +137,8 @@ export class DungeonMap {
 
 	private addLocationToMap(region: RegionInstance, location: Coordinates) {
 		if (this.map.has(location)){
-			this.map.get(location).push(region);
+			// TODO: Decide if this should be ordered. Should rooms always get priority over corridors?
+			this.map.get(location).push(region); 
 		}
 		else{
 			this.map.set(location, [region]);

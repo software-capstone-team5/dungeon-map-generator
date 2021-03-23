@@ -4,14 +4,30 @@ export class Probabilities<T> {
 	probSum: number[];
 
 	constructor(chances: Map<T, number>){
+		if (chances != null){
+			var last = 0;
+			chances.forEach((prob: number, key: T) => {
+				this.objects.push(key);
+				last += prob;
+				this.probSum.push(last);
+			})
+	
+			this.normalize();
+		}
+	}
+
+	static buildUniform<T>(objects: T[]): Probabilities<T>{
+		var probabilities: Probabilities<T> = new Probabilities<T>(null);
+		
+		var prob = 1/objects.length;
 		var last = 0;
-		chances.forEach((prob: number, key: T) => {
-			this.objects.push(key);
+		objects.forEach((key: T) => {
+			probabilities.objects.push(key);
 			last += prob;
-			this.probSum.push(last);
+			probabilities.probSum.push(last);
 		})
 
-		this.normalize();
+		return probabilities;
 	}
 
 	randPickOne(): T{
@@ -41,14 +57,11 @@ export class Probabilities<T> {
 
 	randPickNum(num: number, allowDuplicates: boolean = true): T[]{
 		var picks: T[] = [];
-		for (var i = 0; i < num; i++){
+		while(picks.length < num) {
 			var pick = this.randPickOne();
 			if (allowDuplicates || !picks.includes(pick)){
 				picks.push(pick);
 			}
-		}
-		if (picks.length == 1 && picks[0] == null){
-			picks = [];
 		}
 		return picks;
 	}

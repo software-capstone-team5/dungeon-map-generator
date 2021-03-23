@@ -2,6 +2,11 @@ import { EntranceType } from "../constants/EntranceType";
 import { Coordinates } from "./Coordinates";
 
 export class Entrance {
-	location: Coordinates;
 	type: EntranceType;
+	location: Coordinates;
+
+	constructor(type: EntranceType, location: Coordinates){
+		this.location = location;
+		this.type = type;
+	}
 }
