@@ -28,6 +28,7 @@ function App() {
             Learn React
           </a>
         </header>
+        <p></p>
       </Grid>
     </div>
 

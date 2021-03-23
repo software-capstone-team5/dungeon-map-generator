@@ -1,6 +1,6 @@
 import { Button } from '@material-ui/core';
 import React from 'react';
-import MapLevelConfiguration from './MapLevelConfiguration';
+import MapLevelConfiguration from './MapLevelConfiguration.tsx';
 import RegionLevelConfiguration from './RegionLevelConfiguration';
 
 class Configuration extends React.Component {
@@ -19,9 +19,11 @@ class Configuration extends React.Component {
     render() {
         return (
             <div>
-                <RegionLevelConfiguration></RegionLevelConfiguration>
-                <MapLevelConfiguration></MapLevelConfiguration>
-                <Button onClick={this.handleSave} variant="contained">Save</Button>
+                <form>
+                    <RegionLevelConfiguration></RegionLevelConfiguration>
+                    <MapLevelConfiguration></MapLevelConfiguration>
+                    <Button onClick={this.handleSave} variant="contained">Save</Button>
+                </form>
             </div>
         );
     }
