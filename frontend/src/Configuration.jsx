@@ -16,6 +16,10 @@ class Configuration extends React.Component {
         
     }
 
+    handleInputChange() {
+        
+    }
+
     render() {
         return (
             <div>

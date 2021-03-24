@@ -1,41 +1,36 @@
 import React from 'react';
 import {Radio, RadioGroup, FormControlLabel, FormControl, FormLabel} from '@material-ui/core';
 
-enum Size {
-	small = "SMALL",
-	medium = "MEDIUM",
-	large = "LARGE"
-}
-
-type Props = {
+type Props<EnumType extends number | string> = {
     label: string;
+    enum: {[s: string]: EnumType}
 };
 
-type State = {
-    size: Size;
+type State<EnumType extends number | string> = {
+    value: EnumType;
 };
 
-class SizeRadio extends React.Component<Props, State> {
+class EnumRadio<EnumType extends number | string> extends React.Component<Props<EnumType>, State<EnumType>> {
 
-    constructor(props: Props) {
+    constructor(props: Props<EnumType>) {
         super(props);
-        this.state = {size: Size.small};
+        this.state = {value: Object.values(props.enum)[0]};
     
         this.handleChange = this.handleChange.bind(this);
     }
 
     handleChange(event: React.ChangeEvent<HTMLInputElement>) {
         this.setState({
-            size: event.target.value as Size
-        })
+            value: event.target.value as EnumType
+        });
     }
 
     render() {
         return (
             <FormControl component="fieldset">
                 <FormLabel component="legend">{this.props.label}</FormLabel>
-                <RadioGroup row aria-label="size" name="size" value={this.state.size} onChange={this.handleChange}>
-                    {Object.values(Size).map(x =>
+                <RadioGroup row value={this.state.value} onChange={this.handleChange}>
+                    {Object.values(this.props.enum).map(x =>
                         <FormControlLabel key={x} value={x} control={<Radio />} label={x} />
                     )}
                 </RadioGroup>
@@ -44,4 +39,4 @@ class SizeRadio extends React.Component<Props, State> {
     }
 }
 
-export default SizeRadio;
+export default EnumRadio;
