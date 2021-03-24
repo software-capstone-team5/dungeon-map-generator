@@ -39,7 +39,6 @@ class DifficultySlider extends React.Component<Props, State> {
                 max={20}
             />
             </div>
-            
         );
     }
 }

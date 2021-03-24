@@ -3,7 +3,8 @@ import {Radio, RadioGroup, FormControlLabel, FormControl, FormLabel} from '@mate
 
 type Props<EnumType extends number | string> = {
     label: string;
-    enum: {[s: string]: EnumType}
+    enum: {[s: string]: EnumType};
+    onChange: (newValue: EnumType) => void;
 };
 
 type State<EnumType extends number | string> = {
@@ -23,6 +24,7 @@ class EnumRadio<EnumType extends number | string> extends React.Component<Props<
         this.setState({
             value: event.target.value as EnumType
         });
+        this.props.onChange(this.state.value);
     }
 
     render() {

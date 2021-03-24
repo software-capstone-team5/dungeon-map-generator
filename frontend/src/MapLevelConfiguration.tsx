@@ -35,15 +35,21 @@ class MapLevelConfiguration extends React.Component<Props, State> {
 
     constructor(props: Props) {
         super(props);
+
+        this.handleChange = this.handleChange.bind(this);
+    }
+
+    handleChange(newValue: Size | CorridorComplexity | CorridorLength) {
+
     }
 
     render() {
         return (
             <div>
                 <DifficultySlider/>
-                <EnumRadio<Size> enum={Size} label="Map Size"/>
-                <EnumRadio<CorridorComplexity> enum={CorridorComplexity} label="Corridor Complexity"/>
-                <EnumRadio<CorridorLength> enum={CorridorLength} label="Corridor Length"/>
+                <div><EnumRadio<Size> enum={Size} label="Map Size" onChange={this.handleChange}/></div>
+                <div><EnumRadio<CorridorComplexity> enum={CorridorComplexity} label="Corridor Complexity" onChange={this.handleChange}/></div>
+                <div><EnumRadio<CorridorLength> enum={CorridorLength} label="Corridor Length" onChange={this.handleChange}/></div>
             </div>
         );
     }
