@@ -1,14 +1,13 @@
-import { Button } from '@material-ui/core';
 import React from 'react';
+
+import { withStyles } from '@material-ui/core/styles';
+import { Button, Typography, AccordionDetails } from '@material-ui/core';
+import MuiAccordion from '@material-ui/core/Accordion';
+import MuiAccordionSummary from '@material-ui/core/AccordionSummary';
+import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
+
 import MapLevelConfiguration from './MapLevelConfiguration';
 import RegionLevelConfiguration from './RegionLevelConfiguration';
-import { withStyles } from '@material-ui/core/styles';
-import MuiAccordion from '@material-ui/core/Accordion';
-
-import MuiAccordionSummary from '@material-ui/core/AccordionSummary';
-import AccordionDetails from '@material-ui/core/AccordionDetails';
-import Typography from '@material-ui/core/Typography';
-import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 
 
 const AccordionSummary = withStyles({
@@ -45,7 +44,7 @@ expanded: {},
 
 
 class Configuration extends React.Component {
-    constructor(props) {
+    constructor(props: any) {
         super(props);
         // this.state = {isToggleOn: true};
     

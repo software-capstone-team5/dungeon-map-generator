@@ -1,27 +1,9 @@
 import React from 'react';
+import { Size } from "./constants/Size";
+import { CorridorComplexity } from "./constants/CorridorComplexity";
+import { CorridorLength } from "./constants/CorridorLength";
 import DifficultySlider from './DifficultySlider';
 import EnumRadio from './EnumRadio';
-
-//TODO: Import
-enum Size {
-	small = "SMALL",
-	medium = "MEDIUM",
-	large = "LARGE"
-}
-
-//TODO: Import
-enum CorridorComplexity {
-	small = "SMALL",
-	medium = "MEDIUM",
-	large = "LARGE"
-}
-
-//TODO: Import
-enum CorridorLength {
-	small = "SMALL",
-	medium = "MEDIUM",
-	large = "LARGE"
-}
 
 type Props = {
 
@@ -46,7 +28,7 @@ class MapLevelConfiguration extends React.Component<Props, State> {
     render() {
         return (
             <div>
-                <DifficultySlider/>
+                <DifficultySlider onChange={()=>console.log()}/>
                 <div><EnumRadio<Size> enum={Size} label="Map Size" onChange={this.handleChange}/></div>
                 <div><EnumRadio<CorridorComplexity> enum={CorridorComplexity} label="Corridor Complexity" onChange={this.handleChange}/></div>
                 <div><EnumRadio<CorridorLength> enum={CorridorLength} label="Corridor Length" onChange={this.handleChange}/></div>

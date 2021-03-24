@@ -1,5 +1,5 @@
 export enum CorridorComplexity {
-	low = 'LOW',
-	medium = 'MEDIUM',
-	high = 'HIGH'
+	low = 'Low',
+	medium = 'Medium',
+	high = 'High'
 }
