@@ -4,37 +4,44 @@ import { CorridorComplexity } from "./constants/CorridorComplexity";
 import { CorridorLength } from "./constants/CorridorLength";
 import DifficultySlider from './DifficultySlider';
 import EnumRadio from './EnumRadio';
+import {Configuration} from './models/Configuration';
+import {nameOf, valueOf} from './utils/util';
 
 type Props = {
-
+    configuration: Configuration;
+    onChange: (name: keyof Configuration, value: valueOf<Configuration>)=>void;
 };
 
-type State = {
-
-};
-
-class MapLevelConfiguration extends React.Component<Props, State> {
-
-    constructor(props: Props) {
-        super(props);
-
-        this.handleChange = this.handleChange.bind(this);
-    }
-
-    handleChange(newValue: Size | CorridorComplexity | CorridorLength) {
-
-    }
-
-    render() {
-        return (
+function MapLevelConfiguration(props: Props) {
+    return (
+        <div>
+            <DifficultySlider onChange={props.onChange} initialValue={props.configuration.difficulty}/>
             <div>
-                <DifficultySlider onChange={()=>console.log()}/>
-                <div><EnumRadio<Size> enum={Size} label="Map Size" onChange={this.handleChange}/></div>
-                <div><EnumRadio<CorridorComplexity> enum={CorridorComplexity} label="Corridor Complexity" onChange={this.handleChange}/></div>
-                <div><EnumRadio<CorridorLength> enum={CorridorLength} label="Corridor Length" onChange={this.handleChange}/></div>
+                <EnumRadio<Size>
+                    enum={Size}
+                    callbackPropertyName={nameOf<Configuration>("mapSize")}
+                    onChange={props.onChange}
+                    initialValue={props.configuration.mapSize}
+                    label="Map Size"/>
             </div>
-        );
-    }
+            <div>
+                <EnumRadio<CorridorComplexity>
+                    enum={CorridorComplexity}
+                    callbackPropertyName={nameOf<Configuration>("corridorComplexity")}
+                    onChange={props.onChange}
+                    initialValue={props.configuration.corridorComplexity}
+                    label="Corridor Complexity"/>
+            </div>
+            <div>
+                <EnumRadio<CorridorLength>
+                    enum={CorridorLength}
+                    callbackPropertyName={nameOf<Configuration>("corridorLength")}
+                    onChange={props.onChange}
+                    initialValue={props.configuration.corridorLength}
+                    label="Corridor Length"/>
+            </div>
+        </div>
+    );
 }
 
 export default MapLevelConfiguration;

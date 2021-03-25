@@ -1,6 +1,6 @@
 import './App.css';
 import { Grid } from '@material-ui/core';
-import Configuration from "./Configuration";
+import ConfigurationEditor from "./ConfigurationEditor";
 
 function App() {
   return (
@@ -12,7 +12,7 @@ function App() {
         alignItems="center"
         style={{ minHeight: '100vh' }}
       > 
-        <Configuration/>
+        <ConfigurationEditor/>
         
         <p></p>
         <p></p>

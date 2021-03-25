@@ -1,9 +1,11 @@
 import {Slider} from '@material-ui/core';
 import {Typography} from '@material-ui/core';
 import {Configuration} from './models/Configuration';
+import {nameOf} from './utils/util';
 
 type Props = {
-    onChange: (event: React.ChangeEvent<{}>, value: number | number[]) => void;
+    initialValue: number;
+    onChange: (name: string, value: number) => void;
 }
 
 function DifficultySlider(props: Props) {
@@ -14,8 +16,8 @@ function DifficultySlider(props: Props) {
             </Typography>
             <Slider
                 aria-labelledby="input-slider"
-                defaultValue={Configuration.maxDifficulty/2}
-                onChange={props.onChange}
+                defaultValue={props.initialValue}
+                onChange={(e,v) => props.onChange(nameOf<Configuration>("difficulty"), v as number)}
                 valueLabelDisplay="auto"
                 step={1}
                 marks

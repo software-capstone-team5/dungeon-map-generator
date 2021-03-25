@@ -6,6 +6,8 @@ import MuiAccordion from '@material-ui/core/Accordion';
 import MuiAccordionSummary from '@material-ui/core/AccordionSummary';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 
+import {valueOf} from './utils/util';
+import {Configuration} from './models/Configuration';
 import MapLevelConfiguration from './MapLevelConfiguration';
 import RegionLevelConfiguration from './RegionLevelConfiguration';
 
@@ -43,27 +45,44 @@ expanded: {},
 })(MuiAccordion);
 
 
-class Configuration extends React.Component {
-    constructor(props: any) {
+type Props = {
+    configuration?: Configuration;
+}
+
+// CONFIG EDITOR SHOULD CONTROL THE STATE
+type State = {
+    configuration: Configuration;
+}
+
+
+class ConfigurationEditor extends React.Component<Props, State> {
+    constructor(props: Props) {
         super(props);
-        // this.state = {isToggleOn: true};
-    
+
+        if (props.configuration !== undefined) {
+            this.state = {configuration: props.configuration};
+        } else {
+            this.state = {configuration: new Configuration()};
+        }
+
         // This binding is necessary to make `this` work in the callback
         this.handleSave = this.handleSave.bind(this);
+        this.handleChange = this.handleChange.bind(this);
     }
 
     handleSave() {
-        
+        // Take this.state.configuration and send it to the backend
     }
 
-    handleInputChange() {
-        
+    handleChange(name: keyof Configuration, value: valueOf<Configuration>) {
+        this.setState(prevState => ({ configuration: Object.assign({}, prevState.configuration, { [name]: value }) }));
     }
 
     render() {
         return (
             <div>
                 <form>
+                    <Typography variant="h5" gutterBottom>Configuration</Typography>
                     <Accordion defaultExpanded>
                         <AccordionSummary
                             expandIcon={<ExpandMoreIcon />}
@@ -73,7 +92,7 @@ class Configuration extends React.Component {
                             <Typography>Map Level Options</Typography>
                         </AccordionSummary>
                         <AccordionDetails>
-                            <MapLevelConfiguration />
+                            <MapLevelConfiguration configuration={this.state.configuration} onChange={this.handleChange}/>
                         </AccordionDetails>
                     </Accordion>
                     <Accordion defaultExpanded>
@@ -90,7 +109,7 @@ class Configuration extends React.Component {
                         </Typography>
                         </AccordionDetails>
                     </Accordion>
-                        
+                    <Button onClick={this.handleSave} variant="contained">Generate</Button>
                     <Button onClick={this.handleSave} variant="contained">Save</Button>
                 </form>
             </div>
@@ -98,4 +117,4 @@ class Configuration extends React.Component {
     }
 }
 
-export default Configuration;
+export default ConfigurationEditor;
