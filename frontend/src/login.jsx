@@ -6,8 +6,8 @@ const clientId = "1090934025997-97s914sitcfv4sj9hicuves3c0rvskkh.apps.googleuser
 
 function Login() {
     const onSuccess = (response) => {
-        console.log('Login success currentUser: ', response.profileObj);
-
+        console.log('Login success currentUser: ', response.googleId);
+        requestLoginUser(response.googleId);
         refreshTokenSetup(response);
     }
 
@@ -15,9 +15,19 @@ function Login() {
         console.log('Login failed: ', response);
     }
 
+    const requestLoginUser = (googleId) => {
+        fetch(`http://localhost:5000/getUser?id=${encodeURI(googleId)}`)
+            .then(res => res.json())
+            .then(
+                (result) => {
+                    console.log(result);
+                }
+            )
+    }
+
     const refreshTokenSetup = (response) => {
         let refreshTiming = (response.tokenObj.expires_in || 3600 - 5 * 60) * 1000;
-        console.log("Here");
+
         const refreshToken = async () => {
             const newAuthResponse = await response.reloadAuthResponse();
             refreshTiming = (newAuthResponse.expires_in || 3600 - 5 * 60) * 1000;
