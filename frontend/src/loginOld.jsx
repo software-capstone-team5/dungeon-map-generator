@@ -4,7 +4,7 @@ import GoogleLogin from 'react-google-login';
 // REQ - 2: Request.Login - The system will compare the provided Google Account login with the database to see if there is a matching registered user.
 const clientId = "1090934025997-97s914sitcfv4sj9hicuves3c0rvskkh.apps.googleusercontent.com";
 
-function Login() {
+function LoginOld() {
     const onSuccess = (response) => {
         console.log('Login success currentUser: ', response.googleId);
         requestLoginUser(response.googleId);
@@ -55,4 +55,4 @@ function Login() {
     )
 }
 
-export default Login
+export default LoginOld
