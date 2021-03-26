@@ -31,6 +31,8 @@ export class Firebase {
     }
 }
 
-firebase.initializeApp(firebaseKey);
+if (firebase.apps.length === 0) {
+    firebase.initializeApp(firebaseKey);
+}
 
 export default Firebase;
