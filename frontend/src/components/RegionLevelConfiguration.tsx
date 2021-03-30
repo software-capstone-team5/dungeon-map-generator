@@ -28,6 +28,13 @@ function RegionLevelConfiguration(props: Props) {
         props.onChange(name, updatedList);
     }
 
+    function handleProbUpdate(name: keyof Configuration, index: number, newValue: number) {
+        var updatedList = (props.configuration[name]) as Probabilities<any>;
+        updatedList.probSum[index] = newValue;
+        // TODO: normalize?
+        props.onChange(name, updatedList);
+    }
+
     return (
         <div style={{width: '100%'}}>
             <div className={classes.listLabel}>
@@ -40,6 +47,7 @@ function RegionLevelConfiguration(props: Props) {
             <RegionCategoryList 
                 list={props.configuration.roomCategories} 
                 onDeleteClick={handleDeleteClick}
+                onProbUpdate={handleProbUpdate}
                 callbackPropertyName={nameOf<Configuration>("roomCategories")}
             />
             <div className={classes.listLabel}>
@@ -51,6 +59,7 @@ function RegionLevelConfiguration(props: Props) {
             <RegionCategoryList
                 list={props.configuration.corridorCategories}
                 onDeleteClick={handleDeleteClick}
+                onProbUpdate={handleProbUpdate}
                 callbackPropertyName={nameOf<Configuration>("corridorCategories")}
             />
         </div>
