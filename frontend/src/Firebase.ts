@@ -10,17 +10,7 @@ export class Firebase {
         firebase.auth()
             .signInWithPopup(this.provider)
             .then((result) => {
-                /** @type {firebase.auth.OAuthCredential} */
-                var credential = result.credential as firebase.auth.OAuthCredential;
-
-                if (credential != null) {
-                    // This gives you a Google Access Token. You can use it to access the Google API.
-                    var token = credential.accessToken;
-                    // The signed-in user info.
-                    var user = result.user;
-                    console.log("Token: " + token);
-                    console.log("User: " + user?.uid);
-                }
+                this.getUser();
             }).catch((error) => {
                 // Handle Errors here.
                 var errorCode = error.code;
@@ -28,6 +18,25 @@ export class Firebase {
                 // The firebase.auth.AuthCredential type that was used.
                 var credential = error.credential;
             });
+    }
+
+    static getUser(): void {
+        firebase.auth().currentUser?.getIdToken()
+            .then(function (token) {
+                const requestOptions = {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ idToken: token })
+                };
+
+                fetch(`http://localhost:5000/login`, requestOptions)
+                    .then(res => res.json())
+                    .then(
+                        (result) => {
+                            console.log(result);
+                        }
+                    );
+            })
     }
 }
 

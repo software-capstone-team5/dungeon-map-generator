@@ -2,36 +2,53 @@
 # REQ-2: Request.Login - The system will compare the provided Google Account login with the database to see if there is a matching registered user.
 from backend import app
 from flask import request, jsonify
-from firebase_admin import credentials, firestore, initialize_app  # Initialize Flask App
+from firebase_admin import credentials, firestore, auth, initialize_app  # Initialize Flask App
+from flask_cors import CORS, cross_origin
+from google.oauth2 import id_token
+from google.auth.transport import requests
+
 cred = credentials.Certificate('C:\\Users\\Jacob\\Documents\\GitHub\\dungeon-map-generator\\key.json') # change later to either environment var or something else
 default_app = initialize_app(cred)
 db = firestore.client()
 users_collection = db.collection('Users')
 
-@app.route('/registerUser', methods=['GET', 'POST']) # change method depending on how send data
-def create():
+cors = CORS(app, resources={r'/*': {'origins': '*'}})
+
+CLIENT_ID = "software-capstone-team5"
+
+@app.route("/user", methods=['GET', 'POST']) # change method depending on how send data
+def register():
     try:
         # id = request.json['id']
         id = request.args.get('id')
         # users_collection.document(id).set(request.json)
         users_collection.document(id).set({"temp": True})
-        return jsonify({"success": True}), 200
+        return jsonify({"response": "Successful Registration"}), 200
     except Exception as e:
         return f"An Error Occured: {e}"
 
-@app.route('/getUser', methods=['GET'])
-def read():
+@app.route("/login", methods=['POST'])
+def login():
     try:
         # Check if ID was passed to URL query
-        user_id = request.args.get('id')
-        if user_id:
-            user = users_collection.document(user_id).get()
-            # Check if User Exists
-            if user.exists:
-                return jsonify(user.to_dict()), 200
+        requestData = request.get_json()
+        # id_token comes from the client app (shown above)
+        try:
+            decoded_token = auth.verify_id_token(requestData['idToken'], check_revoked=True)
+            user_id = decoded_token['uid']
+
+            if user_id:
+                user = users_collection.document(user_id).get()
+                # Check if User Exists
+                if user.exists:
+                    return jsonify({"response": "Successful Login"}), 200
+                else:
+                    return jsonify({"response": "User does not exist"}), 400
             else:
-                return "User does not exist"
-        else:
-            return "No ID provided"
+                return jsonify({"response": "No ID provided"}), 400
+        except auth.RevokedIdTokenError:
+            return jsonify({"response": "Revoked ID"}), 400
+        except auth.InvalidIdTokenerror:
+            return jsonify({"response": "Invalid ID"}), 400
     except Exception as e:
         return f"An Error Occured: {e}"
