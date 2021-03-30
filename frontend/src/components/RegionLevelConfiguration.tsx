@@ -1,9 +1,11 @@
 import { IconButton, makeStyles, Typography } from '@material-ui/core';
 import AddBoxIcon from '@material-ui/icons/AddBox';
+import { useState } from 'react';
 import { Probabilities } from '../generator/Probabilities';
 import { Configuration } from '../models/Configuration';
 import { nameOf, valueOf } from '../utils/util';
 
+import RegionCategoryEditor from './RegionCategoryEditor';
 import RegionCategoryList from './RegionCategoryList';
 
 const useStyles = makeStyles({
@@ -21,18 +23,23 @@ type Props = {
 
 function RegionLevelConfiguration(props: Props) {
     const classes = useStyles();
+    const [addDialogOpen, setAddDialogOpen] = useState(false);
     
-    function handleDeleteClick(name: keyof Configuration, index: number) {
+    const handleDeleteClick = (name: keyof Configuration, index: number) => {
         var updatedList = (props.configuration[name]) as Probabilities<any>;
         updatedList.remove(index);
         props.onChange(name, updatedList);
     }
 
-    function handleProbUpdate(name: keyof Configuration, index: number, newValue: number) {
+    const handleProbUpdate = (name: keyof Configuration, index: number, newValue: number) => {
         var updatedList = (props.configuration[name]) as Probabilities<any>;
         updatedList.probSum[index] = newValue;
         // TODO: normalize?
         props.onChange(name, updatedList);
+    }
+
+    const handleAddClick = () => {
+       setAddDialogOpen(true);
     }
 
     return (
@@ -40,7 +47,7 @@ function RegionLevelConfiguration(props: Props) {
             <div className={classes.listLabel}>
                 <Typography >Rooms</Typography>
                 <IconButton aria-label="delete"color="primary">
-                    <AddBoxIcon />
+                    <AddBoxIcon onClick={handleAddClick} />
                 </IconButton>
             </div>
             
@@ -53,7 +60,7 @@ function RegionLevelConfiguration(props: Props) {
             <div className={classes.listLabel}>
                 <Typography>Corridors</Typography>
                 <IconButton aria-label="delete"color="primary">
-                    <AddBoxIcon />
+                    <AddBoxIcon onClick={handleAddClick} />
                 </IconButton>
             </div>
             <RegionCategoryList
@@ -62,6 +69,7 @@ function RegionLevelConfiguration(props: Props) {
                 onProbUpdate={handleProbUpdate}
                 callbackPropertyName={nameOf<Configuration>("corridorCategories")}
             />
+            <RegionCategoryEditor open={addDialogOpen}/>
         </div>
     );
 }

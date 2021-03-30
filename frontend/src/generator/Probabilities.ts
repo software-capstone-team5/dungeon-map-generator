@@ -44,6 +44,15 @@ export class Probabilities<T> {
 		}
 	}
 
+	update(object: T, newValue: number) {
+		this.objects.forEach((key: T, i: number) => {
+			if (key == object) {
+				this.probSum[i] = newValue;
+				return;
+			}
+		})
+	}
+
 	randPickOne(): T{
 		var rand = Math.random();
 		var i = 0;
