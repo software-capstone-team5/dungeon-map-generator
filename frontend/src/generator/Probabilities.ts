@@ -1,7 +1,7 @@
 export class Probabilities<T> {
 	private epsilon = 0.0005; // TODO: Chose value for this
-	objects: T[];
-	probSum: number[];
+	objects: T[] = [];
+	probSum: number[] = [];
 
 	constructor(chances: Map<T, number>){
 		if (chances != null){
@@ -28,6 +28,20 @@ export class Probabilities<T> {
 		})
 
 		return probabilities;
+	}
+
+	add(object: T, prob: number) {
+		this.objects.push(object);
+		this.probSum.push(prob);
+		this.normalize();
+	}
+
+	remove(index: number) {
+		if (index >= 0 && index < this.objects.length) {
+			this.objects.splice(index, 1);
+			this.probSum.splice(index, 1);
+			this.normalize();
+		}
 	}
 
 	randPickOne(): T{

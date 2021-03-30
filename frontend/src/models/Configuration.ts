@@ -13,8 +13,8 @@ export class Configuration {
 	corridorComplexity: CorridorComplexity;
 	corridorLength: CorridorLength;
 	difficulty: number;
-	roomCategories: Probabilities<RoomCategory>;
-	corridorCategories: Probabilities<CorridorCategory>;
+	roomCategories: Probabilities<RoomCategory> = new Probabilities<RoomCategory>(null);
+	corridorCategories: Probabilities<CorridorCategory> = new Probabilities<CorridorCategory>(null);
 	defaultRoomCategory: RoomCategory;
 	defaultCorridorCategory: CorridorCategory;
 

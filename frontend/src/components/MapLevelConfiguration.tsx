@@ -1,11 +1,10 @@
-import React from 'react';
-import { Size } from "./constants/Size";
-import { CorridorComplexity } from "./constants/CorridorComplexity";
-import { CorridorLength } from "./constants/CorridorLength";
+import { Size } from "../constants/Size";
+import { CorridorComplexity } from "../constants/CorridorComplexity";
+import { CorridorLength } from "../constants/CorridorLength";
 import DifficultySlider from './DifficultySlider';
-import EnumRadio from './EnumRadio';
-import {Configuration} from './models/Configuration';
-import {nameOf, valueOf} from './utils/util';
+import EnumRadio from './common/EnumRadio';
+import {Configuration} from '../models/Configuration';
+import {nameOf, valueOf} from '../utils/util';
 
 type Props = {
     configuration: Configuration;

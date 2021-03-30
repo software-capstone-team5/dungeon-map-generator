@@ -6,8 +6,8 @@ import MuiAccordion from '@material-ui/core/Accordion';
 import MuiAccordionSummary from '@material-ui/core/AccordionSummary';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 
-import {valueOf} from './utils/util';
-import {Configuration} from './models/Configuration';
+import {valueOf} from '../utils/util';
+import {Configuration} from '../models/Configuration';
 import MapLevelConfiguration from './MapLevelConfiguration';
 import RegionLevelConfiguration from './RegionLevelConfiguration';
 
@@ -49,11 +49,9 @@ type Props = {
     configuration?: Configuration;
 }
 
-// CONFIG EDITOR SHOULD CONTROL THE STATE
 type State = {
     configuration: Configuration;
 }
-
 
 class ConfigurationEditor extends React.Component<Props, State> {
     constructor(props: Props) {
@@ -71,7 +69,7 @@ class ConfigurationEditor extends React.Component<Props, State> {
     }
 
     handleSave() {
-        // Take this.state.configuration and send it to the backend
+        // TODO Take this.state.configuration and send it to the backend
     }
 
     handleChange(name: keyof Configuration, value: valueOf<Configuration>) {
@@ -104,9 +102,7 @@ class ConfigurationEditor extends React.Component<Props, State> {
                             <Typography>Region Level Options</Typography>
                         </AccordionSummary>
                         <AccordionDetails>
-                        <Typography>
-                            <RegionLevelConfiguration/>
-                        </Typography>
+                            <RegionLevelConfiguration configuration={this.state.configuration} onChange={this.handleChange}/>
                         </AccordionDetails>
                     </Accordion>
                     <Button onClick={this.handleSave} variant="contained">Generate</Button>

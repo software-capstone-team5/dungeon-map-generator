@@ -1,4 +1,3 @@
-import React from 'react';
 import {Radio, RadioGroup, FormControlLabel, FormControl, FormLabel} from '@material-ui/core';
 
 type Props<EnumType extends number | string> = {
@@ -15,7 +14,7 @@ function EnumRadio<EnumType extends number | string>(props: Props<EnumType>) {
             <FormLabel component="legend">{props.label}</FormLabel>
             <RadioGroup row defaultValue={props.initialValue} onChange={(e)=>props.onChange(props.callbackPropertyName, e.target.value as EnumType)}>
                 {Object.values(props.enum).map(x =>
-                    <FormControlLabel key={x} value={x} control={<Radio />} label={x} />
+                    <FormControlLabel key={x} value={x} control={<Radio size='small'/>} label={x} />
                 )}
             </RadioGroup>
         </FormControl>
