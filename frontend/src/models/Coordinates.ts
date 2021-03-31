@@ -1,8 +1,8 @@
 import { Direction } from "../constants/Direction";
 
 export class Coordinates {
-	x: number;
-	y: number;
+	x: number = 0;
+	y: number = 0;
 
 	constructor(x: number, y: number){
 		this.x = x;

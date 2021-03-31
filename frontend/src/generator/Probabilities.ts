@@ -1,9 +1,9 @@
 export class Probabilities<T> {
 	private epsilon = 0.0005; // TODO: Chose value for this
-	objects: T[];
-	probSum: number[];
+	objects: T[] = [];
+	probSum: number[] = [];
 
-	constructor(chances: Map<T, number>){
+	constructor(chances: Map<T, number> | null){
 		if (chances != null){
 			var last = 0;
 			chances.forEach((prob: number, key: T) => {
@@ -30,6 +30,29 @@ export class Probabilities<T> {
 		return probabilities;
 	}
 
+	add(object: T, prob: number) {
+		this.objects.push(object);
+		this.probSum.push(prob);
+		this.normalize();
+	}
+
+	remove(index: number) {
+		if (index >= 0 && index < this.objects.length) {
+			this.objects.splice(index, 1);
+			this.probSum.splice(index, 1);
+			this.normalize();
+		}
+	}
+
+	update(object: T, newValue: number) {
+		this.objects.forEach((key: T, i: number) => {
+			if (key === object) {
+				this.probSum[i] = newValue;
+				return;
+			}
+		})
+	}
+
 	randPickOne(): T{
 		var rand = Math.random();
 		var i = 0;
@@ -49,7 +72,7 @@ export class Probabilities<T> {
 				picks.push(pick);
 			}
 		}
-		if (picks.length == 1 && picks[0] == null){
+		if (picks.length === 1 && picks[0] == null){
 			picks = [];
 		}
 		return picks;

@@ -6,15 +6,15 @@ import { CorridorCategory } from "./CorridorCategory";
 import { RoomCategory } from "./RoomCategory";
 
 export class Configuration {
-	static maxDifficulty: number;
-	static minDifficulty: number;
+	static maxDifficulty: number = 20;
+	static minDifficulty: number = 1;
 	name: string;
 	mapSize: Size;
 	corridorComplexity: CorridorComplexity;
 	corridorLength: CorridorLength;
 	difficulty: number;
-	roomCategories: Probabilities<RoomCategory>;
-	corridorCategories: Probabilities<CorridorCategory>;
+	roomCategories: Probabilities<RoomCategory> = new Probabilities<RoomCategory>(null);
+	corridorCategories: Probabilities<CorridorCategory> = new Probabilities<CorridorCategory>(null);
 	defaultRoomCategory: RoomCategory;
 	defaultCorridorCategory: CorridorCategory;
 
