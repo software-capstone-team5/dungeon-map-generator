@@ -34,7 +34,7 @@ def register():
                 return jsonify({"valid": False, "response": "No ID provided"}), 400
         except auth.RevokedIdTokenError:
             return jsonify({"valid": False, "response": "Revoked ID"}), 400
-        except auth.InvalidIdTokenerror:
+        except auth.InvalidIdTokenError:
             return jsonify({"valid": False, "response": "Invalid ID"}), 400
     except Exception as e:
         return f"An Error Occured: {e}"
@@ -60,7 +60,41 @@ def login():
                 return jsonify({"valid": False, "response": "No ID provided"}), 400
         except auth.RevokedIdTokenError:
             return jsonify({"valid": False, "response": "Revoked ID"}), 400
-        except auth.InvalidIdTokenerror:
+        except auth.InvalidIdTokenError:
+            return jsonify({"valid": False, "response": "Invalid ID"}), 400
+    except Exception as e:
+        return f"An Error Occured: {e}"
+
+# REQ-18: Save.MapConfiguration - The system allows logged-in users to save the entire map configuration (both Map Level and Region Level) as a Preset.
+@app.route("/user/<idToken>/config", methods=['POST'])
+def saveConfig(idToken):
+    try:
+        requestData = request.get_json()
+        try:
+            decoded_token = auth.verify_id_token(idToken, check_revoked=True)
+            user_id = decoded_token['uid']
+
+            if user_id:
+                # TODO change to name from request data
+                # name = requestData['name']
+                name = "test"
+                config_collection = users_collection.document(user_id).collection("Configurations")
+                # Find matching document based on name
+                docs = config_collection.where('name', '==', name).get()
+                # Update if matching document
+                if docs:
+                    for doc in docs:
+                        doc_id = doc.id 
+                        config_collection.document(doc_id).set(requestData)
+                # Add new document
+                else:
+                    config_collection.add(requestData)
+                return jsonify({"valid": True, "response": "Configuration Saved"}), 200
+            else:
+                return jsonify({"valid": False, "response": "No ID provided"}), 400
+        except auth.RevokedIdTokenError:
+            return jsonify({"valid": False, "response": "Revoked ID"}), 400
+        except auth.InvalidIdTokenError:
             return jsonify({"valid": False, "response": "Invalid ID"}), 400
     except Exception as e:
         return f"An Error Occured: {e}"

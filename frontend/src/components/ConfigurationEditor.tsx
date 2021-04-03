@@ -6,42 +6,43 @@ import MuiAccordion from '@material-ui/core/Accordion';
 import MuiAccordionSummary from '@material-ui/core/AccordionSummary';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 
-import {valueOf} from '../utils/util';
-import {Configuration} from '../models/Configuration';
+import { valueOf } from '../utils/util';
+import { Configuration } from '../models/Configuration';
 import MapLevelConfiguration from './MapLevelConfiguration';
 import RegionLevelConfiguration from './RegionLevelConfiguration';
+import { Firebase } from '../Firebase';
 
 
 const AccordionSummary = withStyles({
     root: {
-      backgroundColor: 'rgba(0, 0, 0, .03)',
-      borderBottom: '1px solid rgba(0, 0, 0, .125)',
-      marginBottom: -1,
-      minHeight: 56,
-      '&$expanded': {
+        backgroundColor: 'rgba(0, 0, 0, .03)',
+        borderBottom: '1px solid rgba(0, 0, 0, .125)',
+        marginBottom: -1,
         minHeight: 56,
-      },
+        '&$expanded': {
+            minHeight: 56,
+        },
     },
     content: {
-      '&$expanded': {
-        margin: '12px 0',
-      },
+        '&$expanded': {
+            margin: '12px 0',
+        },
     },
     expanded: {},
-  })(MuiAccordionSummary);
+})(MuiAccordionSummary);
 
 const Accordion = withStyles({
-root: {
-    border: '1px solid rgba(0, 0, 0, .125)',
-    boxShadow: 'none',
-    '&:before': {
-    display: 'none',
+    root: {
+        border: '1px solid rgba(0, 0, 0, .125)',
+        boxShadow: 'none',
+        '&:before': {
+            display: 'none',
+        },
+        '&$expanded': {
+            margin: 'auto',
+        },
     },
-    '&$expanded': {
-    margin: 'auto',
-    },
-},
-expanded: {},
+    expanded: {},
 })(MuiAccordion);
 
 
@@ -58,9 +59,9 @@ class ConfigurationEditor extends React.Component<Props, State> {
         super(props);
 
         if (props.configuration !== undefined) {
-            this.state = {configuration: props.configuration};
+            this.state = { configuration: props.configuration };
         } else {
-            this.state = {configuration: new Configuration()};
+            this.state = { configuration: new Configuration() };
         }
 
         // This binding is necessary to make `this` work in the callback
@@ -68,8 +69,10 @@ class ConfigurationEditor extends React.Component<Props, State> {
         this.handleChange = this.handleChange.bind(this);
     }
 
+    // REQ-18: Save.MapConfiguration - The system allows logged -in users to save the entire map configuration(both Map Level and Region Level) as a Preset.
     handleSave() {
-        // TODO Take this.state.configuration and send it to the backend
+        // TODO Display error/success message?
+        Firebase.saveConfig(this.state.configuration);
     }
 
     handleChange(name: keyof Configuration, value: valueOf<Configuration>) {
@@ -90,7 +93,7 @@ class ConfigurationEditor extends React.Component<Props, State> {
                             <Typography>Map Level Options</Typography>
                         </AccordionSummary>
                         <AccordionDetails>
-                            <MapLevelConfiguration configuration={this.state.configuration} onChange={this.handleChange}/>
+                            <MapLevelConfiguration configuration={this.state.configuration} onChange={this.handleChange} />
                         </AccordionDetails>
                     </Accordion>
                     <Accordion defaultExpanded>
@@ -102,7 +105,7 @@ class ConfigurationEditor extends React.Component<Props, State> {
                             <Typography>Region Level Options</Typography>
                         </AccordionSummary>
                         <AccordionDetails>
-                            <RegionLevelConfiguration configuration={this.state.configuration} onChange={this.handleChange}/>
+                            <RegionLevelConfiguration configuration={this.state.configuration} onChange={this.handleChange} />
                         </AccordionDetails>
                     </Accordion>
                     <Button onClick={this.handleSave} variant="contained">Generate</Button>
