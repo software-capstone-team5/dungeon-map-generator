@@ -18,26 +18,23 @@ function MapLevelConfiguration(props: Props) {
             <div>
                 <EnumRadio<Size>
                     enum={Size}
-                    callbackPropertyName={nameOf<Configuration>("mapSize")}
-                    onChange={props.onChange}
+                    label="Map Size"
                     initialValue={props.configuration.mapSize}
-                    label="Map Size"/>
+                    onChange={(value: Size) => props.onChange(nameOf<Configuration>("mapSize"), value)}/>
             </div>
             <div>
                 <EnumRadio<CorridorComplexity>
                     enum={CorridorComplexity}
-                    callbackPropertyName={nameOf<Configuration>("corridorComplexity")}
-                    onChange={props.onChange}
+                    label="Corridor Complexity"
                     initialValue={props.configuration.corridorComplexity}
-                    label="Corridor Complexity"/>
+                    onChange={(value: CorridorComplexity) => props.onChange(nameOf<Configuration>("corridorComplexity"), value)}/>
             </div>
             <div>
                 <EnumRadio<CorridorLength>
                     enum={CorridorLength}
-                    callbackPropertyName={nameOf<Configuration>("corridorLength")}
-                    onChange={props.onChange}
+                    label="Corridor Length"
                     initialValue={props.configuration.corridorLength}
-                    label="Corridor Length"/>
+                    onChange={(value: CorridorLength) => props.onChange(nameOf<Configuration>("corridorLength"), value)}/>
             </div>
         </div>
     );

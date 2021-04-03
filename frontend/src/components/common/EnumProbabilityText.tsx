@@ -2,11 +2,11 @@ import {FormControl, FormLabel, InputLabel, Input, InputAdornment, makeStyles} f
 import { Probabilities } from '../../generator/Probabilities';
 
 type Props<EnumType extends number | string> = {
+    disabled?: boolean;
     label: string;
     probs: Probabilities<EnumType>;
-    callbackPropertyName: string;
     enum: {[s: string]: EnumType};
-    onProbUpdate: (callbackID: string, enumChanged: EnumType, newValue: number) => void;
+    onProbUpdate: (enumChanged: EnumType, newValue: number) => void;
 };
 
 const useStyles = makeStyles((theme) => ({
@@ -19,6 +19,10 @@ const useStyles = makeStyles((theme) => ({
     },
 }));
 
+EnumProbabilityText.defaultProps = {
+    disabled: false
+}
+
 function EnumProbabilityText<EnumType extends number | string>(props: Props<EnumType>) {
     const classes = useStyles();
 
@@ -27,7 +31,7 @@ function EnumProbabilityText<EnumType extends number | string>(props: Props<Enum
           return;
         }
         // TODO: How do we handle non-normalized inputs?
-        props.onProbUpdate(props.callbackPropertyName, enumChanged, newValue/100)
+        props.onProbUpdate(enumChanged, newValue/100)
     }
 
     return (
@@ -35,14 +39,14 @@ function EnumProbabilityText<EnumType extends number | string>(props: Props<Enum
             <FormLabel>{props.label}</FormLabel>
             {Object.values(props.enum).map((x: EnumType, i: number) =>
                 <div>
-                    <FormControl fullWidth className={classes.margin}>
+                    <FormControl disabled={props.disabled} fullWidth className={classes.margin}>
                         <InputLabel>{x}</InputLabel>
                         <Input
                             type="number"
                             value={props.probs.probSum[i]*100}
                             onChange={(e)=>handleProbabilityChange(x, parseFloat(e.target.value))}
                             endAdornment={<InputAdornment position="end">%</InputAdornment>}
-                            inputProps={{ inputProps: { min: "0", max: "100", step: "1" } }}
+                            inputProps={{ inputProps: { min: "0", max: "100", step: "1" },  style: { textAlign: "right" } }}
                         />
                     </FormControl>
                 </div>
