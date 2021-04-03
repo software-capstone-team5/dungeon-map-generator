@@ -26,12 +26,12 @@ const useStyles = makeStyles((theme) => ({
     },
 }));
 
-type Props = {
-  list: Probabilities<RegionCategory>;
+type Props<T extends RegionCategory> = {
+  list: Probabilities<T>;
   showProbs?: boolean;
   showDelete?: boolean;
   onDeleteClick?: (index: number) => void;
-  onClick?: (rc: RegionCategory) => void;
+  onClick?: (rc: T) => void;
   onProbUpdate?: (index: number, newValue: number) => void;
 }
 
@@ -40,7 +40,7 @@ RegionCategoryProbabilityList.defaultProps = {
   showDelete: false
 }
 
-function RegionCategoryProbabilityList (props: Props) {
+function RegionCategoryProbabilityList<T extends RegionCategory> (props: Props<T>) {
 
     const classes = useStyles();
 
@@ -49,11 +49,11 @@ function RegionCategoryProbabilityList (props: Props) {
         return;
       }
       // TODO: How do we handle non-normalized inputs?
-      props.onProbUpdate(index, newValue/100)
+      props.onProbUpdate!(index, newValue/100)
     }
 
-    const listItems = props.list.objects.map((rc: RegionCategory, i: number) =>
-      <ListItem button onClick={(e)=>props.onClick(rc)} key={i}>
+    const listItems = props.list.objects.map((rc: T, i: number) =>
+      <ListItem button onClick={(e)=>props.onClick!(rc)} key={i}>
         <ListItemText
           primary={rc.name}
         />
@@ -69,7 +69,7 @@ function RegionCategoryProbabilityList (props: Props) {
         }
         {props.showDelete &&
           <ListItemSecondaryAction>
-            <IconButton onClick={()=>props.onDeleteClick(i)} edge="end" aria-label="delete">
+            <IconButton onClick={()=>props.onDeleteClick!(i)} edge="end" aria-label="delete">
               <DeleteIcon />
             </IconButton>
           </ListItemSecondaryAction>

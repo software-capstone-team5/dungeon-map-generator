@@ -39,13 +39,13 @@ function RegionCategoryList<T extends RegionCategory> (props: Props<T>) {
     const classes = useStyles();
 
     const listItems = props.list.map((rc: T, i: number) =>
-      <ListItem button onClick={(e)=>props.onClick(rc)} key={i}>
+      <ListItem button onClick={(e)=>props.onClick!(rc)} key={i}>
         <ListItemText
           primary={rc.name}
         />
         {props.showDelete &&
           <ListItemSecondaryAction>
-            <IconButton onClick={()=>props.onDeleteClick(i)} edge="end" aria-label="delete">
+            <IconButton onClick={()=>props.onDeleteClick!(i)} edge="end" aria-label="delete">
               <DeleteIcon />
             </IconButton>
           </ListItemSecondaryAction>

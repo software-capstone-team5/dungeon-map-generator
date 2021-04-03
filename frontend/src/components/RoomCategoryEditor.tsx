@@ -32,14 +32,14 @@ const useStyles = makeStyles((theme) =>  ({
   },
 }));
 
-function a11yProps(index) {
+function a11yProps(index: number) {
   return {
     id: `simple-tab-${index}`,
     'aria-controls': `simple-tabpanel-${index}`,
   };
 }
 
-function TabPanel(props) {
+function TabPanel(props: any) {
   const { children, value, index, ...other } = props;
 
   return (
@@ -86,7 +86,7 @@ export default function RoomCategoryEditor(props: Props) {
   const [roomCategory, setRoomCategory] = useState(initialRoomCategory);
   const [viewMode, setViewMode] = useState(props.viewOnly)
 
-  const handleTabChange = (event, newValue) => {
+  const handleTabChange = (event: React.ChangeEvent<{}>, newValue: number) => {
     setTab(newValue);
   };
 
@@ -106,7 +106,7 @@ export default function RoomCategoryEditor(props: Props) {
 
   const handleSaveClick = () => {
     // TODO: Make call to backend
-    props.onSave(roomCategory);
+    props.onSave!(roomCategory);
   }
 
   return (

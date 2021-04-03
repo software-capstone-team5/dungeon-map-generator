@@ -82,8 +82,8 @@ function RegionLevelConfiguration(props: Props) {
         props.onChange(name, updatedList);
         setRoomEditorOpen(false);
         setCorridorEditorOpen(false);
-        setRoomCategoryToEdit(null);
-        setCorridorCategoryToEdit(null);
+        setRoomCategoryToEdit(undefined);
+        setCorridorCategoryToEdit(undefined);
     }
 
     return (

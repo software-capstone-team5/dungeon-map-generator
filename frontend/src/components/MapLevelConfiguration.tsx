@@ -14,7 +14,7 @@ type Props = {
 function MapLevelConfiguration(props: Props) {
     return (
         <div>
-            <DifficultySlider onChange={props.onChange} initialValue={props.configuration.difficulty}/>
+            <DifficultySlider onChange={(value: number) => props.onChange(nameOf<Configuration>("difficulty"), value)} initialValue={props.configuration.difficulty}/>
             <div>
                 <EnumRadio<Size>
                     enum={Size}

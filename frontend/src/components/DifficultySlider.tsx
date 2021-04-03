@@ -5,7 +5,7 @@ import {nameOf} from '../utils/util';
 
 type Props = {
     initialValue: number;
-    onChange: (name: string, value: number) => void;
+    onChange: (value: number) => void;
 }
 
 function DifficultySlider(props: Props) {
@@ -17,7 +17,7 @@ function DifficultySlider(props: Props) {
             <Slider
                 aria-labelledby="input-slider"
                 defaultValue={props.initialValue}
-                onChange={(e,v) => props.onChange(nameOf<Configuration>("difficulty"), v as number)}
+                onChange={(e,v) => props.onChange(v as number)}
                 valueLabelDisplay="auto"
                 step={1}
                 marks
