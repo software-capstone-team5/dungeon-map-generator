@@ -11,6 +11,7 @@ import {Configuration} from '../models/Configuration';
 import MapLevelConfiguration from './MapLevelConfiguration';
 import RegionLevelConfiguration from './RegionLevelConfiguration';
 
+import cloneDeep from 'lodash/cloneDeep';
 
 const AccordionSummary = withStyles({
     root: {
@@ -58,7 +59,7 @@ class ConfigurationEditor extends React.Component<Props, State> {
         super(props);
 
         if (props.configuration !== undefined) {
-            this.state = {configuration: props.configuration};
+            this.state = {configuration: cloneDeep(props.configuration)};
         } else {
             this.state = {configuration: new Configuration()};
         }

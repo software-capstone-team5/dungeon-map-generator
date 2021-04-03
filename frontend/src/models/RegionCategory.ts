@@ -24,7 +24,7 @@ export class RegionCategory {
 		});
 
 		this.entranceTypes = new Probabilities<EntranceType>(null);
-		var len = Object.values(EntranceType).length;
+		len = Object.values(EntranceType).length;
 		Object.values(EntranceType).forEach((x:EntranceType) => {
 			this.entranceTypes.add(x, 1/len);
 		});

@@ -1,7 +1,6 @@
 import {Slider} from '@material-ui/core';
 import {Typography} from '@material-ui/core';
 import {Configuration} from '../models/Configuration';
-import {nameOf} from '../utils/util';
 
 type Props = {
     initialValue: number;

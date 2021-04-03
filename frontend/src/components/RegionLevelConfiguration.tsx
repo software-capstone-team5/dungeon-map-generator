@@ -12,6 +12,7 @@ import findIndex from 'lodash/findIndex';
 import RoomCategoryEditor from './RoomCategoryEditor';
 import RegionCategoryProbabilityList from './RegionCategoryProbabilityList';
 import SelectRegionCategory from './SelectRegionCategory';
+import CorridorCategoryEditor from './CorridorCategoryEditor';
 
 const useStyles = makeStyles({
     listLabel: {
@@ -135,6 +136,14 @@ function RegionLevelConfiguration(props: Props) {
                     roomCategory={roomCategoryToEdit}
                     onSave={(rc: RoomCategory) => handleSave(nameOf<Configuration>("roomCategories"), rc)}
                     onCancelClick={()=>setRoomEditorOpen(false)}
+                />
+            }
+            {corridorEditorOpen &&
+                <CorridorCategoryEditor
+                    open={corridorEditorOpen}
+                    corridorCategory={corridorCategoryToEdit}
+                    onSave={(rc: CorridorCategory) => handleSave(nameOf<Configuration>("corridorCategories"), rc)}
+                    onCancelClick={()=>setCorridorEditorOpen(false)}
                 />
             }
             
