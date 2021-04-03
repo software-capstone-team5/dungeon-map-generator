@@ -1,5 +1,5 @@
 export enum Size {
-	small = 'SMALL',
-	medium = 'MEDIUM',
-	large = 'LARGE'
+	small = 'Small',
+	medium = 'Medium',
+	large = 'Large'
 }
