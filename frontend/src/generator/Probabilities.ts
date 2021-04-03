@@ -3,7 +3,7 @@ export class Probabilities<T> {
 	objects: T[] = [];
 	probSum: number[] = [];
 
-	constructor(chances: Map<T, number>){
+	constructor(chances: Map<T, number> | null){
 		if (chances != null){
 			var last = 0;
 			chances.forEach((prob: number, key: T) => {
@@ -46,7 +46,7 @@ export class Probabilities<T> {
 
 	update(object: T, newValue: number) {
 		this.objects.forEach((key: T, i: number) => {
-			if (key == object) {
+			if (key === object) {
 				this.probSum[i] = newValue;
 				return;
 			}
@@ -72,7 +72,7 @@ export class Probabilities<T> {
 				picks.push(pick);
 			}
 		}
-		if (picks.length == 1 && picks[0] == null){
+		if (picks.length === 1 && picks[0] == null){
 			picks = [];
 		}
 		return picks;

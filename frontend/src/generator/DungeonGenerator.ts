@@ -38,7 +38,7 @@ export class DungeonGenerator {
 		while(!done){
 			if (Math.random() > (maxRooms - numRooms)/maxRooms){
 				if (lastPath.length > 0){
-					map.addCorridor(this.generateCorridor(config.corridorCategories.randPickOne(), lastPath, direction));
+					map.addCorridor(this.generateCorridor(config.corridorCategories.randPickOne(), config.defaultCorridorCategory, lastPath, direction));
 				}
 				done = true;
 			}
@@ -52,7 +52,7 @@ export class DungeonGenerator {
 				var next = this.getNextLocation(last, direction);
 
 				if ( Math.random() > (maxLength - lastPath.length)/maxLength){
-					var result = this.finishPath(config, map, lastPath, direction);
+					var result = this.finishPath(config, map, lastPath, next, direction);
 					next = result[0];
 					direction = result[1];
 					lastPath = [];
@@ -65,8 +65,8 @@ export class DungeonGenerator {
 		return map;
 	}
 
-	private finishPath(config: Configuration, map: DungeonMap, lastPath: Coordinates[], direction:Direction): [Coordinates, Direction] {
-		map.addCorridor(this.generateCorridor(config.corridorCategories.randPickOne(), lastPath, direction));
+	private finishPath(config: Configuration, map: DungeonMap, lastPath: Coordinates[], next: Coordinates, direction:Direction): [Coordinates, Direction] {
+		map.addCorridor(this.generateCorridor(config.corridorCategories.randPickOne(), config.defaultCorridorCategory, lastPath, direction));
 		var room = this.generateRoom(config.roomCategories.randPickOne(), next, direction);
 		map.addRoom(room);
 		var next = Probabilities.buildUniform<Coordinates>(map.getRegionBorder(room)).randPickOne();
@@ -147,10 +147,10 @@ export class DungeonGenerator {
 		return room;
 	}
 
-	private generateCorridor(category: CorridorCategory, path: Coordinates[], direction: Direction): CorridorInstance {
+	private generateCorridor(category: CorridorCategory, defaultCategory: CorridorCategory | null, path: Coordinates[], direction: Direction): CorridorInstance {
 		var corridor: CorridorInstance = this.genearteRegion(category) as CorridorInstance;
 		corridor.category = category;
-		corridor.width = category.widths.randPickOne();
+		corridor.width = category.widths ? category.widths.randPickOne() : defaultCategory?.widths ? defaultCategory.widths.randPickOne() : CorridorWidth.thin;
 
 		var widthModifier;
 		// TODO: Chose actual values

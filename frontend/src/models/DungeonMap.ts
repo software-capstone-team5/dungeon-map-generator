@@ -78,14 +78,14 @@ export class DungeonMap {
 
 	addEntrance(entrance: Entrance){
 		if (this.map.has(entrance.location)){
-			this.map.get(entrance.location)[0].entrances.push(entrance);
+			this.map.get(entrance.location)![0].entrances.push(entrance);
 		}
 		// TODO: Else throw error ?
 	}
 
 	removeEntrance(entrance: Entrance){
 		if (this.map.has(entrance.location)){
-			this.map.get(entrance.location).forEach((region) => {
+			this.map.get(entrance.location)!.forEach((region) => {
 				var index = region.entrances.indexOf(entrance);
 				if (index > -1){
 					if (region.entrances.length > 1){
@@ -100,14 +100,14 @@ export class DungeonMap {
 	getRegionBorder(region: RegionInstance): Coordinates[] {
 		var border: Coordinates[] = [];
 		region.locations.forEach((location) => {
-			if (this.map.has(location) && this.map.get(location)[0] == region){
+			if (this.map.has(location) && this.map.get(location)![0] == region){
 				var adjacent = [new Coordinates(location.x + 1, location.y),
 								new Coordinates(location.x - 1, location.y),
 								new Coordinates(location.x, location.y + 1),
 								new Coordinates(location.x, location.y - 1)];
 				for (var i = 0; i < adjacent.length; i++){
 					var point = adjacent[i];
-					if (!this.map.has(point) || this.map.get(point)[0] != region){
+					if (!this.map.has(point) || this.map.get(point)![0] != region){
 						border.push(point);
 						break;
 					}
@@ -138,7 +138,7 @@ export class DungeonMap {
 	private addLocationToMap(region: RegionInstance, location: Coordinates) {
 		if (this.map.has(location)){
 			// TODO: Decide if this should be ordered. Should rooms always get priority over corridors?
-			this.map.get(location).push(region); 
+			this.map.get(location)!.push(region); 
 		}
 		else{
 			this.map.set(location, [region]);
@@ -147,7 +147,7 @@ export class DungeonMap {
 
 	private removeLocationFromMap(region: RegionInstance, location: Coordinates){
 		if (this.map.has(location)){
-			var regions = this.map.get(location);
+			var regions = this.map.get(location)!;
 			var index = regions.indexOf(region);
 			if (index > -1){
 				if (regions.length == 1){
