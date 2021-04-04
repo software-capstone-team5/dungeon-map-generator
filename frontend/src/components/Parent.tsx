@@ -64,6 +64,7 @@ class Parent extends React.Component<Props, State> {
 
         this.handleGenerate = this.handleGenerate.bind(this);
         this.handleSingleDownload = this.handleSingleDownload.bind(this);
+        this.handleLayerDownloads = this.handleLayerDownloads.bind(this);
         this.handleJsonDownload = this.handleJsonDownload.bind(this);
     }
 
@@ -94,6 +95,20 @@ class Parent extends React.Component<Props, State> {
         }
     }
 
+    handleLayerDownloads() {
+        var current = this.dungeonDisplay.current;
+        if (current && this.state.map){
+            var urls = current.getMultipleImages();
+            urls.forEach((url, i) => {
+                // TODO: zip?
+                var link = document.createElement('a');
+                link.download = 'DungeonMap' + i + '.png';
+                link.href = url;
+                link.click();
+            })
+        }
+    }
+
     async handleJsonDownload() {
         if (this.state.map){
             var json = this.state.map.getJSON();
@@ -108,10 +123,12 @@ class Parent extends React.Component<Props, State> {
     render() {
         return (
             <div>
+                <DungeonDisplay map={this.state.map} canvasProps={null} ref={this.dungeonDisplay}></DungeonDisplay>
 				<Button onClick={this.handleGenerate} variant="contained">Generate</Button>
 				<Button onClick={this.handleSingleDownload} disabled={!this.state.map} variant="contained">Download Single Image</Button>
+				<Button onClick={this.handleLayerDownloads} disabled={!this.state.map} variant="contained">Download Layer Images</Button>
 				<Button onClick={this.handleJsonDownload} disabled={!this.state.map} variant="contained">Download JSON</Button>
-				<DungeonDisplay map={this.state.map} canvasProps={null} ref={this.dungeonDisplay}></DungeonDisplay>
+				
             </div>
         );
     }

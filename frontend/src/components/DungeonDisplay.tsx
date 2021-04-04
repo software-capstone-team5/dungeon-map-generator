@@ -5,6 +5,7 @@ import { TileType } from '../constants/TileType';
 import { Coordinates } from '../models/Coordinates';
 import { DungeonMap } from '../models/DungeonMap';
 import { RegionInstance } from '../models/RegionInstance';
+import CSS from 'csstype';
 
 type Props = {
     map: DungeonMap | null;
@@ -12,13 +13,33 @@ type Props = {
 }
 
 class DungeonDisplay extends Component {
-	private canvasRef: React.RefObject<any>;
+	private backgroundRef: React.RefObject<any>;
+	private mainRef: React.RefObject<any>;
+	private hiddenRef: React.RefObject<any>;
+	private combinedRef: React.RefObject<any>;
 	props: Props;
+
+	private containerStyle: CSS.Properties = {
+		display: 'grid'
+	}
 	
+	private canvasStyle: CSS.Properties = {
+		gridArea: '1/1'
+	}
+
+	private combinedStyle: CSS.Properties = {
+		gridArea: '1/1',
+		visibility: 'hidden'
+	}
+
 	constructor(props: Props) {
 		super(props)
 		this.props = props
-		this.canvasRef = React.createRef();
+		// this.containerRef = React.createRef();
+		this.backgroundRef = React.createRef();
+		this.mainRef = React.createRef();
+		this.hiddenRef = React.createRef();
+		this.combinedRef = React.createRef();
 	}
 
 	componentDidMount() {
@@ -43,58 +64,68 @@ class DungeonDisplay extends Component {
 	}
 	
 	render() {
-		return <canvas ref={this.canvasRef} {...this.props.canvasProps}/>
+		return <div style={this.containerStyle}>
+			<canvas style={this.canvasStyle} ref={this.backgroundRef} {...this.props.canvasProps}/>
+			<canvas style={this.canvasStyle} ref={this.mainRef} {...this.props.canvasProps}/>
+			<canvas style={this.canvasStyle} ref={this.hiddenRef} {...this.props.canvasProps}/>
+			<canvas style={this.combinedStyle} ref={this.combinedRef} {...this.props.canvasProps}/>
+		</div>
 	}
 
 	getSingleImage(){
-		const canvas = this.canvasRef.current;
-		if (!canvas){
-			return
-		}
-		
-		return canvas.toDataURL("image/png");
+		const canvases = this.getCanvases();
+
+		var combinedCanvas = this.combinedRef.current;
+		var context = combinedCanvas.getContext('2d');
+
+		canvases.forEach((canvas) => {
+			context.drawImage(canvas, 0, 0);
+		})
+
+		return combinedCanvas.toDataURL("image/png");
+	}
+
+	getMultipleImages(): any[]{
+		return this.getCanvases().map((canvas) => canvas.toDataURL("image/png"));
 	}
 
 	drawDungeon(dungeonMap: DungeonMap) {
-		const canvas = this.canvasRef.current;
-		if (!canvas){
-			return
-		}
-
-		const context = canvas.getContext('2d');
-		if (!context){
-			return
-		}
+		var canvases = this.getCanvases();
+		var contexts = canvases.map((canvas) => canvas.getContext('2d'));
 		
 		var width = dungeonMap.getWidth();
 		var height = dungeonMap.getHeight();
-		canvas.width = width * dungeonMap.tileSize;
-		canvas.height = height * dungeonMap.tileSize;
+		var canvasWidth = width * dungeonMap.tileSize;
+		var canvasHeight = height * dungeonMap.tileSize;
+		canvases.forEach((canvas) => {
+			canvas.width = canvasWidth;
+			canvas.height = canvasHeight;
+		})
+
+		// TODO: Use background image;
+		contexts[0].fillStyle = '#E0D3AF';
+		contexts[0].fillRect(0, 0, canvasWidth, canvasHeight);
 
 		for (var x = 0; x < width; x++){
 			for (var y = 0; y < height; y++){
 				var region = dungeonMap.getRegionInstance(x, y);
 				var startx = dungeonMap.tileSize * x;
-				var starty =  canvas.height - dungeonMap.tileSize * (y + 1);
+				var starty =  canvasHeight - dungeonMap.tileSize * (y + 1);
 				if (region){
 					if (y == 0 || y == height){
 						var i = 0;
 					}
-					context.drawImage(region.tileSet.get(TileType.floor), startx, starty);
+					contexts[1].drawImage(region.tileSet.get(TileType.floor), startx, starty);
 				}
-				else {
-					context.fillStyle = '#E0D3AF';
-					context.fillRect(startx, starty, dungeonMap.tileSize, dungeonMap.tileSize);
-				}
-				this.drawWalls(region, dungeonMap, x, y, width, height, context, startx, starty);
+				this.drawWalls(region, dungeonMap, x, y, width, height, contexts[1], startx, starty);
 			}
 		}
 
 		dungeonMap.rooms.forEach((room) => {
-			this.drawEntrances(room, dungeonMap, context, canvas.height);
+			this.drawEntrances(room, dungeonMap, contexts[1], contexts[2], canvasHeight);
 		});
 		dungeonMap.corridors.forEach((corridor) => {
-			this.drawEntrances(corridor, dungeonMap, context, canvas.height);
+			this.drawEntrances(corridor, dungeonMap, contexts[1], contexts[2], canvasHeight);
 		});
 	}
 
@@ -116,52 +147,68 @@ class DungeonDisplay extends Component {
 		}
 	}
 
-	private drawEntrances(region: RegionInstance, dungeonMap: DungeonMap, context: any, canvasHeight: number){
+	private drawEntrances(region: RegionInstance, dungeonMap: DungeonMap, context: any, hiddenContext: any, canvasHeight: number){
 		region.entrances.forEach((entrance) => {
 			var startx = dungeonMap.tileSize * entrance.location.x;
 			var starty =  canvasHeight - dungeonMap.tileSize * (entrance.location.y + 1);
 
 			var tileTypes;
-			switch(entrance.type){
-				case (EntranceType.regular):
-					tileTypes = [TileType.regularDoorLeft, TileType.regularDoorRight, TileType.regularDoorUp,TileType.regularDoorDown];
-					break;
-				case (EntranceType.locked):
-					tileTypes = [TileType.lockedDoorLeft, TileType.lockedDoorRight, TileType.lockedDoorUp, TileType.secretDoorDown];
-					break
-				case (EntranceType.secret):
-					tileTypes = [TileType.secretDoorLeft, TileType.secretDoorRight, TileType.secretDoorUp, TileType.secretDoorDown];
-			}
-
 			switch(entrance.direction){
 				case (Direction.left):
-					context.drawImage(region.tileSet.get(tileTypes[0]), startx, starty);
+					tileTypes = [TileType.regularDoorLeft, TileType.lockedDoorLeft, TileType.secretDoorLeft];
 					break;
 				case (Direction.right):
-					context.drawImage(region.tileSet.get(tileTypes[1]), startx, starty);
+					tileTypes = [TileType.regularDoorRight, TileType.lockedDoorRight, TileType.secretDoorRight];
 					break;
 				case (Direction.up):
-					context.drawImage(region.tileSet.get(tileTypes[2]), startx, starty);
+					tileTypes = [TileType.regularDoorUp, TileType.lockedDoorUp, TileType.secretDoorUp];
 					break;
 				case (Direction.down):
-					context.drawImage(region.tileSet.get(tileTypes[3]), startx, starty);
+					tileTypes = [TileType.regularDoorDown, TileType.lockedDoorDown, TileType.secretDoorDown];
+			}
+
+			switch(entrance.type){
+				case (EntranceType.regular):
+					context.drawImage(region.tileSet.get(tileTypes[0]), startx, starty);
+					break;
+				case (EntranceType.locked):
+					context.drawImage(region.tileSet.get(tileTypes[1]), startx, starty);
+					break
+				case (EntranceType.secret):
+					hiddenContext.drawImage(region.tileSet.get(tileTypes[2]), startx, starty);
+					
 			}
 		})
 	}
 
 	clearDungeon(){
-		const canvas = this.canvasRef.current;
-		if (!canvas){
-			return
+		var canvases = this.getCanvases();
+		var contexts = canvases.map((canvas) => canvas.getContext('2d'));
+		contexts.forEach((context) => {
+			context.fillStyle = "rgba(255, 255, 255, 0)";
+			context.fillRect(0, 0, canvases[0].width, canvases[0].height);
+		})
+	}
+
+	private getCanvases(){
+		const backgroundCanvas = this.backgroundRef.current;
+		if (!backgroundCanvas){
+			return []
+		}
+		const mainCanvas = this.mainRef.current;
+		if (!mainCanvas){
+			return []
+		}
+		const hiddenCanvas = this.hiddenRef.current;
+		if (!hiddenCanvas){
+			return []
+		}
+		const combinedCanvas = this.combinedRef.current;
+		if (!combinedCanvas){
+			return []
 		}
 
-		const context = canvas.getContext('2d');
-		if (!context){
-			return
-		}
-
-		context.fillStyle = "rgba(255, 255, 255, 0)";
-		context.fillRect(0, 0, canvas.width, canvas.height);
+		return [backgroundCanvas, mainCanvas, hiddenCanvas, combinedCanvas];
 	}
 }
 
