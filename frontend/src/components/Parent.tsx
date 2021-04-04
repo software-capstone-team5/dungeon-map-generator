@@ -64,6 +64,7 @@ class Parent extends React.Component<Props, State> {
 
         this.handleGenerate = this.handleGenerate.bind(this);
         this.handleSingleDownload = this.handleSingleDownload.bind(this);
+        this.handleJsonDownload = this.handleJsonDownload.bind(this);
     }
 
     private getDefaultTileSets(): Probabilities<TileSet>{
@@ -93,11 +94,23 @@ class Parent extends React.Component<Props, State> {
         }
     }
 
+    async handleJsonDownload() {
+        if (this.state.map){
+            var json = this.state.map.getJSON();
+            var url = await URL.createObjectURL(new Blob([json], {type: 'application/json'}));
+            var link = document.createElement('a');
+            link.download = 'DungeonMap.json';
+            link.href = url;
+            link.click();
+        }
+    }
+
     render() {
         return (
             <div>
 				<Button onClick={this.handleGenerate} variant="contained">Generate</Button>
 				<Button onClick={this.handleSingleDownload} disabled={!this.state.map} variant="contained">Download Single Image</Button>
+				<Button onClick={this.handleJsonDownload} disabled={!this.state.map} variant="contained">Download JSON</Button>
 				<DungeonDisplay map={this.state.map} canvasProps={null} ref={this.dungeonDisplay}></DungeonDisplay>
             </div>
         );

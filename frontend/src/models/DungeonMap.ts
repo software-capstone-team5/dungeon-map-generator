@@ -50,8 +50,9 @@ export class DungeonMap {
 		// TODO
 	}
 
-	getJSON() {
-		// TODO
+	getJSON(): string {
+		// TODO: Consider condensing this file and reducing redundancy.
+		return JSON.stringify(this);
 	}
 
 	addCorridor(corridor: CorridorInstance){
