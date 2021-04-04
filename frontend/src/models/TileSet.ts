@@ -3,17 +3,19 @@ import { TileType } from "../constants/TileType";
 export class TileSet {
 	name: string;
 	tileSize: number = 48;
-	set: Map<TileType, string> = new Map<TileType, string>(); // string is image url? Better way to represent this for react?
+	set: Map<string, HTMLImageElement> = new Map<string, HTMLImageElement>(); // key is TileType, value is image url? Better way to represent this for react?
 
-	constructor(set: Map<TileType, string>){
+	constructor(name: string, tileSize: number, set: Map<string, HTMLImageElement>){
+		this.name = name;
+		this.tileSize = tileSize;
 		this.set = set;
 	}
 
-	addTileToSet(tileType: TileType, img: string) {
+	addTileToSet(tileType: string, img: HTMLImageElement) {
 		this.set.set(tileType, img);
 	}
 
-	get(tileType: TileType){
+	get(tileType: string){
 		return this.set.get(tileType);
 	}
 }

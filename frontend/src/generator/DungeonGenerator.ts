@@ -27,8 +27,8 @@ export class DungeonGenerator {
 		var lastPath: Coordinates[] = [];
 		var numRooms = 0;
 		var start: Coordinates = new Coordinates(0,0);
-		// start.x = Math.floor(Math.random() * map.getWidth());
-		start.x = 0;
+		start.x = Math.floor(Math.random() * map.getWidth());
+		// start.x = 0;
 		start.y = Math.floor(Math.random() * map.getHeight());
 		lastPath.push(start);
 		var done = false;
@@ -38,11 +38,12 @@ export class DungeonGenerator {
 		var maxRooms = config.getMaxRooms();
 		var minRooms = config.getMinRooms();
 		var direction: Direction = Direction.right;
+		var lastEntranceDirection: Direction = Direction.left;
 
 		while(!done){
 			if (numRooms > minRooms && Math.random() > (maxRooms - numRooms)/maxRooms){
 				if (lastPath.length > 0){
-					map.addCorridor(this.generateCorridor(config.corridorCategories.randPickOne(), config.defaultCorridorCategory, lastPath, direction));
+					map.addCorridor(this.generateCorridor(config.corridorCategories.randPickOne(), config.defaultCorridorCategory, lastPath, direction, lastEntranceDirection));
 				}
 				done = true;
 			}
@@ -54,58 +55,65 @@ export class DungeonGenerator {
 					direction = directions.randPickOne()!;
 				}
 
-				var next = this.getNextLocation(last, direction);
-				next = this.constrainToMap(next, map.getWidth(), map.getHeight());
+				var next = map.constrainToMap(this.getNextLocation(last, direction));
 
 				var region = map.getRegionInstance(next.x, next.y);
-				if (region) {
-					map.addCorridor(this.generateCorridor(config.corridorCategories.randPickOne(), config.defaultCorridorCategory, lastPath, direction));
-					var result = this.branchFromRegion(region, map, direction);
+				if(region){
+					if (lastPath && lastPath.length > 0){
+						// this.addEntrance(region, config, next, direction);
+						var corridor = this.generateCorridor(config.corridorCategories.randPickOne(), config.defaultCorridorCategory, lastPath, direction, lastEntranceDirection);	
+						map.addCorridor(corridor);
+					}
+					var result = this.branchFromMap(map, direction);
 					next = result[0];
 					direction = result[1];
 					lastPath = [];
+					lastEntranceDirection = this.getOppositeDirection(direction);
+					region = map.getRegionInstance(next.x, next.y);
 				}
 
+				next = map.constrainToMap(next);
+
 				if ( Math.random() > (maxLength - lastPath.length)/maxLength){
-					map.addCorridor(this.generateCorridor(config.corridorCategories.randPickOne(), config.defaultCorridorCategory, lastPath, direction));
+					var corridor = this.generateCorridor(config.corridorCategories.randPickOne(), config.defaultCorridorCategory, lastPath, direction, lastEntranceDirection);
+					map.addCorridor(corridor);
 					var room = this.generateRoom(config.roomCategories.randPickOne(), config.defaultRoomCategory, next, direction);
 					map.addRoom(room);
+
 					var result = this.branchFromRegion(room, map, direction);
 					if (result[0]) {
 						next = result[0];
 						direction = result[1];
 						numRooms ++;
+						// this.addEntrance(room, config, next, direction);
+						next = map.constrainToMap(this.getNextLocation(last, direction));
 					}
 					else{
 						map.removeRoom(room);
 					}
 					lastPath = [];
+					lastEntranceDirection = this.getOppositeDirection(direction);
 				}
 
-				next = this.constrainToMap(next, map.getWidth(), map.getHeight());
 	
 				lastPath.push(next);
 			}
 		}
 		return map;
-	}
+	}	
 
-	private static constrainToMap(location: Coordinates, maxX: number, maxY: number): Coordinates{
-		var next = new Coordinates(location.x, location.y);
-		if (next.x < 0){
-			next.x = 0;
+	private static addEntrance(region: RegionInstance, config: Configuration, location: Coordinates, direction: Direction){
+		var category;
+		var defaultCategory;
+		if (region.isCorridor){
+			category = (region as CorridorInstance).category;
+			defaultCategory = config.defaultCorridorCategory;
 		}
-		if (next.x > maxX){
-			next.x = maxX;
+		else{
+			category = (region as RoomInstance).category;
+			defaultCategory = config.defaultRoomCategory;
 		}
-		if (next.y < 0){
-			next.y = 0;
-		}
-		if (next.y > maxY){
-			next.y = maxY;
-		}
-
-		return next;
+		region.entrances.push(new Entrance(category.entranceTypes ? category.entranceTypes!.randPickOne()! : defaultCategory.entranceTypes!.randPickOne()!, location, direction));
 	}
 
 	private static branchFromRegion(region: RegionInstance, map: DungeonMap, direction:Direction): [Coordinates, Direction]{
@@ -120,8 +128,25 @@ export class DungeonGenerator {
 		return [next, direction];
 	}
 
+	private static branchFromMap(map: DungeonMap, direction:Direction): [Coordinates, Direction]{
+		var next = Probabilities.buildUniform<Coordinates>(map.getMapBorder()).randPickOne()!;
+		
+		var adjacent = [new Coordinates(next.x + 1, next.y),
+			new Coordinates(next.x - 1, next.y),
+			new Coordinates(next.x, next.y + 1),
+			new Coordinates(next.x, next.y - 1)];
+		for (var i = 0; i < adjacent.length; i++){
+			var point = adjacent[i];
+			if (!map.getRegionInstance(point.x, point.y)){
+				direction = next.getDirectionTo(point);
+				break;
+			}
+		}
+
+		return [next, direction];
+	}
+
 	private static getNextLocation(last: Coordinates, direction: Direction): Coordinates {
-		// TODO: Constrain to map size
 		switch (direction){
 			case Direction.right:
 				return new Coordinates(last.x + 1, last.y);
@@ -131,6 +156,19 @@ export class DungeonGenerator {
 				return new Coordinates(last.x, last.y + 1);
 			case Direction.down:
 				return new Coordinates(last.x, last.y - 1);
+		}
+	}
+
+	private static getOppositeDirection(direction: Direction): Direction {
+		switch (direction){
+			case Direction.right:
+				return Direction.left;
+			case Direction.left:
+				return Direction.right;
+			case Direction.up:
+				return Direction.down;
+			case Direction.down:
+				return Direction.up;
 		}
 	}
 
@@ -171,7 +209,7 @@ export class DungeonGenerator {
 		room.category = category;
 		room.size = category.sizes ? category.sizes!.randPickOne()! : defaultCategory.sizes!.randPickOne()!;
 		room.shape = category.shapes ? category.shapes!.randPickOne()! : defaultCategory.shapes!.randPickOne()!;
-		room.entrances = [new Entrance(category.entranceTypes ? category.entranceTypes!.randPickOne()! : defaultCategory.entranceTypes!.randPickOne()!, start)];
+		// room.entrances = [new Entrance(category.entranceTypes ? category.entranceTypes!.randPickOne()! : defaultCategory.entranceTypes!.randPickOne()!, start, this.getOppositeDirection(direction))];
 
 		var sizeModifier;
 		// TODO: Chose actual values
@@ -180,16 +218,16 @@ export class DungeonGenerator {
 				sizeModifier = 1;
 				break;
 			case Size.medium:
-				sizeModifier = 2;
+				sizeModifier = 1.5;
 				break;
 			case Size.large:
-				sizeModifier = 3;
+				sizeModifier = 2;
 		}
 		room.locations = this.getRoomLocations(room.shape, start, sizeModifier, direction);
 		return room;
 	}
 
-	private static generateCorridor(category: CorridorCategory | null, defaultCategory: CorridorCategory, path: Coordinates[], direction: Direction): CorridorInstance {
+	private static generateCorridor(category: CorridorCategory | null, defaultCategory: CorridorCategory, path: Coordinates[], direction: Direction, lastEntranceDirection: Direction): CorridorInstance {
 		if (!category){
 			category = defaultCategory;
 		}
@@ -197,6 +235,9 @@ export class DungeonGenerator {
 		var corridor: CorridorInstance = this.genearteRegion(category, defaultCategory) as CorridorInstance;
 		corridor.category = category;
 		corridor.width = category.widths ? category.widths!.randPickOne()! : defaultCategory.widths!.randPickOne()!;
+		// corridor.entrances = [
+			// new Entrance(category.entranceTypes ? category.entranceTypes!.randPickOne()! : defaultCategory.entranceTypes!.randPickOne()!, path[path.length - 1], direction)]
+			// new Entrance(category.entranceTypes ? category.entranceTypes!.randPickOne()! : defaultCategory.entranceTypes!.randPickOne()!, path[0], lastEntranceDirection)];
 
 		var widthModifier;
 		// TODO: Chose actual values
@@ -231,22 +272,23 @@ export class DungeonGenerator {
 		var roomWidth: number;
 		var roomHeight: number;
 		var cutCorners: boolean = false;
+		var sqrArea: number = Math.random()*this.defaultSqrtArea;
 		switch(shape){
 			case (RoomShape.square):
-				roomWidth = roomHeight = this.defaultSqrtArea;
+				roomWidth = roomHeight = Math.ceil(this.defaultSqrtArea);
 				break;
 			case (RoomShape.rectangle):
 				if (Math.random() > 0.5){
-					roomWidth = Math.max(1, Math.floor(Math.random()*this.defaultSqrtArea));
-					roomHeight = Math.ceil((this.defaultSqrtArea*this.defaultSqrtArea)/roomWidth);
+					roomWidth = Math.max(1, Math.floor(Math.random() * sqrArea));
+					roomHeight = Math.ceil((sqrArea*sqrArea)/roomWidth);
 				}
 				else{
-					roomHeight = Math.max(1, Math.floor(Math.random()*this.defaultSqrtArea));
-					roomWidth = Math.ceil((this.defaultSqrtArea*this.defaultSqrtArea)/roomHeight);
+					roomHeight = Math.max(1, Math.floor(Math.random()*sqrArea));
+					roomWidth = Math.ceil(sqrArea*sqrArea/roomHeight);
 				}
 				break;
 			case (RoomShape.nonRectangular):
-				roomWidth = roomHeight = this.defaultSqrtArea;
+				roomWidth = roomHeight = sqrArea;
 				cutCorners = true;
 				break;
 		}

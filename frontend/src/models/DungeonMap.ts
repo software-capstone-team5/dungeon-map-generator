@@ -9,9 +9,9 @@ export class DungeonMap {
 	private width: number;
 	private height: number;
 	private map: Map<string, RegionInstance[]>;
-	private corridors: CorridorInstance[] = [];
-	private rooms: RoomInstance[] = [];
 	private config: Configuration;
+	corridors: CorridorInstance[] = [];
+	rooms: RoomInstance[] = [];
 	tileSize: number = 48;
 
 	// possible alternative to current map is to map corridates to key 
@@ -62,6 +62,7 @@ export class DungeonMap {
 
 	removeCorridor(corridor: CorridorInstance) {
 		this.removeRegion(corridor);
+		this.removeFromArray(this.corridors, corridor);
 	}
 
 	addRoom(room: RoomInstance) {
@@ -73,6 +74,7 @@ export class DungeonMap {
 
 	removeRoom(room: RoomInstance) {
 		this.removeRegion(room);
+		this.removeFromArray(this.rooms, room);
 	}
 
 	moveRoom(room: RoomInstance, newStart: Coordinates){
@@ -127,13 +129,58 @@ export class DungeonMap {
 					var point = adjacent[i];
 					var pointKey = point.toString();
 					if (!this.map.has(pointKey) || this.map.get(pointKey)![0] !== region){
-						border.push(point);
+						border.push(location);
 						break;
 					}
 				}
 			}
 		})
 		return border;
+	}
+
+	getMapBorder(): Coordinates[] {
+		var border: Coordinates[] = [];
+		this.map.forEach((value, key) => {
+			var location: Coordinates = Coordinates.fromString(key);
+			var adjacent = [new Coordinates(location.x + 1, location.y),
+				new Coordinates(location.x - 1, location.y),
+				new Coordinates(location.x, location.y + 1),
+				new Coordinates(location.x, location.y - 1)];
+			for (var i = 0; i < adjacent.length; i++){
+				var point = adjacent[i];
+				var pointKey = point.toString();
+				if (!this.map.has(pointKey)){
+					border.push(location);
+					break;
+				}
+			}
+		})
+		return border;
+	}
+
+	isOutOfBounds(x: number, y: number): boolean {
+		if (x < 0 || x >= this.width || y < 0 || y >= this.height){
+			return true;
+		}
+		return false;
+	}
+
+	constrainToMap(location: Coordinates): Coordinates{
+		var next = new Coordinates(location.x, location.y);
+		if (next.x < 0){
+			next.x = 0;
+		}
+		if (next.x > this.width){
+			next.x =  this.width;
+		}
+		if (next.y < 0){
+			next.y = 0;
+		}
+		if (next.y > this.height){
+			next.y = this.height;
+		}
+
+		return next;
 	}
 
 	// Note, if a location is already occupied then it will not be 
@@ -179,6 +226,16 @@ export class DungeonMap {
 					regions.pop();
 				}
 			}
+		}
+	}
+
+	private removeFromArray<T>(array: T[], item: T){
+		var index = array.indexOf(item);
+		if (index > -1){
+			if (array.length === 1){
+				array[index] = array[array.length - 1];
+			}
+			array.pop();
 		}
 	}
 }

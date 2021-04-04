@@ -9,6 +9,11 @@ export class Coordinates {
 		this.y = y;
 	}
 
+	static fromString(str: string): Coordinates {
+		var split = str.split(",");
+		return new Coordinates(parseInt(split[0]), parseInt(split[1]));
+	}
+
 	subtract(rhs: Coordinates): Coordinates{
 		return new Coordinates(this.x - rhs.x, this.y - rhs.y);
 	}
@@ -40,5 +45,5 @@ export class Coordinates {
 }
 
 Coordinates.prototype.toString = function () {
-	return '(' + this.x + ',' + this.y + ')';
+	return this.x + ',' + this.y;
 };

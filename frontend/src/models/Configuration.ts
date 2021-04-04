@@ -58,11 +58,11 @@ export class Configuration {
 		// TODO: Chose actual values
 		switch(this.corridorComplexity){
 			case (CorridorComplexity.low):
-				return 0.2;
+				return 0.1;
 			case (CorridorComplexity.medium):
-				return 0.5;
+				return 0.2;
 			case (CorridorComplexity.high):
-				return 0.8;
+				return 0.4;
 		}
 	}
 
@@ -70,9 +70,9 @@ export class Configuration {
 		// TODO: Chose actual values
 		switch(this.corridorLength){
 			case (CorridorLength.short):
-				return 5;
-			case (CorridorLength.medium):
 				return 10;
+			case (CorridorLength.medium):
+				return 15;
 			case (CorridorLength.long):
 				return 20;
 		}
