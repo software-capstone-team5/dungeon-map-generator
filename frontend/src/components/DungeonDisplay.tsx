@@ -46,6 +46,15 @@ class DungeonDisplay extends Component {
 		return <canvas ref={this.canvasRef} {...this.props.canvasProps}/>
 	}
 
+	getSingleImage(){
+		const canvas = this.canvasRef.current;
+		if (!canvas){
+			return
+		}
+		
+		return canvas.toDataURL("image/png");
+	}
+
 	drawDungeon(dungeonMap: DungeonMap) {
 		const canvas = this.canvasRef.current;
 		if (!canvas){

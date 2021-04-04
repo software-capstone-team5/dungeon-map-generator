@@ -60,7 +60,10 @@ class Parent extends React.Component<Props, State> {
             this.state = {configuration: defaultConfig, map: null};
         }
 
+        this.dungeonDisplay = React.createRef();
+
         this.handleGenerate = this.handleGenerate.bind(this);
+        this.handleSingleDownload = this.handleSingleDownload.bind(this);
     }
 
     private getDefaultTileSets(): Probabilities<TileSet>{
@@ -79,11 +82,23 @@ class Parent extends React.Component<Props, State> {
         this.setState({map: DungeonGenerator.generateDungeon(this.state.configuration)});
     }
 
+    handleSingleDownload() {
+        var current = this.dungeonDisplay.current;
+        if (current && this.state.map){
+            var url = current.getSingleImage();
+            var link = document.createElement('a');
+            link.download = 'DungeonMap.png';
+            link.href = url;
+            link.click();
+        }
+    }
+
     render() {
         return (
             <div>
 				<Button onClick={this.handleGenerate} variant="contained">Generate</Button>
-				<DungeonDisplay map={this.state.map} canvasProps={null}></DungeonDisplay>
+				<Button onClick={this.handleSingleDownload} disabled={!this.state.map} variant="contained">Download Single Image</Button>
+				<DungeonDisplay map={this.state.map} canvasProps={null} ref={this.dungeonDisplay}></DungeonDisplay>
             </div>
         );
     }
