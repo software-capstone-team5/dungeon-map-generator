@@ -12,6 +12,8 @@ import MapLevelConfiguration from './MapLevelConfiguration';
 import RegionLevelConfiguration from './RegionLevelConfiguration';
 
 import cloneDeep from 'lodash/cloneDeep';
+import { RoomCategory } from '../models/RoomCategory';
+import { CorridorCategory } from '../models/CorridorCategory';
 
 const AccordionSummary = withStyles({
     root: {
@@ -61,7 +63,27 @@ class ConfigurationEditor extends React.Component<Props, State> {
         if (props.configuration !== undefined) {
             this.state = {configuration: cloneDeep(props.configuration)};
         } else {
-            this.state = {configuration: new Configuration()};
+            // This is just temporary test data
+            var config = new Configuration();
+            var rc1 = new CorridorCategory();
+            rc1.id = "1"
+            rc1.name = "Windy Hall";
+            var rc2 = new CorridorCategory();
+            rc2.id = "2"
+            rc2.name = "Big Boy Hall";
+            config.corridorCategories.add(rc1, 0.5);
+            config.corridorCategories.add(rc2, 0.5);
+
+            var rrc1 = new RoomCategory();
+            rrc1.id = "1"
+            rrc1.name = "Prison Room";
+            var rrc2 = new RoomCategory();
+            rrc2.id = "2"
+            rrc2.name = "Treasure Room";
+            config.roomCategories.add(rrc1, 0.5);
+            config.roomCategories.add(rrc2, 0.5);
+            this.state = {configuration: config};
+            // this.state = {configuration: new Configuration()};
         }
 
         // This binding is necessary to make `this` work in the callback

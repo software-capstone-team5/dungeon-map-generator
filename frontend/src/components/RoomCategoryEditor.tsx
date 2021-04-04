@@ -52,7 +52,7 @@ function TabPanel(props: any) {
     >
       {value === index && (
         <Box p={3}>
-          <Typography>{children}</Typography>
+          {children}
         </Box>
       )}
     </div>
@@ -68,10 +68,11 @@ type Props = {
 }
 
 RoomCategoryEditor.defaultProps = {
-  viewOnly: true
+  viewOnly: false
 }
 
 export default function RoomCategoryEditor(props: Props) {
+  const editMode: boolean = props.roomCategory !== undefined
   
   var initialRoomCategory: RoomCategory;
   if (props.roomCategory !== undefined) {
@@ -84,7 +85,7 @@ export default function RoomCategoryEditor(props: Props) {
   //TODO: Set to 0 so basic is default, do it when basic is complete
   const [tab, setTab] = useState(1);
   const [roomCategory, setRoomCategory] = useState(initialRoomCategory);
-  const [viewMode, setViewMode] = useState(props.viewOnly)
+  const [viewMode, setViewMode] = useState(props.viewOnly);
 
   const handleTabChange = (event: React.ChangeEvent<{}>, newValue: number) => {
     setTab(newValue);
@@ -116,8 +117,8 @@ export default function RoomCategoryEditor(props: Props) {
           className={classes.root}
           disableTypography
           id="form-dialog-title">
-          <Typography variant="h6">Add Room Category</Typography> 
-          {viewMode &&
+          <Typography component={'span'} variant="h6">{editMode ? "Edit": "Add"} Room Category</Typography>
+          {viewMode && editMode &&
             <IconButton aria-label="edit" className={classes.editButton} onClick={handleEditClick}>
               <EditIcon />
             </IconButton>

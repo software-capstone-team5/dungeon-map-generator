@@ -52,7 +52,7 @@ function TabPanel(props: any) {
     >
       {value === index && (
         <Box p={3}>
-          <Typography>{children}</Typography>
+          {children}
         </Box>
       )}
     </div>
@@ -68,10 +68,11 @@ type Props = {
 }
 
 CorridorCategoryEditor.defaultProps = {
-  viewOnly: true
+  viewOnly: false
 }
 
 export default function CorridorCategoryEditor(props: Props) {
+  const editMode: boolean = props.corridorCategory !== undefined
   
   var initialCorridorCategory: CorridorCategory;
   if (props.corridorCategory !== undefined) {
@@ -84,7 +85,7 @@ export default function CorridorCategoryEditor(props: Props) {
   //TODO: Set to 0 so basic is default, do it when basic is complete
   const [tab, setTab] = useState(1);
   const [corridorCategory, setCorridorCategory] = useState(initialCorridorCategory);
-  const [viewMode, setViewMode] = useState(props.viewOnly)
+  const [viewMode, setViewMode] = useState(props.viewOnly);
 
   const handleTabChange = (event: React.ChangeEvent<{}>, newValue: number) => {
     setTab(newValue);
@@ -116,7 +117,7 @@ export default function CorridorCategoryEditor(props: Props) {
           className={classes.root}
           disableTypography
           id="form-dialog-title">
-          <Typography variant="h6">Add Corridor Category</Typography> 
+          <Typography component={'span'} variant="h6">{editMode ? "Edit": "Add"} Corridor Category</Typography>
           {viewMode &&
             <IconButton aria-label="edit" className={classes.editButton} onClick={handleEditClick}>
               <EditIcon />
