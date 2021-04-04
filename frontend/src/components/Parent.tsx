@@ -17,6 +17,7 @@ import { RoomShape } from '../constants/RoomShape';
 import { CorridorWidth } from '../constants/CorridorWidth';
 import { RoomCategory } from '../models/RoomCategory';
 import { CorridorCategory } from '../models/CorridorCategory';
+import { TileType } from '../constants/TileType';
 
 type Props = {
     configuration?: Configuration;
@@ -38,7 +39,7 @@ class Parent extends React.Component<Props, State> {
         } else {
             var defaultConfig = new Configuration();
             var defaultCategory = {
-                tileSets: Probabilities.buildUniform([new TileSet(new Map())]),
+                tileSets: this.getDefaultTileSets(),
                 monsters: Probabilities.buildUniform([new Monster()]),
                 states: Probabilities.buildUniform([MonsterState.aware, MonsterState.asleep, MonsterState.relaxed]),
                 items: Probabilities.buildUniform([new Item("item1", ""), new Item("item2", ""), new Item("item3", "")]),
@@ -60,6 +61,18 @@ class Parent extends React.Component<Props, State> {
         }
 
         this.handleGenerate = this.handleGenerate.bind(this);
+    }
+
+    private getDefaultTileSets(): Probabilities<TileSet>{
+        // TODO: Get actual default tile sets
+        var defaultSet = new TileSet("default", 48, new Map());
+        for (var tileType of Object.values(TileType)){
+            var img = new Image();
+            img.src = process.env.PUBLIC_URL + "/TileSets/Default/" + tileType + ".png";
+            defaultSet.addTileToSet(tileType, img);
+        }
+
+        return Probabilities.buildUniform([defaultSet]);
     }
 
     handleGenerate() {
