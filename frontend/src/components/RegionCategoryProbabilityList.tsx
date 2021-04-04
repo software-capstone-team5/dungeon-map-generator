@@ -61,6 +61,8 @@ function RegionCategoryProbabilityList<T extends RegionCategory> (props: Props<T
           <TextField
             type="number"
             value={props.list.probSum[i]*100}
+            onClick={(event) => event.stopPropagation()}
+            onFocus={(event) => event.stopPropagation()}
             onChange={(e)=>handleProbabilityChange(i, parseFloat(e.target.value))}
             label="%"
             variant="outlined"
