@@ -8,6 +8,7 @@ import { RoomCategory } from "./RoomCategory";
 export class Configuration {
 	static maxDifficulty: number = 20;
 	static minDifficulty: number = 1;
+	id: string = "";
 	name: string = "";
 	mapSize: Size = Size.medium;
 	corridorComplexity: CorridorComplexity = CorridorComplexity.medium;
