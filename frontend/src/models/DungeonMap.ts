@@ -1,4 +1,3 @@
-import { Size } from "../constants/Size";
 import { Configuration } from "./Configuration";
 import { Coordinates } from "./Coordinates";
 import { CorridorInstance } from "./CorridorInstance";
@@ -9,8 +8,11 @@ import { RoomInstance } from "./RoomInstance";
 export class DungeonMap {
 	private width: number;
 	private height: number;
-	private map: Map<Coordinates, RegionInstance[]>;
+	private map: Map<string, RegionInstance[]>;
+	private corridors: CorridorInstance[] = [];
+	private rooms: RoomInstance[] = [];
 	private config: Configuration;
+	tileSize: number = 48;
 
 	// possible alternative to current map is to map corridates to key 
 	// which maps to region instance. Avoids large map with duplicate instances
@@ -20,7 +22,7 @@ export class DungeonMap {
 
 		this.width = this.height = this.config.getMapSizeNum();
 
-		this.map = new Map;
+		this.map = new Map();
 	}
 
 	getWidth() {
@@ -29,6 +31,15 @@ export class DungeonMap {
 
 	getHeight() {
 		return this.height;
+	}
+
+	getRegionInstance(x: number, y: number): RegionInstance | null{
+		var locationKey = new Coordinates(x, y).toString();
+		if (this.map.has(locationKey)){
+			return this.map.get(locationKey)![0]
+		}
+		
+		return null;
 	}
 
 	getSingleImage() {
@@ -44,6 +55,8 @@ export class DungeonMap {
 	}
 
 	addCorridor(corridor: CorridorInstance){
+		corridor.isCorridor = true;
+		this.corridors.push(corridor);
 		this.addRegion(corridor);
 	}
 
@@ -52,6 +65,8 @@ export class DungeonMap {
 	}
 
 	addRoom(room: RoomInstance) {
+		room.isCorridor = false;
+		this.rooms.push(room);
 		this.addRegion(room);
 		return room;
 	}
@@ -62,7 +77,7 @@ export class DungeonMap {
 
 	moveRoom(room: RoomInstance, newStart: Coordinates){
 		var diff = newStart.subtract(room.start);
-		if (diff.x != 0 || diff.y != 0){
+		if (diff.x !== 0 || diff.y !== 0){
 			room.locations.forEach((location) => {
 				this.removeLocationFromMap(room, location);
 				location = location.add(diff); // TODO: Confirm this modifies location in room
@@ -77,15 +92,17 @@ export class DungeonMap {
 	}
 
 	addEntrance(entrance: Entrance){
-		if (this.map.has(entrance.location)){
-			this.map.get(entrance.location)![0].entrances.push(entrance);
+		var locationKey = entrance.location.toString();
+		if (this.map.has(locationKey)){
+			this.map.get(locationKey)![0].entrances.push(entrance);
 		}
 		// TODO: Else throw error ?
 	}
 
 	removeEntrance(entrance: Entrance){
-		if (this.map.has(entrance.location)){
-			this.map.get(entrance.location)!.forEach((region) => {
+		var locationKey = entrance.location.toString();
+		if (this.map.has(locationKey)){
+			this.map.get(locationKey)!.forEach((region) => {
 				var index = region.entrances.indexOf(entrance);
 				if (index > -1){
 					if (region.entrances.length > 1){
@@ -100,14 +117,16 @@ export class DungeonMap {
 	getRegionBorder(region: RegionInstance): Coordinates[] {
 		var border: Coordinates[] = [];
 		region.locations.forEach((location) => {
-			if (this.map.has(location) && this.map.get(location)![0] == region){
+			var locationKey = location.toString();
+			if (this.map.has(locationKey) && this.map.get(locationKey)![0] === region){
 				var adjacent = [new Coordinates(location.x + 1, location.y),
 								new Coordinates(location.x - 1, location.y),
 								new Coordinates(location.x, location.y + 1),
 								new Coordinates(location.x, location.y - 1)];
 				for (var i = 0; i < adjacent.length; i++){
 					var point = adjacent[i];
-					if (!this.map.has(point) || this.map.get(point)![0] != region){
+					var pointKey = point.toString();
+					if (!this.map.has(pointKey) || this.map.get(pointKey)![0] !== region){
 						border.push(point);
 						break;
 					}
@@ -136,22 +155,24 @@ export class DungeonMap {
 	}
 
 	private addLocationToMap(region: RegionInstance, location: Coordinates) {
-		if (this.map.has(location)){
+		var locationKey = location.toString();
+		if (this.map.has(locationKey)){
 			// TODO: Decide if this should be ordered. Should rooms always get priority over corridors?
-			this.map.get(location)!.push(region); 
+			this.map.get(locationKey)!.push(region); 
 		}
 		else{
-			this.map.set(location, [region]);
+			this.map.set(locationKey, [region]);
 		}
 	}
 
 	private removeLocationFromMap(region: RegionInstance, location: Coordinates){
-		if (this.map.has(location)){
-			var regions = this.map.get(location)!;
+		var locationKey = location.toString();
+		if (this.map.has(locationKey)){
+			var regions = this.map.get(locationKey)!;
 			var index = regions.indexOf(region);
 			if (index > -1){
-				if (regions.length == 1){
-					this.map.delete(location);
+				if (regions.length === 1){
+					this.map.delete(locationKey);
 				}
 				else{
 					regions[index] = regions[regions.length - 1];

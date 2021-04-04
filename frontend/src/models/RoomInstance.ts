@@ -9,4 +9,5 @@ export class RoomInstance extends RegionInstance {
 	category: RoomCategory;
 	size: Size;
 	shape: RoomShape;
+	isCorridor = false;
 }

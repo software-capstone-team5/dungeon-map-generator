@@ -8,10 +8,11 @@ import { Trap } from "./Trap";
 
 export class RegionCategory {
 	name: string;
-	tileSets: Probabilities<TileSet>;
-	monsters: Probabilities<Monster>;
-	states: Probabilities<MonsterState>;
-	items: Probabilities<Item>;
-	entranceTypes: Probabilities<EntranceType>;
-	traps: Probabilities<Trap>;
+	tileSets: Probabilities<TileSet> | null;
+	monsters: Probabilities<Monster> | null;
+	states: Probabilities<MonsterState> | null;
+	items: Probabilities<Item> | null;
+	entranceTypes: Probabilities<EntranceType> | null;
+	traps: Probabilities<Trap> | null;
+	isCorridor = false;
 }

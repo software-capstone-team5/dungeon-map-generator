@@ -22,7 +22,7 @@ export class Coordinates {
 	}
 
 	getDirectionTo(rhs: Coordinates): Direction {
-		if (this.x == rhs.x){
+		if (this.x === rhs.x){
 			if (this.y > rhs.y){
 				return Direction.up;
 			}
@@ -38,3 +38,7 @@ export class Coordinates {
 		}
 	}
 }
+
+Coordinates.prototype.toString = function () {
+	return '(' + this.x + ',' + this.y + ')';
+};

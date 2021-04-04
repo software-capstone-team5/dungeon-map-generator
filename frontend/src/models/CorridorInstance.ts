@@ -5,4 +5,5 @@ import { RegionInstance } from "./RegionInstance";
 export class CorridorInstance extends RegionInstance {
 	category: CorridorCategory;
 	width: CorridorWidth;
+	isCorridor = true;
 }

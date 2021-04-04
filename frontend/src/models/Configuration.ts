@@ -9,10 +9,10 @@ export class Configuration {
 	static maxDifficulty: number = 20;
 	static minDifficulty: number = 1;
 	name: string;
-	mapSize: Size;
-	corridorComplexity: CorridorComplexity;
-	corridorLength: CorridorLength;
-	difficulty: number;
+	mapSize: Size = Size.medium;
+	corridorComplexity: CorridorComplexity = CorridorComplexity.medium;
+	corridorLength: CorridorLength = CorridorLength.medium;
+	difficulty: number = 5;
 	roomCategories: Probabilities<RoomCategory> = new Probabilities<RoomCategory>(null);
 	corridorCategories: Probabilities<CorridorCategory> = new Probabilities<CorridorCategory>(null);
 	defaultRoomCategory: RoomCategory;
@@ -34,11 +34,23 @@ export class Configuration {
 		// TODO: Chose actual values
 		switch(this.mapSize){
 			case Size.small:
+				return 5;
+			case Size.medium:
+				return 10;
+			case Size.large:
+				return 15;
+		}
+	}
+
+	getMinRooms(): number{
+		// TODO: Chose actual values
+		switch(this.mapSize){
+			case Size.small:
 				return 3;
 			case Size.medium:
 				return 5;
 			case Size.large:
-				return 10;
+				return 8;
 		}
 	}
 
