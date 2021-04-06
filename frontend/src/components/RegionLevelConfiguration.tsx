@@ -9,7 +9,7 @@ import { RoomCategory } from '../models/RoomCategory';
 import { nameOf, valueOf } from '../utils/util';
 import findIndex from 'lodash/findIndex';
 
-import RegionCategoryProbabilityList from './RegionCategoryProbabilityList';
+import ProbabilityNameList from "./common/ProbabilityNameList"
 import CorridorCategoryEditor from './CorridorCategoryEditor';
 import RoomCategoryEditor from './RoomCategoryEditor';
 import SelectCorridorCategory from './SelectCorridorCategory';
@@ -97,7 +97,7 @@ function RegionLevelConfiguration(props: Props) {
                 </IconButton>
             </div>
             
-            <RegionCategoryProbabilityList
+            <ProbabilityNameList
                 showProbs
                 showDelete
                 list={props.configuration.roomCategories}
@@ -111,7 +111,7 @@ function RegionLevelConfiguration(props: Props) {
                     <AddBoxIcon />
                 </IconButton>
             </div>
-            <RegionCategoryProbabilityList
+            <ProbabilityNameList
                 showProbs
                 showDelete
                 list={props.configuration.corridorCategories}

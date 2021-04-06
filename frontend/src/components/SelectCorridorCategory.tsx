@@ -4,7 +4,7 @@ import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogTitle from '@material-ui/core/DialogTitle';
-import RegionCategoryList from './RegionCategoryList';
+import NameList from './common/NameList';
 import CorridorCategoryEditor from './CorridorCategoryEditor';
 import { CorridorCategory } from '../models/CorridorCategory';
 import { nameOf } from '../utils/util';
@@ -48,7 +48,7 @@ export default function SelectCorridorCategory(props: Props) {
       >
         <DialogTitle id="form-dialog-title">Select Corridor Category</DialogTitle>
         <DialogContent>
-          <RegionCategoryList<CorridorCategory> list={corridorCategories} onClick={(rc: CorridorCategory) => props.onSelect(rc)}></RegionCategoryList>
+          <NameList<CorridorCategory> list={corridorCategories} onClick={(rc: CorridorCategory) => props.onSelect(rc)}></NameList>
           <Button onClick={()=>setCorridorEditorOpen(true)} variant="outlined" style={{width: "100%"}} color="primary">
             Add New
           </Button>
