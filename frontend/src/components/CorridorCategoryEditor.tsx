@@ -7,15 +7,15 @@ import DialogContent from '@material-ui/core/DialogContent';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import EditIcon from '@material-ui/icons/Edit';
 
-import { Size } from "../constants/Size";
 import { AppBar, Tab, Tabs, Box, Typography, IconButton, makeStyles} from '@material-ui/core';
 import EnumProbabilityText from './common/EnumProbabilityText';
-import { RoomCategory } from '../models/RoomCategory';
+import { CorridorCategory } from '../models/CorridorCategory';
 import { nameOf, valueOf } from '../utils/util';
 import { Probabilities } from '../generator/Probabilities';
-import { RoomShape } from '../constants/RoomShape';
 import { MonsterState } from '../constants/MonsterState';
 import { EntranceType } from '../constants/EntranceType';
+import { CorridorWidth } from '../constants/CorridorWidth';
+
 import cloneDeep from 'lodash/cloneDeep';
 
 
@@ -62,41 +62,41 @@ function TabPanel(props: any) {
 type Props = {
   open: boolean;
   viewOnly?: boolean;
-  roomCategory?: RoomCategory;
+  corridorCategory?: CorridorCategory;
   onCancelClick: ()=>void;
-  onSave?: (rc: RoomCategory) => void;
+  onSave?: (rc: CorridorCategory) => void;
 }
 
-RoomCategoryEditor.defaultProps = {
+CorridorCategoryEditor.defaultProps = {
   viewOnly: false
 }
 
-export default function RoomCategoryEditor(props: Props) {
-  const editMode: boolean = props.roomCategory !== undefined
+export default function CorridorCategoryEditor(props: Props) {
+  const editMode: boolean = props.corridorCategory !== undefined
   
-  var initialRoomCategory: RoomCategory;
-  if (props.roomCategory !== undefined) {
-    initialRoomCategory = cloneDeep(props.roomCategory);
+  var initialCorridorCategory: CorridorCategory;
+  if (props.corridorCategory !== undefined) {
+    initialCorridorCategory = cloneDeep(props.corridorCategory);
   } else {
-    initialRoomCategory = new RoomCategory();
+    initialCorridorCategory = new CorridorCategory();
   }
 
   const classes = useStyles();
   //TODO: Set to 0 so basic is default, do it when basic is complete
   const [tab, setTab] = useState(1);
-  const [roomCategory, setRoomCategory] = useState(initialRoomCategory);
+  const [corridorCategory, setCorridorCategory] = useState(initialCorridorCategory);
   const [viewMode, setViewMode] = useState(props.viewOnly);
 
   const handleTabChange = (event: React.ChangeEvent<{}>, newValue: number) => {
     setTab(newValue);
   };
 
-  const handleChange = (name: keyof RoomCategory, value: valueOf<RoomCategory>) => {
-    setRoomCategory(Object.assign({}, roomCategory, { [name]: value }) );
+  const handleChange = (name: keyof CorridorCategory, value: valueOf<CorridorCategory>) => {
+    setCorridorCategory(Object.assign({}, corridorCategory, { [name]: value }) );
   }
 
-  const handleProbUpdate = (name: keyof RoomCategory, key: any, newValue: number) => {
-    var updatedList = (roomCategory[name]) as Probabilities<any>;
+  const handleProbUpdate = (name: keyof CorridorCategory, key: any, newValue: number) => {
+    var updatedList = (corridorCategory[name]) as Probabilities<any>;
     updatedList.update(key, newValue);
     handleChange(name, updatedList);
   }
@@ -107,7 +107,7 @@ export default function RoomCategoryEditor(props: Props) {
 
   const handleSaveClick = () => {
     // TODO: Make call to backend
-    props.onSave!(roomCategory);
+    props.onSave!(corridorCategory);
   }
 
   return (
@@ -117,8 +117,8 @@ export default function RoomCategoryEditor(props: Props) {
           className={classes.root}
           disableTypography
           id="form-dialog-title">
-          <Typography component={'span'} variant="h6">{editMode ? "Edit": "Add"} Room Category</Typography>
-          {viewMode && editMode &&
+          <Typography component={'span'} variant="h6">{editMode ? "Edit": "Add"} Corridor Category</Typography>
+          {viewMode &&
             <IconButton aria-label="edit" className={classes.editButton} onClick={handleEditClick}>
               <EditIcon />
             </IconButton>
@@ -145,22 +145,15 @@ export default function RoomCategoryEditor(props: Props) {
                 shrink: true,
               }}
               fullWidth
-              value={roomCategory.name}
-              onChange={(e)=>handleChange(nameOf<RoomCategory>("name"), e.target.value)}
+              value={corridorCategory.name}
+              onChange={(e)=>handleChange(nameOf<CorridorCategory>("name"), e.target.value)}
             />
-            <EnumProbabilityText<Size>
-              label="Size"
-              enum={Size}
+            <EnumProbabilityText<CorridorWidth>
+              label="Corridor Width"
+              enum={CorridorWidth}
               disabled={viewMode}
-              probs={roomCategory.sizes}
-              onProbUpdate={(enumChanged: Size, newValue: number) => handleProbUpdate(nameOf<RoomCategory>("sizes"), enumChanged, newValue)}
-            />
-            <EnumProbabilityText<RoomShape>
-              label="Room Shape"
-              enum={RoomShape}
-              disabled={viewMode}
-              probs={roomCategory.shapes}
-              onProbUpdate={(enumChanged: RoomShape, newValue: number) => handleProbUpdate(nameOf<RoomCategory>("shapes"), enumChanged, newValue)}
+              probs={corridorCategory.widths}
+              onProbUpdate={(enumChanged: CorridorWidth, newValue: number) => handleProbUpdate(nameOf<CorridorCategory>("widths"), enumChanged, newValue)}
             />
             {/* Tile assets
                 monsters
@@ -169,8 +162,8 @@ export default function RoomCategoryEditor(props: Props) {
               label="Monster State"
               enum={MonsterState}
               disabled={viewMode}
-              probs={roomCategory.states}
-              onProbUpdate={(enumChanged: MonsterState, newValue: number) => handleProbUpdate(nameOf<RoomCategory>("states"), enumChanged, newValue)}
+              probs={corridorCategory.states}
+              onProbUpdate={(enumChanged: MonsterState, newValue: number) => handleProbUpdate(nameOf<CorridorCategory>("states"), enumChanged, newValue)}
             />
             {/* items
                 traps
@@ -179,8 +172,8 @@ export default function RoomCategoryEditor(props: Props) {
               label="Entrance Type"
               enum={EntranceType}
               disabled={viewMode}
-              probs={roomCategory.entranceTypes}
-              onProbUpdate={(enumChanged: EntranceType, newValue: number) => handleProbUpdate(nameOf<RoomCategory>("entranceTypes"), enumChanged, newValue)}
+              probs={corridorCategory.entranceTypes}
+              onProbUpdate={(enumChanged: EntranceType, newValue: number) => handleProbUpdate(nameOf<CorridorCategory>("entranceTypes"), enumChanged, newValue)}
             />
         </TabPanel>
         </DialogContent>

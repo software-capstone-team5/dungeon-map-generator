@@ -8,11 +8,12 @@ import { RoomCategory } from "./RoomCategory";
 export class Configuration {
 	static maxDifficulty: number = 20;
 	static minDifficulty: number = 1;
-	name: string;
-	mapSize: Size;
-	corridorComplexity: CorridorComplexity;
-	corridorLength: CorridorLength;
-	difficulty: number;
+	id: string = "";
+	name: string = "";
+	mapSize: Size = Size.medium;
+	corridorComplexity: CorridorComplexity = CorridorComplexity.medium;
+	corridorLength: CorridorLength = CorridorLength.medium;
+	difficulty: number = Configuration.maxDifficulty/2;
 	roomCategories: Probabilities<RoomCategory> = new Probabilities<RoomCategory>(null);
 	corridorCategories: Probabilities<CorridorCategory> = new Probabilities<CorridorCategory>(null);
 	defaultRoomCategory: RoomCategory;
