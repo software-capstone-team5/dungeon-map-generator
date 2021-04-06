@@ -9,9 +9,11 @@ import { RoomCategory } from '../models/RoomCategory';
 import { nameOf, valueOf } from '../utils/util';
 import findIndex from 'lodash/findIndex';
 
-import RoomCategoryEditor from './RoomCategoryEditor';
 import RegionCategoryProbabilityList from './RegionCategoryProbabilityList';
-import SelectRegionCategory from './SelectRegionCategory';
+import CorridorCategoryEditor from './CorridorCategoryEditor';
+import RoomCategoryEditor from './RoomCategoryEditor';
+import SelectCorridorCategory from './SelectCorridorCategory';
+import SelectRoomCategory from './SelectRoomCategory';
 
 const useStyles = makeStyles({
     listLabel: {
@@ -90,8 +92,8 @@ function RegionLevelConfiguration(props: Props) {
         <div style={{width: '100%'}}>
             <div className={classes.listLabel}>
                 <Typography >Rooms</Typography>
-                <IconButton aria-label="add"color="primary">
-                    <AddBoxIcon onClick={handleAddRoomClick} />
+                <IconButton onClick={handleAddRoomClick} aria-label="add" color="primary">
+                    <AddBoxIcon/>
                 </IconButton>
             </div>
             
@@ -105,8 +107,8 @@ function RegionLevelConfiguration(props: Props) {
             />
             <div className={classes.listLabel}>
                 <Typography>Corridors</Typography>
-                <IconButton aria-label="add" color="primary">
-                    <AddBoxIcon onClick={handleAddCorridorClick} />
+                <IconButton onClick={handleAddCorridorClick} aria-label="add" color="primary">
+                    <AddBoxIcon />
                 </IconButton>
             </div>
             <RegionCategoryProbabilityList
@@ -117,13 +119,13 @@ function RegionLevelConfiguration(props: Props) {
                 onDeleteClick={(index) => handleDeleteClick(nameOf<Configuration>("corridorCategories"), index)}
                 onProbUpdate={(index, newValue) => handleProbUpdate(nameOf<Configuration>("corridorCategories"), index, newValue)}
             />
-            <SelectRegionCategory<RoomCategory>
+            <SelectRoomCategory
                 open={addRoomDialogOpen}
                 exclude={props.configuration.roomCategories.objects}
                 onSelect={(rc) => handleSelect(nameOf<Configuration>("roomCategories"), rc)}
                 onCancelClick={() => setAddRoomDialogOpen(false)}
             />
-            <SelectRegionCategory<CorridorCategory>
+            <SelectCorridorCategory
                 open={addCorridorDialogOpen}
                 exclude={props.configuration.corridorCategories.objects}
                 onSelect={(cc) => handleSelect(nameOf<Configuration>("corridorCategories"), cc)}
@@ -131,10 +133,20 @@ function RegionLevelConfiguration(props: Props) {
             />
             {roomEditorOpen &&
                 <RoomCategoryEditor
+                    viewOnly
                     open={roomEditorOpen}
                     roomCategory={roomCategoryToEdit}
                     onSave={(rc: RoomCategory) => handleSave(nameOf<Configuration>("roomCategories"), rc)}
                     onCancelClick={()=>setRoomEditorOpen(false)}
+                />
+            }
+            {corridorEditorOpen &&
+                <CorridorCategoryEditor
+                    viewOnly
+                    open={corridorEditorOpen}
+                    corridorCategory={corridorCategoryToEdit}
+                    onSave={(rc: CorridorCategory) => handleSave(nameOf<Configuration>("corridorCategories"), rc)}
+                    onCancelClick={()=>setCorridorEditorOpen(false)}
                 />
             }
             

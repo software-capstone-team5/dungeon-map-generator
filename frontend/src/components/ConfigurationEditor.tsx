@@ -1,17 +1,20 @@
 import React from 'react';
 
 import { withStyles } from '@material-ui/core/styles';
-import { Button, Typography, AccordionDetails } from '@material-ui/core';
+import { Button, Typography, AccordionDetails, TextField, Paper } from '@material-ui/core';
 import MuiAccordion from '@material-ui/core/Accordion';
 import MuiAccordionSummary from '@material-ui/core/AccordionSummary';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 
-import { valueOf } from '../utils/util';
+import { nameOf, valueOf } from '../utils/util';
 import { Configuration } from '../models/Configuration';
 import MapLevelConfiguration from './MapLevelConfiguration';
 import RegionLevelConfiguration from './RegionLevelConfiguration';
 import { Firebase } from '../Firebase';
 
+import cloneDeep from 'lodash/cloneDeep';
+import { RoomCategory } from '../models/RoomCategory';
+import { CorridorCategory } from '../models/CorridorCategory';
 
 const AccordionSummary = withStyles({
     root: {
@@ -59,9 +62,29 @@ class ConfigurationEditor extends React.Component<Props, State> {
         super(props);
 
         if (props.configuration !== undefined) {
-            this.state = { configuration: props.configuration };
+            this.state = { configuration: cloneDeep(props.configuration) };
         } else {
-            this.state = { configuration: new Configuration() };
+            // This is just temporary test data
+            var config = new Configuration();
+            var rc1 = new CorridorCategory();
+            rc1.id = "1"
+            rc1.name = "Windy Hall";
+            var rc2 = new CorridorCategory();
+            rc2.id = "2"
+            rc2.name = "Big Boy Hall";
+            config.corridorCategories.add(rc1, 0.5);
+            config.corridorCategories.add(rc2, 0.5);
+
+            var rrc1 = new RoomCategory();
+            rrc1.id = "1"
+            rrc1.name = "Prison Room";
+            var rrc2 = new RoomCategory();
+            rrc2.id = "2"
+            rrc2.name = "Treasure Room";
+            config.roomCategories.add(rrc1, 0.5);
+            config.roomCategories.add(rrc2, 0.5);
+            this.state = { configuration: config };
+            // this.state = {configuration: new Configuration()};
         }
 
         // This binding is necessary to make `this` work in the callback
@@ -82,8 +105,18 @@ class ConfigurationEditor extends React.Component<Props, State> {
     render() {
         return (
             <div>
-                <form>
-                    <Typography variant="h5" gutterBottom>Configuration</Typography>
+                <Typography variant="h5" gutterBottom>Configuration</Typography>
+                <Paper>
+                    <TextField
+                        variant="outlined"
+                        margin="dense"
+                        label="Name"
+                        InputLabelProps={{
+                            shrink: true,
+                        }}
+                        value={this.state.configuration.name}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => this.handleChange(nameOf<Configuration>("name"), e.target.value)}
+                    />
                     <Accordion defaultExpanded>
                         <AccordionSummary
                             expandIcon={<ExpandMoreIcon />}
@@ -108,9 +141,9 @@ class ConfigurationEditor extends React.Component<Props, State> {
                             <RegionLevelConfiguration configuration={this.state.configuration} onChange={this.handleChange} />
                         </AccordionDetails>
                     </Accordion>
-                    <Button onClick={this.handleSave} variant="contained">Generate</Button>
-                    <Button onClick={this.handleSave} variant="contained">Save</Button>
-                </form>
+                </Paper>
+                <Button variant="contained">Generate</Button>
+                <Button onClick={this.handleSave} variant="contained">Save</Button>
             </div>
         );
     }

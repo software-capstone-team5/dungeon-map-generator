@@ -38,18 +38,16 @@ function EnumProbabilityText<EnumType extends number | string>(props: Props<Enum
         <div className={classes.root}>
             <FormLabel>{props.label}</FormLabel>
             {Object.values(props.enum).map((x: EnumType, i: number) =>
-                <div>
-                    <FormControl disabled={props.disabled} fullWidth className={classes.margin}>
+                    <FormControl key={x} disabled={props.disabled} fullWidth className={classes.margin}>
                         <InputLabel>{x}</InputLabel>
                         <Input
                             type="number"
                             value={props.probs.probSum[i]*100}
                             onChange={(e)=>handleProbabilityChange(x, parseFloat(e.target.value))}
                             endAdornment={<InputAdornment position="end">%</InputAdornment>}
-                            inputProps={{ inputProps: { min: "0", max: "100", step: "1" },  style: { textAlign: "right" } }}
+                            inputProps={{ inputprops: { min: "0", max: "100", step: "1" },  style: { textAlign: "right" } }}
                         />
                     </FormControl>
-                </div>
             )}
         </div>
     );

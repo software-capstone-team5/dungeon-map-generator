@@ -17,7 +17,7 @@ export class RoomCategory extends RegionCategory {
 		});
 
 		this.shapes = new Probabilities<RoomShape>(null);
-		var len = Object.values(RoomShape).length;
+		len = Object.values(RoomShape).length;
 		Object.values(RoomShape).forEach((x: RoomShape) => {
 			this.shapes.add(x, 1/len);
 		});
