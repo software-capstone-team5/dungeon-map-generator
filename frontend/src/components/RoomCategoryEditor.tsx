@@ -25,6 +25,9 @@ import SelectMonster from './SelectMonster';
 import SelectItem from './SelectItem';
 import ItemEditor from './ItemEditor';
 import { Item } from '../models/Item';
+import { Trap } from '../models/Trap';
+import TrapEditor from './TrapEditor';
+import SelectTrap from './SelectTrap';
 
 
 const useStyles = makeStyles((theme) =>  ({
@@ -108,6 +111,10 @@ export default function RoomCategoryEditor(props: Props) {
   const [itemEditorOpen, setItemEditorOpen] = useState<boolean>(false);
   const [selectItemDialogOpen, setSelectItemDialogOpen] = useState<boolean>(false);
 
+  const [trapToEdit, setTrapToEdit] = useState<Trap>()
+  const [trapEditorOpen, setTrapEditorOpen] = useState<boolean>(false);
+  const [selectTrapDialogOpen, setSelectTrapDialogOpen] = useState<boolean>(false);
+
   const handleTabChange = (event: React.ChangeEvent<{}>, newValue: number) => {
     setTab(newValue);
   };
@@ -147,6 +154,7 @@ export default function RoomCategoryEditor(props: Props) {
   const closeSelectDialogs = () => {
     setSelectMonsterDialogOpen(false);
     setSelectItemDialogOpen(false);
+    setSelectTrapDialogOpen(false);
   }
 
   const handleMonsterClick = (m: Monster) => {
@@ -181,7 +189,24 @@ export default function RoomCategoryEditor(props: Props) {
     handleChange(nameOf<RoomCategory>("items"), updatedList);
     setItemEditorOpen(false);
     setItemToEdit(undefined);
-}
+  }
+
+  const handleTrapClick = (trap: Trap) => {
+    setTrapToEdit(trap);
+    setTrapEditorOpen(true);
+  }
+
+  const handleAddTrapClick = () => {
+    setSelectTrapDialogOpen(true);
+  }
+
+  const handleTrapSave = (newTrap: Trap) => {
+    var updatedList = roomCategory.traps;
+    updatedList.updateObject(trapToEdit!, newTrap);
+    handleChange(nameOf<RoomCategory>("traps"), updatedList);
+    setTrapEditorOpen(false);
+    setTrapToEdit(undefined);
+  }
 
   const handleEditClick = () => {
     setViewMode(false);
@@ -286,7 +311,21 @@ export default function RoomCategoryEditor(props: Props) {
               onDeleteClick={(index) => handleDeleteClick(nameOf<RoomCategory>("items"), index)}
               onProbUpdate={(index, newValue) => handleListProbUpdate(nameOf<RoomCategory>("items"), index, newValue)}
             />
-            {/* traps */}
+            <div className={classes.listLabel}>
+                <FormLabel>Traps</FormLabel>
+                <IconButton disabled={viewMode} onClick={handleAddTrapClick} aria-label="add" color="primary">
+                    <AddBoxIcon/>
+                </IconButton>
+            </div>
+            <ProbabilityNameList
+              showProbs
+              showDelete={!viewMode}
+              disabled={viewMode}
+              list={roomCategory.traps}
+              onClick={handleTrapClick}
+              onDeleteClick={(index) => handleDeleteClick(nameOf<RoomCategory>("traps"), index)}
+              onProbUpdate={(index, newValue) => handleListProbUpdate(nameOf<RoomCategory>("traps"), index, newValue)}
+            />
             <EnumProbabilityText<EntranceType>
               label="Entrance Type"
               enum={EntranceType}
@@ -337,6 +376,21 @@ export default function RoomCategoryEditor(props: Props) {
               item={itemToEdit}
               onSave={(i: Item) => handleItemSave(i)}
               onCancelClick={()=>setItemEditorOpen(false)}
+          />
+      }
+      <SelectTrap
+        open={selectTrapDialogOpen}
+        exclude={roomCategory.traps.objects}
+        onSelect={(i) => handleSelect(nameOf<RoomCategory>("traps"), i)}
+        onCancelClick={() => setSelectTrapDialogOpen(false)}
+      />
+      {trapEditorOpen &&
+          <TrapEditor
+              viewOnly
+              open={trapEditorOpen}
+              trap={trapToEdit}
+              onSave={(i: Trap) => handleTrapSave(i)}
+              onCancelClick={()=>setTrapEditorOpen(false)}
           />
       }
     </div>
