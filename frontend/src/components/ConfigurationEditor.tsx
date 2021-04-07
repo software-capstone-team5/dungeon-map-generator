@@ -14,6 +14,7 @@ import RegionLevelConfiguration from './RegionLevelConfiguration';
 import cloneDeep from 'lodash/cloneDeep';
 import { RoomCategory } from '../models/RoomCategory';
 import { CorridorCategory } from '../models/CorridorCategory';
+import { Monster } from '../models/Monster';
 
 const AccordionSummary = withStyles({
     root: {
@@ -77,6 +78,11 @@ class ConfigurationEditor extends React.Component<Props, State> {
             var rrc1 = new RoomCategory();
             rrc1.id = "1"
             rrc1.name = "Prison Room";
+            var monster = new Monster();
+            monster.name = "Orc";
+            monster.challenge = 10;
+            monster.description = "Ugly bitch";
+            rrc1.monsters.add(monster, 1);
             var rrc2 = new RoomCategory();
             rrc2.id = "2"
             rrc2.name = "Treasure Room";

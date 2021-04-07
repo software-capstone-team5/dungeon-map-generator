@@ -110,9 +110,13 @@ export default function CorridorCategoryEditor(props: Props) {
     props.onSave!(corridorCategory);
   }
 
+  const handleClose = () => {
+    setCorridorCategory(new CorridorCategory());
+  }
+
   return (
     <div>
-      <Dialog open={props.open} aria-labelledby="form-dialog-title">
+      <Dialog open={props.open} onClose={handleClose} aria-labelledby="form-dialog-title">
         <DialogTitle
           className={classes.root}
           disableTypography

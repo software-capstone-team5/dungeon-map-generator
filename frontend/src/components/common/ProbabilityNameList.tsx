@@ -31,6 +31,7 @@ interface hasName {
 
 type Props<T extends hasName> = {
   list: Probabilities<T>;
+  disabled?: boolean;
   showProbs?: boolean;
   showDelete?: boolean;
   onDeleteClick?: (index: number) => void;
@@ -39,6 +40,7 @@ type Props<T extends hasName> = {
 }
 
 ProbabilityNameList.defaultProps = {
+  disabled: false,
   showProbs: false,
   showDelete: false
 }
@@ -55,14 +57,21 @@ function ProbabilityNameList<T extends hasName> (props: Props<T>) {
       props.onProbUpdate!(index, newValue/100)
     }
 
+    const handleClick = (item: T) => {
+      if (props.onClick && !props.disabled) {
+        props.onClick(item)
+      }
+    }
+
     const listItems = props.list.objects.map((item: T, i: number) =>
-      <ListItem button onClick={(e)=>props.onClick!(item)} key={i}>
+      <ListItem button={(!props.disabled) as true} onClick={(e)=>handleClick(item)} key={i}>
         <ListItemText
           primary={item.name}
         />
         {props.showProbs &&
           <TextField
             type="number"
+            disabled={props.disabled}
             value={props.list.probSum[i]*100}
             onClick={(event) => event.stopPropagation()}
             onFocus={(event) => event.stopPropagation()}
@@ -74,7 +83,7 @@ function ProbabilityNameList<T extends hasName> (props: Props<T>) {
         }
         {props.showDelete &&
           <ListItemSecondaryAction>
-            <IconButton onClick={()=>props.onDeleteClick!(i)} edge="end" aria-label="delete">
+            <IconButton disabled={props.disabled} onClick={()=>props.onDeleteClick!(i)} edge="end" aria-label="delete">
               <DeleteIcon />
             </IconButton>
           </ListItemSecondaryAction>
