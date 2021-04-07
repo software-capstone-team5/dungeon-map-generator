@@ -22,6 +22,9 @@ import ProbabilityNameList from './common/ProbabilityNameList';
 import { Monster } from '../models/Monster';
 import MonsterEditor from './MonsterEditor';
 import SelectMonster from './SelectMonster';
+import SelectItem from './SelectItem';
+import ItemEditor from './ItemEditor';
+import { Item } from '../models/Item';
 
 
 const useStyles = makeStyles((theme) =>  ({
@@ -96,9 +99,14 @@ export default function RoomCategoryEditor(props: Props) {
   const [tab, setTab] = useState(1);
   const [roomCategory, setRoomCategory] = useState(initialRoomCategory);
   const [viewMode, setViewMode] = useState(props.viewOnly);
+
   const [monsterToEdit, setMonsterToEdit] = useState<Monster>()
   const [monsterEditorOpen, setMonsterEditorOpen] = useState<boolean>(false);
   const [selectMonsterDialogOpen, setSelectMonsterDialogOpen] = useState<boolean>(false);
+
+  const [itemToEdit, setItemToEdit] = useState<Item>()
+  const [itemEditorOpen, setItemEditorOpen] = useState<boolean>(false);
+  const [selectItemDialogOpen, setSelectItemDialogOpen] = useState<boolean>(false);
 
   const handleTabChange = (event: React.ChangeEvent<{}>, newValue: number) => {
     setTab(newValue);
@@ -138,6 +146,7 @@ export default function RoomCategoryEditor(props: Props) {
 
   const closeSelectDialogs = () => {
     setSelectMonsterDialogOpen(false);
+    setSelectItemDialogOpen(false);
   }
 
   const handleMonsterClick = (m: Monster) => {
@@ -155,6 +164,23 @@ export default function RoomCategoryEditor(props: Props) {
     handleChange(nameOf<RoomCategory>("monsters"), updatedList);
     setMonsterEditorOpen(false);
     setMonsterToEdit(undefined);
+  }
+
+  const handleItemClick = (i: Item) => {
+    setItemToEdit(i);
+    setItemEditorOpen(true);
+  }
+
+  const handleAddItemClick = () => {
+    setSelectItemDialogOpen(true);
+  }
+
+  const handleItemSave = (newItem: Item) => {
+    var updatedList = roomCategory.items;
+    updatedList.updateObject(itemToEdit!, newItem);
+    handleChange(nameOf<RoomCategory>("items"), updatedList);
+    setItemEditorOpen(false);
+    setItemToEdit(undefined);
 }
 
   const handleEditClick = () => {
@@ -245,9 +271,22 @@ export default function RoomCategoryEditor(props: Props) {
               probs={roomCategory.states}
               onProbUpdate={(enumChanged: MonsterState, newValue: number) => handleEnumProbUpdate(nameOf<RoomCategory>("states"), enumChanged, newValue)}
             />
-            {/* items
-                traps
-                 */}
+            <div className={classes.listLabel}>
+                <FormLabel>Items</FormLabel>
+                <IconButton disabled={viewMode} onClick={handleAddItemClick} aria-label="add" color="primary">
+                    <AddBoxIcon/>
+                </IconButton>
+            </div>
+            <ProbabilityNameList
+              showProbs
+              showDelete={!viewMode}
+              disabled={viewMode}
+              list={roomCategory.items}
+              onClick={handleItemClick}
+              onDeleteClick={(index) => handleDeleteClick(nameOf<RoomCategory>("items"), index)}
+              onProbUpdate={(index, newValue) => handleListProbUpdate(nameOf<RoomCategory>("items"), index, newValue)}
+            />
+            {/* traps */}
             <EnumProbabilityText<EntranceType>
               label="Entrance Type"
               enum={EntranceType}
@@ -283,6 +322,21 @@ export default function RoomCategoryEditor(props: Props) {
               monster={monsterToEdit}
               onSave={(m: Monster) => handleMonsterSave(m)}
               onCancelClick={()=>setMonsterEditorOpen(false)}
+          />
+      }
+      <SelectItem
+        open={selectItemDialogOpen}
+        exclude={roomCategory.items.objects}
+        onSelect={(i) => handleSelect(nameOf<RoomCategory>("items"), i)}
+        onCancelClick={() => setSelectItemDialogOpen(false)}
+      />
+      {itemEditorOpen &&
+          <ItemEditor
+              viewOnly
+              open={itemEditorOpen}
+              item={itemToEdit}
+              onSave={(i: Item) => handleItemSave(i)}
+              onCancelClick={()=>setItemEditorOpen(false)}
           />
       }
     </div>
