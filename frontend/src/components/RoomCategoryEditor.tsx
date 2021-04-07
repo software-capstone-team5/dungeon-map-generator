@@ -1,4 +1,6 @@
 import { useState } from 'react';
+
+import { AppBar, Tab, Tabs, Box, Typography, IconButton, makeStyles, FormLabel} from '@material-ui/core';
 import Button from '@material-ui/core/Button';
 import TextField from '@material-ui/core/TextField';
 import Dialog from '@material-ui/core/Dialog';
@@ -8,26 +10,27 @@ import DialogTitle from '@material-ui/core/DialogTitle';
 import EditIcon from '@material-ui/icons/Edit';
 import AddBoxIcon from '@material-ui/icons/AddBox';
 
-import { Size } from "../constants/Size";
-import { AppBar, Tab, Tabs, Box, Typography, IconButton, makeStyles, FormLabel} from '@material-ui/core';
 import EnumProbabilityText from './common/EnumProbabilityText';
-import { RoomCategory } from '../models/RoomCategory';
-import { nameOf, valueOf } from '../utils/util';
-import { Probabilities } from '../generator/Probabilities';
-import { RoomShape } from '../constants/RoomShape';
-import { MonsterState } from '../constants/MonsterState';
-import { EntranceType } from '../constants/EntranceType';
-import cloneDeep from 'lodash/cloneDeep';
 import ProbabilityNameList from './common/ProbabilityNameList';
+import { RoomCategory } from '../models/RoomCategory';
 import { Monster } from '../models/Monster';
-import MonsterEditor from './MonsterEditor';
-import SelectMonster from './SelectMonster';
-import SelectItem from './SelectItem';
-import ItemEditor from './ItemEditor';
 import { Item } from '../models/Item';
 import { Trap } from '../models/Trap';
-import TrapEditor from './TrapEditor';
+import { Probabilities } from '../generator/Probabilities';
+import { MonsterState } from '../constants/MonsterState';
+import { EntranceType } from '../constants/EntranceType';
+import { Size } from "../constants/Size";
+import { RoomShape } from '../constants/RoomShape';
+
 import SelectTrap from './SelectTrap';
+import SelectMonster from './SelectMonster';
+import SelectItem from './SelectItem';
+import MonsterEditor from './MonsterEditor';
+import ItemEditor from './ItemEditor';
+import TrapEditor from './TrapEditor';
+
+import { nameOf, valueOf } from '../utils/util';
+import cloneDeep from 'lodash/cloneDeep';
 
 
 const useStyles = makeStyles((theme) =>  ({
@@ -121,7 +124,6 @@ export default function RoomCategoryEditor(props: Props) {
 
   const handleChange = (name: keyof RoomCategory, value: valueOf<RoomCategory>) => {
     setRoomCategory(Object.assign({}, roomCategory, { [name]: value }) );
-    console.log(roomCategory);
   }
 
   const handleEnumProbUpdate = (name: keyof RoomCategory, key: any, newValue: number) => {

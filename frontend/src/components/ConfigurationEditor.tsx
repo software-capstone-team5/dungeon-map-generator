@@ -81,7 +81,7 @@ class ConfigurationEditor extends React.Component<Props, State> {
             var monster = new Monster();
             monster.name = "Orc";
             monster.challenge = 10;
-            monster.description = "Ugly bitch";
+            monster.description = "Ugly person";
             rrc1.monsters.add(monster, 1);
             var rrc2 = new RoomCategory();
             rrc2.id = "2"
