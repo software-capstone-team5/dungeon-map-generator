@@ -65,22 +65,70 @@ def saveConfig(idToken):
         requestData = request.get_json()
         user_id = verifyToken(idToken)
         if type(user_id) == str:
-            # TODO change to name from request data
-            # name = requestData['name']
-            name = "test"
+            db_id = requestData['id']
             config_collection = users_collection.document(user_id).collection("Configurations")
-            # Find matching document based on name
-            docs = config_collection.where('name', '==', name).get()
-            # Update if matching document
-            if docs:
-                for doc in docs:
-                    doc_id = doc.id 
-                    config_collection.document(doc_id).set(requestData)
-            # Add new document
+            # Document exists in DB
+            if db_id:
+                config = config_collection.document(db_id)
+            # New document
             else:
-                config_collection.add(requestData)
+                config = config_collection.document()
+                requestData['id'] = config.id
+
+            # Save corridor categories in CorridorCategories collection in DB
+            corridorCategories = requestData['corridorCategories']
+            corridorCat_collection = users_collection.document(user_id).collection("CorridorCategories")
+            # Update configuration to hold DB references
+            requestData['corridorCategories']['objects'] = saveCategories(corridorCategories, corridorCat_collection)
+
+            # Save room categories in RoomCategories collection in DB
+            roomCategories = requestData['roomCategories']
+            roomCat_collection = users_collection.document(user_id).collection("RoomCategories")
+            # Update configuration to hold DB references
+            requestData['roomCategories']['objects'] = saveCategories(roomCategories, roomCat_collection)
+
+            config.set(requestData) # TODO remove episilon including child nodes that have them
             return jsonify({"valid": True, "response": "Configuration Saved"}), 200
         else:
             return user_id
+    except Exception as e:
+        return f"An Error Occured: {e}"
+
+def saveCategories(categories, collection_ref):
+    references = []
+    for i in range(len(categories['objects'])):
+        category = categories['objects'][i]
+        dbCategory = saveCategory(category, collection_ref)
+        references.append(dbCategory)
+    return references
+
+# REQ-28: Save.RoomCategory - The system should allow the user to save a Room Category that they have created in the database.
+# REQ-37: Save.CorridorCategory - The system should allow the user to save a Corridor Category that they have created in the database.
+def saveCategory(category, collection_ref):
+    cat_id = category['id']
+    if cat_id:
+        dbCategory = collection_ref.document(cat_id)
+    else:
+        dbCategory = collection_ref.document()
+        category['id'] = dbCategory.id
+
+    dbCategory.set(category)
+    return dbCategory
+
+#getConfigAll WIP
+@app.route("/user/<idToken>/config/<name>", methods=['GET'])
+def getConfigByName(idToken, name): # ID
+    try:
+        user_id = verifyToken(idToken)
+        if user_id:
+            config_collection = users_collection.document(user_id).collection("Configurations")
+            # Find matching document based on name
+            docs = config_collection.where('name', '==', name).get()
+            if docs:
+                for doc in docs:
+                    result = config_collection.document(doc.id).get()
+                return jsonify({"config": result.to_dict()}), 200
+        else:
+            return jsonify({"valid": False, "response": "No ID provided"}), 400
     except Exception as e:
         return f"An Error Occured: {e}"
