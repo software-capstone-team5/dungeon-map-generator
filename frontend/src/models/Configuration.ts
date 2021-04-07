@@ -13,15 +13,15 @@ export class Configuration {
 	mapSize: Size = Size.medium;
 	corridorComplexity: CorridorComplexity = CorridorComplexity.medium;
 	corridorLength: CorridorLength = CorridorLength.medium;
-	difficulty: number = Configuration.maxDifficulty/2;
+	difficulty: number = Configuration.maxDifficulty / 2;
 	roomCategories: Probabilities<RoomCategory> = new Probabilities<RoomCategory>(null);
 	corridorCategories: Probabilities<CorridorCategory> = new Probabilities<CorridorCategory>(null);
 	defaultRoomCategory: RoomCategory;
 	defaultCorridorCategory: CorridorCategory;
 
-	getMapSizeNum(): number{
+	getMapSizeNum(): number {
 		// TODO: Chose actual values
-		switch(this.mapSize){
+		switch (this.mapSize) {
 			case Size.small:
 				return 10;
 			case Size.medium:
@@ -31,9 +31,9 @@ export class Configuration {
 		}
 	}
 
-	getMaxRooms(): number{
+	getMaxRooms(): number {
 		// TODO: Chose actual values
-		switch(this.mapSize){
+		switch (this.mapSize) {
 			case Size.small:
 				return 3;
 			case Size.medium:
@@ -45,7 +45,7 @@ export class Configuration {
 
 	getTurnChance(): number {
 		// TODO: Chose actual values
-		switch(this.corridorComplexity){
+		switch (this.corridorComplexity) {
 			case (CorridorComplexity.low):
 				return 0.2;
 			case (CorridorComplexity.medium):
@@ -57,7 +57,7 @@ export class Configuration {
 
 	getMaxLength(): number {
 		// TODO: Chose actual values
-		switch(this.corridorLength){
+		switch (this.corridorLength) {
 			case (CorridorLength.short):
 				return 5;
 			case (CorridorLength.medium):

@@ -10,7 +10,7 @@ import { nameOf, valueOf } from '../utils/util';
 import { Configuration } from '../models/Configuration';
 import MapLevelConfiguration from './MapLevelConfiguration';
 import RegionLevelConfiguration from './RegionLevelConfiguration';
-import { Firebase } from '../Firebase';
+import { DB } from '../DB';
 
 import cloneDeep from 'lodash/cloneDeep';
 import { RoomCategory } from '../models/RoomCategory';
@@ -95,7 +95,7 @@ class ConfigurationEditor extends React.Component<Props, State> {
     // REQ-18: Save.MapConfiguration - The system allows logged -in users to save the entire map configuration(both Map Level and Region Level) as a Preset.
     handleSave() {
         // TODO Display error/success message?
-        Firebase.saveConfig(this.state.configuration);
+        DB.saveConfig(this.state.configuration);
     }
 
     handleChange(name: keyof Configuration, value: valueOf<Configuration>) {
