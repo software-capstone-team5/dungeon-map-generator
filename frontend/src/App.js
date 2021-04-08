@@ -1,9 +1,12 @@
 import './App.css';
+import { useState } from 'react';
 import { Grid, AppBar, Toolbar, Typography, Button, IconButton } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
 import MenuIcon from '@material-ui/icons/Menu';
 
 import ConfigurationEditor from "./components/ConfigurationEditor";
+
+import { Authenticator } from './Authenticator';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -19,6 +22,37 @@ const useStyles = makeStyles((theme) => ({
 
 function App() {
   const classes = useStyles();
+  const [loggedIn, setLoggedIn] = useState(false);
+
+  const handleLoginClick = async () => {
+    var result = await Authenticator.loginUser();
+    if (result) {
+      if (result.valid) {
+        setLoggedIn(true);
+      } else {
+        window.alert(result.response)
+      }
+    }
+  }
+
+  const handleLogoutClick = async () => {
+    var success = await Authenticator.logoutUser();
+    if (success) {
+      setLoggedIn(false);
+    }
+  }
+
+  const handleRegisterClick = async () => {
+    var result = await Authenticator.registerUser();
+    if (result) {
+      if (result.valid) {
+        setLoggedIn(true);
+      } else {
+        window.alert(result.response)
+      }
+    }
+  }
+
   return (
     <div className="App">
       <div className={classes.root}>
@@ -30,7 +64,15 @@ function App() {
             <Typography variant="h6" className={classes.title}>
               Dungeon Map Generator
             </Typography>
-            <Button color="inherit">Login</Button> {/* TODO: Change this button depending on login state */}
+            {loggedIn ?
+              <Button onClick={handleLogoutClick} color="inherit">Logout</Button>
+              :
+              <div>
+                <Button onClick={handleRegisterClick} color="inherit">Register</Button>
+                <Button onClick={handleLoginClick} color="inherit">Login</Button>
+              </div>
+            }
+
           </Toolbar>
         </AppBar>
       </div>
