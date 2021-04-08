@@ -1,12 +1,22 @@
 import { useState } from 'react';
 
-import { AppBar, Tab, Tabs, Box, Typography, IconButton, makeStyles, FormLabel} from '@material-ui/core';
+import { makeStyles } from '@material-ui/core';
+import AppBar from '@material-ui/core/AppBar';
+import Tab from '@material-ui/core/Tab';
+import Tabs from '@material-ui/core/Tabs';
+import Box from '@material-ui/core/Box';
+import Typography from '@material-ui/core/Typography';
+import IconButton from '@material-ui/core/IconButton';
+import FormLabel from '@material-ui/core/FormLabel';
 import Button from '@material-ui/core/Button';
 import TextField from '@material-ui/core/TextField';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogTitle from '@material-ui/core/DialogTitle';
+import Tooltip from '@material-ui/core/Tooltip';
+
+import HelpOutlineIcon from '@material-ui/icons/HelpOutline';
 import EditIcon from '@material-ui/icons/Edit';
 import AddBoxIcon from '@material-ui/icons/AddBox';
 
@@ -48,7 +58,14 @@ const useStyles = makeStyles((theme) =>  ({
     display: 'flex',
     alignItems: 'center',
     flexWrap: 'wrap',
-},
+  },
+  helpIcon: {
+    "padding-left": theme.spacing(1),
+    "padding-right": theme.spacing(1)
+  },
+  customWidth: {
+    maxWidth: 200,
+  }
 }));
 
 function a11yProps(index: number) {
@@ -86,24 +103,31 @@ type Props = {
   onSave?: (rc: RoomCategory) => void;
 }
 
+type Errors = {
+  name: boolean;
+}
+
 RoomCategoryEditor.defaultProps = {
   viewOnly: false
 }
 
 export default function RoomCategoryEditor(props: Props) {
   const editMode: boolean = props.roomCategory !== undefined
-  
-  var initialRoomCategory: RoomCategory;
-  if (props.roomCategory !== undefined) {
-    initialRoomCategory = cloneDeep(props.roomCategory);
-  } else {
-    initialRoomCategory = new RoomCategory();
-  }
-
   const classes = useStyles();
+  
+  const [roomCategory, setRoomCategory] = useState(() => {
+    if (props.roomCategory !== undefined) {
+      return cloneDeep(props.roomCategory);
+    } else {
+      return new RoomCategory();
+    }
+  });
+
+  const [errors, setErrors] = useState<Errors>({
+    name: false
+  });
   //TODO: Set to 0 so basic is default, do it when basic is complete
   const [tab, setTab] = useState(1);
-  const [roomCategory, setRoomCategory] = useState(initialRoomCategory);
   const [viewMode, setViewMode] = useState(props.viewOnly);
 
   const [monsterToEdit, setMonsterToEdit] = useState<Monster>()
@@ -123,32 +147,28 @@ export default function RoomCategoryEditor(props: Props) {
   };
 
   const handleChange = (name: keyof RoomCategory, value: valueOf<RoomCategory>) => {
+    if (name === nameOf<RoomCategory>("name")){
+      if (value) {
+        setErrors({
+          ...errors,
+          name: false
+        })
+      }
+    }
     setRoomCategory(Object.assign({}, roomCategory, { [name]: value }) );
   }
 
-  const handleEnumProbUpdate = (name: keyof RoomCategory, key: any, newValue: number) => {
-    var updatedList = (roomCategory[name]) as Probabilities<any>;
-    updatedList.update(key, newValue);
-    handleChange(name, updatedList);
-  }
-
   const handleDeleteClick = (name: keyof RoomCategory, index: number) => {
-    var updatedList = (roomCategory[name]) as Probabilities<any>;
+    var updatedList = Object.create(roomCategory[name] as Probabilities<any>);
+    updatedList = Object.assign(updatedList, roomCategory[name]);
     updatedList.remove(index);
     handleChange(name, updatedList);
   }
 
-  const handleListProbUpdate = (name: keyof RoomCategory, index: number, newValue: number) => {
-    var updatedList = (roomCategory[name]) as Probabilities<any>;
-    updatedList.probSum[index] = newValue;
-    // TODO: normalize?
-    handleChange(name, updatedList);
-  }
-
   const handleSelect = (name: keyof RoomCategory, item: any) => {
-    var updatedList = (roomCategory[name]) as Probabilities<any>;
-    updatedList.add(item, 0.5);
-    // TODO: Normalize?
+    var updatedList = Object.create(roomCategory[name] as Probabilities<any>);
+    updatedList = Object.assign(updatedList, roomCategory[name]);
+    updatedList.add(item);
     handleChange(name, updatedList);
     closeSelectDialogs();
   }
@@ -169,7 +189,8 @@ export default function RoomCategoryEditor(props: Props) {
   }
 
   const handleMonsterSave = (newMonster: Monster) => {
-    var updatedList = roomCategory.monsters;
+    var updatedList = Object.create(roomCategory.monsters as Probabilities<Monster>);
+    updatedList = Object.assign(updatedList, roomCategory.monsters);
     updatedList.updateObject(monsterToEdit!, newMonster);
     handleChange(nameOf<RoomCategory>("monsters"), updatedList);
     setMonsterEditorOpen(false);
@@ -186,7 +207,8 @@ export default function RoomCategoryEditor(props: Props) {
   }
 
   const handleItemSave = (newItem: Item) => {
-    var updatedList = roomCategory.items;
+    var updatedList = Object.create(roomCategory.items as Probabilities<Item>);
+    updatedList = Object.assign(updatedList, roomCategory.items);
     updatedList.updateObject(itemToEdit!, newItem);
     handleChange(nameOf<RoomCategory>("items"), updatedList);
     setItemEditorOpen(false);
@@ -203,7 +225,8 @@ export default function RoomCategoryEditor(props: Props) {
   }
 
   const handleTrapSave = (newTrap: Trap) => {
-    var updatedList = roomCategory.traps;
+    var updatedList = Object.create(roomCategory.traps as Probabilities<Trap>);
+    updatedList = Object.assign(updatedList, roomCategory.traps);
     updatedList.updateObject(trapToEdit!, newTrap);
     handleChange(nameOf<RoomCategory>("traps"), updatedList);
     setTrapEditorOpen(false);
@@ -215,12 +238,32 @@ export default function RoomCategoryEditor(props: Props) {
   }
 
   const handleSaveClick = () => {
+    if (!roomCategory.name) {
+      return;
+    }
+    // TODO : Normalize tileset
+    roomCategory.shapes.normalize();
+    roomCategory.sizes.normalize();
+    roomCategory.states.normalize();
+    roomCategory.entranceTypes.normalize();
+    roomCategory.items.normalize();
+    roomCategory.traps.normalize();
+    roomCategory.monsters.normalize();
     // TODO: Make call to backend
     props.onSave!(roomCategory);
   }
 
   const handleClose = () => {
     setRoomCategory(new RoomCategory());
+  }
+
+  const handleNameBlur = () => {
+    if (!roomCategory.name) {
+      setErrors({
+        ...errors,
+        name: true
+      })
+    }
   }
 
   return (
@@ -239,15 +282,27 @@ export default function RoomCategoryEditor(props: Props) {
         </DialogTitle>
         <DialogContent>
         <AppBar color="default" position="static">
-          <Tabs value={tab} onChange={handleTabChange} aria-label="simple tabs example" variant="fullWidth">
+          <Tabs value={tab} onChange={handleTabChange} aria-label="simple tabs example" variant="fullWidth" indicatorColor="primary" textColor="primary">
             <Tab label="Basic" {...a11yProps(0)} />
-            <Tab label="Advanced" {...a11yProps(1)} />
+            <Tab 
+              label={
+                <div className={classes.listLabel}>
+                Advanced
+                <Tooltip title="The probabilities in each list will be normalized if they don't sum up to 100%" classes={{ tooltip: classes.customWidth }}>
+                  <HelpOutlineIcon className={classes.helpIcon} color="primary"></HelpOutlineIcon>
+                </Tooltip>
+                </div>}
+              {...a11yProps(1)} 
+            />
           </Tabs>
         </AppBar>
         <TabPanel value={tab} index={0}>
         </TabPanel>
         <TabPanel value={tab} index={1}>
           <TextField
+              required
+              error={errors.name}
+              onBlur={handleNameBlur}
               disabled={viewMode}
               variant="outlined"
               autoFocus
@@ -266,14 +321,14 @@ export default function RoomCategoryEditor(props: Props) {
               enum={Size}
               disabled={viewMode}
               probs={roomCategory.sizes}
-              onProbUpdate={(enumChanged: Size, newValue: number) => handleEnumProbUpdate(nameOf<RoomCategory>("sizes"), enumChanged, newValue)}
+              onProbUpdate={(newList: Probabilities<Size>) => handleChange(nameOf<RoomCategory>("sizes"), newList)}
             />
             <EnumProbabilityText<RoomShape>
               label="Room Shape"
               enum={RoomShape}
               disabled={viewMode}
               probs={roomCategory.shapes}
-              onProbUpdate={(enumChanged: RoomShape, newValue: number) => handleEnumProbUpdate(nameOf<RoomCategory>("shapes"), enumChanged, newValue)}
+              onProbUpdate={(newList: Probabilities<RoomShape>) => handleChange(nameOf<RoomCategory>("shapes"), newList)}
             />
             {/* Tile assets */}
             <div className={classes.listLabel}>
@@ -289,14 +344,14 @@ export default function RoomCategoryEditor(props: Props) {
               list={roomCategory.monsters}
               onClick={handleMonsterClick}
               onDeleteClick={(index) => handleDeleteClick(nameOf<RoomCategory>("monsters"), index)}
-              onProbUpdate={(index, newValue) => handleListProbUpdate(nameOf<RoomCategory>("monsters"), index, newValue)}
+              onProbUpdate={(newList) => handleChange(nameOf<RoomCategory>("monsters"), newList)}
             />
             <EnumProbabilityText<MonsterState>
               label="Monster State"
               enum={MonsterState}
               disabled={viewMode}
               probs={roomCategory.states}
-              onProbUpdate={(enumChanged: MonsterState, newValue: number) => handleEnumProbUpdate(nameOf<RoomCategory>("states"), enumChanged, newValue)}
+              onProbUpdate={(newList: Probabilities<MonsterState>) => handleChange(nameOf<RoomCategory>("states"), newList)}
             />
             <div className={classes.listLabel}>
                 <FormLabel>Items</FormLabel>
@@ -311,7 +366,7 @@ export default function RoomCategoryEditor(props: Props) {
               list={roomCategory.items}
               onClick={handleItemClick}
               onDeleteClick={(index) => handleDeleteClick(nameOf<RoomCategory>("items"), index)}
-              onProbUpdate={(index, newValue) => handleListProbUpdate(nameOf<RoomCategory>("items"), index, newValue)}
+              onProbUpdate={(newList) => handleChange(nameOf<RoomCategory>("items"), newList)}
             />
             <div className={classes.listLabel}>
                 <FormLabel>Traps</FormLabel>
@@ -326,14 +381,14 @@ export default function RoomCategoryEditor(props: Props) {
               list={roomCategory.traps}
               onClick={handleTrapClick}
               onDeleteClick={(index) => handleDeleteClick(nameOf<RoomCategory>("traps"), index)}
-              onProbUpdate={(index, newValue) => handleListProbUpdate(nameOf<RoomCategory>("traps"), index, newValue)}
+              onProbUpdate={(newList) => handleChange(nameOf<RoomCategory>("traps"), newList)}
             />
             <EnumProbabilityText<EntranceType>
               label="Entrance Type"
               enum={EntranceType}
               disabled={viewMode}
               probs={roomCategory.entranceTypes}
-              onProbUpdate={(enumChanged: EntranceType, newValue: number) => handleEnumProbUpdate(nameOf<RoomCategory>("entranceTypes"), enumChanged, newValue)}
+              onProbUpdate={(newList: Probabilities<EntranceType>) => handleChange(nameOf<RoomCategory>("entranceTypes"), newList)}
             />
         </TabPanel>
         </DialogContent>

@@ -41,15 +41,9 @@ const RegionLevelConfiguration = memo(
         const [corridorCategoryToEdit, setCorridorCategoryToEdit] = useState<CorridorCategory>();
 
         const handleDeleteClick = (name: keyof Configuration, index: number) => {
-            var updatedList = Object.assign({}, props.configuration[name]) as Probabilities<any>;
+            var updatedList = Object.create(props.configuration[name] as Probabilities<any>);
+            updatedList = Object.assign(updatedList, props.configuration[name]);
             updatedList.remove(index);
-            props.onChange(name, updatedList);
-        }
-
-        const handleProbUpdate = (name: keyof Configuration, index: number, newValue: number) => {
-            var updatedList = Object.assign({}, props.configuration[name]) as Probabilities<any>;
-            updatedList.probSum[index] = newValue;
-            // TODO: normalize?
             props.onChange(name, updatedList);
         }
 
@@ -62,9 +56,9 @@ const RegionLevelConfiguration = memo(
          }
 
         const handleSelect = (name: keyof Configuration, rc: RegionCategory) => {
-            var updatedList = Object.assign({}, props.configuration[name]) as Probabilities<any>;
-            updatedList.add(rc, 0.5);
-            // TODO: Normalize?
+            var updatedList = Object.create(props.configuration[name] as Probabilities<any>);
+            updatedList = Object.assign(updatedList, props.configuration[name]);
+            updatedList.add(rc);
             props.onChange(name, updatedList);
             setAddRoomDialogOpen(false);
             setAddCorridorDialogOpen(false);
@@ -81,9 +75,13 @@ const RegionLevelConfiguration = memo(
         }
 
         const handleSave = (name: keyof Configuration, rc: RegionCategory) => {
-            var updatedList = Object.assign({}, props.configuration[name]) as Probabilities<any>;
-            var index = findIndex(updatedList.objects, { id: rc.id })
-            updatedList.objects[index] = rc;
+            var updatedList = Object.create(props.configuration[name] as Probabilities<any>);
+            updatedList = Object.assign(updatedList, props.configuration[name]) as Probabilities<any>;
+            if (roomCategoryToEdit !== undefined) {
+                updatedList.updateObject(roomCategoryToEdit, rc);
+            } else if (corridorCategoryToEdit !== undefined) {
+                updatedList.updateObject(corridorCategoryToEdit, rc);
+            }
             props.onChange(name, updatedList);
             setRoomEditorOpen(false);
             setCorridorEditorOpen(false);
@@ -106,7 +104,7 @@ const RegionLevelConfiguration = memo(
                     list={props.configuration.roomCategories}
                     onClick={handleRoomClick}
                     onDeleteClick={(index) => handleDeleteClick(nameOf<Configuration>("roomCategories"), index)}
-                    onProbUpdate={(index, newValue) => handleProbUpdate(nameOf<Configuration>("roomCategories"), index, newValue)}
+                    onProbUpdate={(newList) => props.onChange(nameOf<Configuration>("roomCategories"), newList)}
                 />
                 <div className={classes.listLabel}>
                     <Typography>Corridors</Typography>
@@ -120,7 +118,7 @@ const RegionLevelConfiguration = memo(
                     list={props.configuration.corridorCategories}
                     onClick={handleCorridorClick}
                     onDeleteClick={(index) => handleDeleteClick(nameOf<Configuration>("corridorCategories"), index)}
-                    onProbUpdate={(index, newValue) => handleProbUpdate(nameOf<Configuration>("corridorCategories"), index, newValue)}
+                    onProbUpdate={(newList) => props.onChange(nameOf<Configuration>("corridorCategories"), newList)}
                 />
                 <SelectRoomCategory
                     open={addRoomDialogOpen}

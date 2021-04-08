@@ -1,6 +1,6 @@
 export class Item {
 	id: string = "";
-	name: string;
-	description: string;
-	value: number;
+	name: string = "";
+	description: string = "";
+	value: number = 0;
 }

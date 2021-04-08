@@ -1,4 +1,5 @@
 import {FormControl, FormLabel, InputLabel, Input, InputAdornment, makeStyles} from '@material-ui/core';
+import { createNumericLiteral } from 'typescript';
 import { Probabilities } from '../../generator/Probabilities';
 
 type Props<EnumType extends number | string> = {
@@ -6,7 +7,7 @@ type Props<EnumType extends number | string> = {
     label: string;
     probs: Probabilities<EnumType>;
     enum: {[s: string]: EnumType};
-    onProbUpdate: (enumChanged: EnumType, newValue: number) => void;
+    onProbUpdate: (newList: Probabilities<EnumType>) => void;
 };
 
 const useStyles = makeStyles((theme) => ({
@@ -25,13 +26,17 @@ EnumProbabilityText.defaultProps = {
 
 function EnumProbabilityText<EnumType extends number | string>(props: Props<EnumType>) {
     const classes = useStyles();
+    var pureProbs = props.probs.toMap();
 
     const handleProbabilityChange = (enumChanged: EnumType, newValue: number) => {
-        if (newValue < 0 || newValue > 100) {
-          return;
+        if (newValue < 0 || newValue > 100 || Number.isNaN(newValue)) {
+            return;
         }
-        // TODO: How do we handle non-normalized inputs?
-        props.onProbUpdate(enumChanged, newValue/100)
+        newValue = newValue/100
+        pureProbs.set(enumChanged, parseFloat(newValue.toFixed(4)));
+        var newList = new Probabilities<EnumType>(pureProbs, false);
+        
+        props.onProbUpdate!(newList);
     }
 
     return (
@@ -42,7 +47,7 @@ function EnumProbabilityText<EnumType extends number | string>(props: Props<Enum
                         <InputLabel>{x}</InputLabel>
                         <Input
                             type="number"
-                            value={props.probs.probSum[i]*100}
+                            value={+(pureProbs.get(x)!*100).toFixed(2)}
                             onChange={(e)=>handleProbabilityChange(x, parseFloat(e.target.value))}
                             endAdornment={<InputAdornment position="end">%</InputAdornment>}
                             inputProps={{ inputprops: { min: "0", max: "100", step: "1" },  style: { textAlign: "right" } }}

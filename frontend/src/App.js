@@ -9,15 +9,22 @@ import ConfigurationEditor from "./components/ConfigurationEditor";
 import { Authenticator } from './Authenticator';
 
 const useStyles = makeStyles((theme) => ({
-  root: {
-    flexGrow: 1,
-  },
   menuButton: {
     marginRight: theme.spacing(2),
   },
   title: {
     flexGrow: 1,
   },
+  topContainer: {
+    display: "flex",
+    "flex-flow": "column",
+    height: "100%",
+  },
+  content: {
+    flex: "2",
+    overflow: "auto",
+    padding: theme.spacing(3),
+  }
 }));
 
 function App() {
@@ -55,38 +62,40 @@ function App() {
 
   return (
     <div className="App">
-      <div className={classes.root}>
-        <AppBar position="static">
-          <Toolbar>
-            <IconButton edge="start" className={classes.menuButton} color="inherit" aria-label="menu">
-              <MenuIcon />
-            </IconButton>
-            <Typography variant="h6" className={classes.title}>
-              Dungeon Map Generator
-            </Typography>
-            {loggedIn ?
-              <Button onClick={handleLogoutClick} color="inherit">Logout</Button>
-              :
-              <div>
-                <Button onClick={handleRegisterClick} color="inherit">Register</Button>
-                <Button onClick={handleLoginClick} color="inherit">Login</Button>
-              </div>
-            }
+      <Grid container direction="column" className={classes.topContainer}>
+        <div>
+          <AppBar position="static">
+            <Toolbar>
+              <IconButton edge="start" className={classes.menuButton} color="inherit" aria-label="menu">
+                <MenuIcon />
+              </IconButton>
+              <Typography variant="h6" className={classes.title}>
+                Dungeon Map Generator
+              </Typography>
+              {loggedIn ?
+                <Button onClick={handleLogoutClick} color="inherit">Logout</Button>
+                :
+                <div>
+                  <Button onClick={handleRegisterClick} color="inherit">Register</Button>
+                  <Button onClick={handleLoginClick} color="inherit">Login</Button>
+                </div>
+              }
 
-          </Toolbar>
-        </AppBar>
-      </div>
-      <Grid
-        container
-        direction="row"
-        justify="space-evenly"
-        alignItems="center"
-        style={{ minHeight: '100vh' }}
-      > 
-        <ConfigurationEditor/>
-        
-        <p></p>
-        <p></p>
+            </Toolbar>
+          </AppBar>
+        </div>
+        <Grid
+          container
+          direction="row"
+          justify="space-evenly"
+          alignItems="center"
+          className={classes.content}
+        >
+          <ConfigurationEditor/>
+ 
+          <p></p>
+          <p></p>
+        </Grid>
       </Grid>
     </div>
   );

@@ -8,10 +8,6 @@ export class CorridorCategory extends RegionCategory {
 	constructor() {
 		super();
 
-		this.widths = new Probabilities<CorridorWidth>(null);
-		var len = Object.values(CorridorWidth).length;
-		Object.values(CorridorWidth).forEach((x: CorridorWidth) => {
-			this.widths.add(x, 1/len);
-		});
+		this.widths = Probabilities.buildUniform(Object.values(CorridorWidth));
 	}
 }

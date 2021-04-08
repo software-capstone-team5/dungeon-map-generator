@@ -34,26 +34,39 @@ type Props = {
   onSave?: (rc: Monster) => void;
 }
 
+type Errors = {
+  name: boolean;
+}
+
 MonsterEditor.defaultProps = {
   viewOnly: false
 }
 
 export default function MonsterEditor(props: Props) {
   const editMode: boolean = props.monster !== undefined
-  
-  var initialMonster: Monster;
-  if (props.monster !== undefined) {
-    initialMonster = cloneDeep(props.monster);
-  } else {
-    initialMonster = new Monster();
-  }
-
   const classes = useStyles();
-  //TODO: Set to 0 so basic is default, do it when basic is complete
-  const [monster, setMonster] = useState(initialMonster);
+  
   const [viewMode, setViewMode] = useState(props.viewOnly);
-
+  const [errors, setErrors] = useState<Errors>({
+    name: false
+  });
+  const [monster, setMonster] = useState<Monster>(() => {
+    if (props.monster !== undefined) {
+      return cloneDeep(props.monster);
+    } else {
+      return new Monster();
+    }
+  });
+ 
   const handleChange = (name: keyof Monster, value: valueOf<Monster>) => {
+    if (name === nameOf<Monster>("name")){
+      if (value) {
+        setErrors({
+          ...errors,
+          name: false
+        })
+      }
+    }
     setMonster(Object.assign({}, monster, { [name]: value }) );
   }
 
@@ -62,8 +75,20 @@ export default function MonsterEditor(props: Props) {
   }
 
   const handleSaveClick = () => {
+    if (!monster.name) {
+      return;
+    }
     // TODO: Make call to backend
     props.onSave!(monster);
+  }
+
+  const handleNameBlur = () => {
+    if (!monster.name) {
+      setErrors({
+        ...errors,
+        name: true
+      })
+    }
   }
 
   return (
@@ -82,6 +107,9 @@ export default function MonsterEditor(props: Props) {
         </DialogTitle>
         <DialogContent>
           <TextField
+              required
+              error={errors.name}
+              onBlur={handleNameBlur}
               disabled={viewMode}
               variant="outlined"
               autoFocus
