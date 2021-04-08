@@ -1,7 +1,11 @@
 import React from 'react';
 
 import { withStyles } from '@material-ui/core/styles';
-import { Button, Typography, AccordionDetails, TextField, Paper } from '@material-ui/core';
+import Button from '@material-ui/core/Button';
+import Typography from '@material-ui/core/Typography';
+import AccordionDetails from '@material-ui/core/AccordionDetails';
+import TextField from '@material-ui/core/TextField';
+import Paper from '@material-ui/core/Paper';
 import MuiAccordion from '@material-ui/core/Accordion';
 import MuiAccordionSummary from '@material-ui/core/AccordionSummary';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
@@ -141,7 +145,7 @@ class ConfigurationEditor extends React.Component<Props, State> {
                             <Typography>Region Level Options</Typography>
                         </AccordionSummary>
                         <AccordionDetails>
-                            <RegionLevelConfiguration configuration={this.state.configuration} onChange={this.handleChange}/>
+                            {/* <RegionLevelConfiguration configuration={this.state.configuration} onChange={this.handleChange}/> */}
                         </AccordionDetails>
                     </Accordion>
                 </Paper>
