@@ -1,6 +1,8 @@
 export class Trap {
 	id: string = "";
-	name: string;
-	description: string;
-	difficulty: number;
+	name: string = "";
+	description: string = "";
+	difficulty: number = Trap.maxDifficulty/2;
+	static minDifficulty: number = 1;
+	static maxDifficulty: number = 30;
 }

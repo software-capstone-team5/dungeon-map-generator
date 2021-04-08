@@ -29,5 +29,8 @@ export class RegionCategory {
 			this.entranceTypes.add(x, 1/len);
 		});
 
+		this.monsters = new Probabilities<Monster>(null);
+		this.items = new Probabilities<Item>(null);
+		this.traps = new Probabilities<Trap>(null);
 	}
 }

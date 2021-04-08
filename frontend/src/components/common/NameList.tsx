@@ -8,7 +8,6 @@ import {
   IconButton
 } from '@material-ui/core';
 
-import { RegionCategory } from '../models/RegionCategory';
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -23,25 +22,29 @@ const useStyles = makeStyles((theme) => ({
     },
 }));
 
-type Props<T extends RegionCategory> = {
+interface hasName {
+  name: string;
+}
+
+type Props<T extends hasName> = {
   list: T[];
   showDelete?: boolean;
-  onClick?: (rc: T) => void;
+  onClick?: (item: T) => void;
   onDeleteClick?: (index: number) => void;
 }
 
-RegionCategoryList.defaultProps = {
+NameList.defaultProps = {
   showDelete: false
 }
 
-function RegionCategoryList<T extends RegionCategory> (props: Props<T>) {
+function NameList<T extends hasName> (props: Props<T>) {
 
     const classes = useStyles();
 
-    const listItems = props.list.map((rc: T, i: number) =>
-      <ListItem button onClick={(e)=>props.onClick!(rc)} key={i}>
+    const listItems = props.list.map((item: T, i: number) =>
+      <ListItem button onClick={(e)=>props.onClick!(item)} key={i}>
         <ListItemText
-          primary={rc.name}
+          primary={item.name}
         />
         {props.showDelete &&
           <ListItemSecondaryAction>
@@ -66,4 +69,4 @@ function RegionCategoryList<T extends RegionCategory> (props: Props<T>) {
 
 }
 
-export default RegionCategoryList;
+export default NameList;

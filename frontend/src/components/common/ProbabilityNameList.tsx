@@ -9,8 +9,7 @@ import {
   TextField
 } from '@material-ui/core';
 
-import { Probabilities } from '../generator/Probabilities';
-import { RegionCategory } from '../models/RegionCategory';
+import { Probabilities } from '../../generator/Probabilities';
 
 
 const useStyles = makeStyles((theme) => ({
@@ -26,21 +25,27 @@ const useStyles = makeStyles((theme) => ({
     },
 }));
 
-type Props<T extends RegionCategory> = {
+interface hasName {
+  name: string;
+}
+
+type Props<T extends hasName> = {
   list: Probabilities<T>;
+  disabled?: boolean;
   showProbs?: boolean;
   showDelete?: boolean;
   onDeleteClick?: (index: number) => void;
-  onClick?: (rc: T) => void;
+  onClick?: (item: T) => void;
   onProbUpdate?: (index: number, newValue: number) => void;
 }
 
-RegionCategoryProbabilityList.defaultProps = {
+ProbabilityNameList.defaultProps = {
+  disabled: false,
   showProbs: false,
   showDelete: false
 }
 
-function RegionCategoryProbabilityList<T extends RegionCategory> (props: Props<T>) {
+function ProbabilityNameList<T extends hasName> (props: Props<T>) {
 
     const classes = useStyles();
 
@@ -52,14 +57,21 @@ function RegionCategoryProbabilityList<T extends RegionCategory> (props: Props<T
       props.onProbUpdate!(index, newValue/100)
     }
 
-    const listItems = props.list.objects.map((rc: T, i: number) =>
-      <ListItem button onClick={(e)=>props.onClick!(rc)} key={i}>
+    const handleClick = (item: T) => {
+      if (props.onClick && !props.disabled) {
+        props.onClick(item)
+      }
+    }
+
+    const listItems = props.list.objects.map((item: T, i: number) =>
+      <ListItem button={(!props.disabled) as true} onClick={(e)=>handleClick(item)} key={i}>
         <ListItemText
-          primary={rc.name}
+          primary={item.name}
         />
         {props.showProbs &&
           <TextField
             type="number"
+            disabled={props.disabled}
             value={props.list.probSum[i]*100}
             onClick={(event) => event.stopPropagation()}
             onFocus={(event) => event.stopPropagation()}
@@ -71,7 +83,7 @@ function RegionCategoryProbabilityList<T extends RegionCategory> (props: Props<T
         }
         {props.showDelete &&
           <ListItemSecondaryAction>
-            <IconButton onClick={()=>props.onDeleteClick!(i)} edge="end" aria-label="delete">
+            <IconButton disabled={props.disabled} onClick={()=>props.onDeleteClick!(i)} edge="end" aria-label="delete">
               <DeleteIcon />
             </IconButton>
           </ListItemSecondaryAction>
@@ -92,4 +104,4 @@ function RegionCategoryProbabilityList<T extends RegionCategory> (props: Props<T
 
 }
 
-export default RegionCategoryProbabilityList;
+export default ProbabilityNameList;
