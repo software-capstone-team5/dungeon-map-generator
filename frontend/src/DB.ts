@@ -70,7 +70,8 @@ export class DB {
         }
     }
 
-    static async getConfig(name: string) { // WIP
+    // REQ-18: Save.MapConfiguration - The system allows logged -in users to save the entire map configuration(both Map Level and Region Level) as a Preset.
+    static async getAllConfig() {
         try {
             var token = await Authenticator.getIDToken();
             if (token === undefined) {
@@ -79,14 +80,20 @@ export class DB {
             const requestOptions = {
                 method: 'GET'
             };
-            var response = await fetch(`${BACKEND_URL}/user/${token}/config/${name}`, requestOptions);
+            var response = await fetch(`${BACKEND_URL}/user/${token}/config`, requestOptions);
             var data = await response.json();
-            var config = plainToClass(Configuration, data.config)
+            if (!data.valid) {
+                return data;
+            }
+            var configs: Configuration[] = [];
+            data.response.forEach((element: Object) => {
+                configs.push(plainToClass(Configuration, element))
+            });
+            // var config = plainToClass(Configuration, data.config)
             var emptyConfig = new Configuration();
-            // Object.assign(config, data.config)
-            console.log(config);
+            console.log(configs);
             console.log(emptyConfig);
-            return { valid: true, "response": config };
+            return { valid: true, "response": configs };
         } catch (error) {
             console.log(error);
         }

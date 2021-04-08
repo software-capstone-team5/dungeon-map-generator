@@ -4,6 +4,7 @@ from firebase_admin import credentials, firestore, auth, initialize_app  # Initi
 from flask_cors import CORS, cross_origin
 from google.oauth2 import id_token
 from google.auth.transport import requests
+from util import *
 
 cred = credentials.Certificate('./certs/key.json') # change later to either environment var or something else
 default_app = initialize_app(cred)
@@ -65,15 +66,8 @@ def saveConfig(idToken):
         requestData = request.get_json()
         user_id = verifyToken(idToken)
         if type(user_id) == str:
-            db_id = requestData['id']
             config_collection = users_collection.document(user_id).collection("Configurations")
-            # Document exists in DB
-            if db_id:
-                config = config_collection.document(db_id)
-            # New document
-            else:
-                config = config_collection.document()
-                requestData['id'] = config.id
+            requestData, config = getDBID(requestData, config_collection)
 
             # Save corridor category references in CorridorCategories collection in DB
             corridorCategories = requestData['corridorCategories']
@@ -103,7 +97,7 @@ def saveRoomCategory(idToken):
         if type(user_id) == str:
             # Save room category in RoomCategories collection in DB
             roomCat_collection = users_collection.document(user_id).collection("RoomCategories")
-            category = saveCategory(requestData, roomCat_collection)
+            category = saveCategory(requestData, roomCat_collection, users_collection, user_id)
             return jsonify({"valid": True, "response": category.id}), 200
         else:
             return user_id
@@ -119,49 +113,67 @@ def saveCorridorCategory(idToken):
         if type(user_id) == str:
             # Save corridor category in CorridorCategories collection in DB
             corridorCat_collection = users_collection.document(user_id).collection("CorridorCategories")
-            category = saveCategory(requestData, corridorCat_collection)
+            category = saveCategory(requestData, corridorCat_collection, users_collection, user_id)
             return jsonify({"valid": True, "response": category.id}), 200
         else:
             return user_id
     except Exception as e:
         return f"An Error Occured: {e}"
 
-def saveReferences(data, collection_ref):
-    references = []
-    for i in range(len(data['objects'])):
-        reference = data['objects'][i]
-        ref_id = reference['id']
-        db_reference = collection_ref.document(ref_id)
-        references.append(db_reference)
-    return references
 
-# REQ-28: Save.RoomCategory - The system should allow the user to save a Room Category that they have created in the database.
-# REQ-37: Save.CorridorCategory - The system should allow the user to save a Corridor Category that they have created in the database.
-def saveCategory(categoryData, collection_ref):
-    cat_id = categoryData['id']
-    if cat_id:
-        dbCategory = collection_ref.document(cat_id)
-    else:
-        dbCategory = collection_ref.document()
-        categoryData['id'] = dbCategory.id
-
-    #Also update db for Monster, items, traps,
-    dbCategory.set(categoryData) # TODO remove episilon including child nodes that have them
-    return dbCategory
-
-#getConfigAll WIP
-@app.route("/user/<idToken>/config/<config_id>", methods=['GET'])
-def getConfigByName(idToken, config_id):
+# REQ-18: Save.MapConfiguration - The system allows logged-in users to save the entire map configuration (both Map Level and Region Level) as a Preset.
+@app.route("/user/<idToken>/config", methods=['GET'])
+def getConfigs(idToken):
     try:
         user_id = verifyToken(idToken)
         if user_id:
-            config_collection = users_collection.document(user_id).collection("Configurations")
-            # Find matching document based on name
-            docs = config_collection.where('name', '==', config_id).get()
-            if docs:
-                for doc in docs:
-                    result = config_collection.document(doc.id).get()
-                return jsonify({"config": result.to_dict()}), 200
+            configs = users_collection.document(user_id).collection("Configurations")
+            result = []
+            for config in configs.stream():
+                configDict = config.to_dict()
+                corridorRefs = configDict['corridorCategories']['objects']
+                configDict['corridorCategories']['objects'] = getReferences(corridorRefs)
+
+                roomRefs = configDict['roomCategories']['objects']
+                configDict['roomCategories']['objects'] = getReferences(roomRefs)
+                result.append(configDict)
+            return jsonify({"valid": True, "response": result}), 200
+        else:
+            return jsonify({"valid": False, "response": "No ID provided"}), 400
+    except Exception as e:
+        return f"An Error Occured: {e}"
+
+# REQ-28: Save.RoomCategory - The system should allow the user to save a Room Category that they have created in the database.
+@app.route("/user/<idToken>/room", methods=['GET'])
+def getRooms(idToken):
+    try:
+        user_id = verifyToken(idToken)
+        if user_id:
+            rooms = users_collection.document(user_id).collection("RoomCategories")
+            result = []
+            for room in rooms.stream():
+                roomDict = room.to_dict()
+                # roomCategory = getCategoryReferences(roomDict)
+                result.append(roomDict) # TODO Replace with roomCategory
+            return jsonify({"valid": True, "response": result}), 200
+        else:
+            return jsonify({"valid": False, "response": "No ID provided"}), 400
+    except Exception as e:
+        return f"An Error Occured: {e}"
+
+# REQ-37: Save.CorridorCategory - The system should allow the user to save a Corridor Category that they have created in the database.
+@app.route("/user/<idToken>/corridor", methods=['GET'])
+def getCorridors(idToken):
+    try:
+        user_id = verifyToken(idToken)
+        if user_id:
+            corridors = users_collection.document(user_id).collection("CorridorCategories")
+            result = []
+            for corridor in corridors.stream():
+                corridorDict = corridor.to_dict()
+                # corridorCategory = getCategoryReferences(corridorDict)
+                result.append(corridorDict) # TODO Replace with corridorCategory
+            return jsonify({"valid": True, "response": result}), 200
         else:
             return jsonify({"valid": False, "response": "No ID provided"}), 400
     except Exception as e:
