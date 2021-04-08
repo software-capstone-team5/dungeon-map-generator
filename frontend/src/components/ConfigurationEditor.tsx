@@ -145,7 +145,7 @@ class ConfigurationEditor extends React.Component<Props, State> {
                             <Typography>Region Level Options</Typography>
                         </AccordionSummary>
                         <AccordionDetails>
-                            {/* <RegionLevelConfiguration configuration={this.state.configuration} onChange={this.handleChange}/> */}
+                            <RegionLevelConfiguration configuration={this.state.configuration} onChange={this.handleChange}/>
                         </AccordionDetails>
                     </Accordion>
                 </Paper>
