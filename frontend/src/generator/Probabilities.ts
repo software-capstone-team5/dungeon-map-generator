@@ -53,6 +53,11 @@ export class Probabilities<T> {
 		})
 	}
 
+	updateObject(object: T, newObject: T) {
+		var index = this.objects.indexOf(object);
+		this.objects[index] = newObject;
+	}
+
 	randPickOne(): T{
 		var rand = Math.random();
 		var i = 0;
