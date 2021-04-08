@@ -89,11 +89,57 @@ export class DB {
             data.response.forEach((element: Object) => {
                 configs.push(plainToClass(Configuration, element))
             });
-            // var config = plainToClass(Configuration, data.config)
-            var emptyConfig = new Configuration();
-            console.log(configs);
-            console.log(emptyConfig);
             return { valid: true, "response": configs };
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
+    // REQ-28: Save.RoomCategory - The system should allow the user to save a Room Category that they have created in the database.
+    static async getAllRoomCat() {
+        try {
+            var token = await Authenticator.getIDToken();
+            if (token === undefined) {
+                return { valid: false, "response": "Not Logged In" };
+            }
+            const requestOptions = {
+                method: 'GET'
+            };
+            var response = await fetch(`${BACKEND_URL}/user/${token}/room`, requestOptions);
+            var data = await response.json();
+            if (!data.valid) {
+                return data;
+            }
+            var roomCats: RoomCategory[] = [];
+            data.response.forEach((element: Object) => {
+                roomCats.push(plainToClass(RoomCategory, element))
+            });
+            return { valid: true, "response": roomCats };
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
+    // REQ-37: Save.CorridorCategory - The system should allow the user to save a Corridor Category that they have created in the database.
+    static async getAllCorridorCat() {
+        try {
+            var token = await Authenticator.getIDToken();
+            if (token === undefined) {
+                return { valid: false, "response": "Not Logged In" };
+            }
+            const requestOptions = {
+                method: 'GET'
+            };
+            var response = await fetch(`${BACKEND_URL}/user/${token}/corridor`, requestOptions);
+            var data = await response.json();
+            if (!data.valid) {
+                return data;
+            }
+            var corridorCats: RoomCategory[] = [];
+            data.response.forEach((element: Object) => {
+                corridorCats.push(plainToClass(RoomCategory, element))
+            });
+            return { valid: true, "response": corridorCats };
         } catch (error) {
             console.log(error);
         }
