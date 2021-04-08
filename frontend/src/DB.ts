@@ -5,6 +5,8 @@ import { Configuration } from './models/Configuration';
 import { BACKEND_URL } from './constants/Backend';
 import { plainToClass } from "class-transformer";
 import { Authenticator } from './Authenticator';
+import { RoomCategory } from "./models/RoomCategory";
+import { CorridorCategory } from "./models/CorridorCategory";
 
 export class DB {
 
@@ -21,6 +23,46 @@ export class DB {
                 body: JSON.stringify(config)
             };
             var response = await fetch(`${BACKEND_URL}/user/${token}/config`, requestOptions);
+            var data = await response.json();
+            return data
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
+    // REQ-28: Save.RoomCategory - The system should allow the user to save a Room Category that they have created in the database.
+    static async saveRoomCategory(roomCategory: RoomCategory) {
+        try {
+            var token = await Authenticator.getIDToken();
+            if (token === undefined) {
+                return { "valid": false, "response": "Not logged in" };
+            }
+            const requestOptions = {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(roomCategory)
+            };
+            var response = await fetch(`${BACKEND_URL}/user/${token}/room`, requestOptions);
+            var data = await response.json();
+            return data
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
+    // REQ-37: Save.CorridorCategory - The system should allow the user to save a Corridor Category that they have created in the database.
+    static async saveCorridorCategory(corridorCategory: CorridorCategory) {
+        try {
+            var token = await Authenticator.getIDToken();
+            if (token === undefined) {
+                return { "valid": false, "response": "Not logged in" };
+            }
+            const requestOptions = {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(corridorCategory)
+            };
+            var response = await fetch(`${BACKEND_URL}/user/${token}/corridor`, requestOptions);
             var data = await response.json();
             return data
         } catch (error) {

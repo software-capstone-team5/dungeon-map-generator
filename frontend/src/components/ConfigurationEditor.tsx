@@ -93,9 +93,15 @@ class ConfigurationEditor extends React.Component<Props, State> {
     }
 
     // REQ-18: Save.MapConfiguration - The system allows logged -in users to save the entire map configuration(both Map Level and Region Level) as a Preset.
-    handleSave() {
+    async handleSave() {
         // TODO Display error/success message?
-        DB.saveConfig(this.state.configuration);
+        var result = await DB.saveConfig(this.state.configuration);
+        if (result.valid) {
+            var id = result.response;
+            this.state.configuration.id = id;
+        } else {
+            window.alert(result.response)
+        }
     }
 
     handleChange(name: keyof Configuration, value: valueOf<Configuration>) {

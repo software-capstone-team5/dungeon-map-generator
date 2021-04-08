@@ -8,7 +8,7 @@ import DialogTitle from '@material-ui/core/DialogTitle';
 import EditIcon from '@material-ui/icons/Edit';
 
 import { Size } from "../constants/Size";
-import { AppBar, Tab, Tabs, Box, Typography, IconButton, makeStyles} from '@material-ui/core';
+import { AppBar, Tab, Tabs, Box, Typography, IconButton, makeStyles } from '@material-ui/core';
 import EnumProbabilityText from './common/EnumProbabilityText';
 import { RoomCategory } from '../models/RoomCategory';
 import { nameOf, valueOf } from '../utils/util';
@@ -17,9 +17,10 @@ import { RoomShape } from '../constants/RoomShape';
 import { MonsterState } from '../constants/MonsterState';
 import { EntranceType } from '../constants/EntranceType';
 import cloneDeep from 'lodash/cloneDeep';
+import DB from '../DB';
 
 
-const useStyles = makeStyles((theme) =>  ({
+const useStyles = makeStyles((theme) => ({
   root: {
     margin: 0,
     padding: theme.spacing(2),
@@ -63,7 +64,7 @@ type Props = {
   open: boolean;
   viewOnly?: boolean;
   roomCategory?: RoomCategory;
-  onCancelClick: ()=>void;
+  onCancelClick: () => void;
   onSave?: (rc: RoomCategory) => void;
 }
 
@@ -73,7 +74,7 @@ RoomCategoryEditor.defaultProps = {
 
 export default function RoomCategoryEditor(props: Props) {
   const editMode: boolean = props.roomCategory !== undefined
-  
+
   var initialRoomCategory: RoomCategory;
   if (props.roomCategory !== undefined) {
     initialRoomCategory = cloneDeep(props.roomCategory);
@@ -92,7 +93,7 @@ export default function RoomCategoryEditor(props: Props) {
   };
 
   const handleChange = (name: keyof RoomCategory, value: valueOf<RoomCategory>) => {
-    setRoomCategory(Object.assign({}, roomCategory, { [name]: value }) );
+    setRoomCategory(Object.assign({}, roomCategory, { [name]: value }));
   }
 
   const handleProbUpdate = (name: keyof RoomCategory, key: any, newValue: number) => {
@@ -105,8 +106,14 @@ export default function RoomCategoryEditor(props: Props) {
     setViewMode(false);
   }
 
-  const handleSaveClick = () => {
-    // TODO: Make call to backend
+  const handleSaveClick = async () => {
+    var result = await DB.saveRoomCategory(roomCategory);
+    if (result.valid) {
+      var id = result.response;
+      roomCategory.id = id;
+    } else {
+      window.alert(result.response);
+    }
     props.onSave!(roomCategory);
   }
 
@@ -117,7 +124,7 @@ export default function RoomCategoryEditor(props: Props) {
           className={classes.root}
           disableTypography
           id="form-dialog-title">
-          <Typography component={'span'} variant="h6">{editMode ? "Edit": "Add"} Room Category</Typography>
+          <Typography component={'span'} variant="h6">{editMode ? "Edit" : "Add"} Room Category</Typography>
           {viewMode && editMode &&
             <IconButton aria-label="edit" className={classes.editButton} onClick={handleEditClick}>
               <EditIcon />
@@ -125,16 +132,16 @@ export default function RoomCategoryEditor(props: Props) {
           }
         </DialogTitle>
         <DialogContent>
-        <AppBar color="default" position="static">
-          <Tabs value={tab} onChange={handleTabChange} aria-label="simple tabs example" variant="fullWidth">
-            <Tab label="Basic" {...a11yProps(0)} />
-            <Tab label="Advanced" {...a11yProps(1)} />
-          </Tabs>
-        </AppBar>
-        <TabPanel value={tab} index={0}>
-        </TabPanel>
-        <TabPanel value={tab} index={1}>
-          <TextField
+          <AppBar color="default" position="static">
+            <Tabs value={tab} onChange={handleTabChange} aria-label="simple tabs example" variant="fullWidth">
+              <Tab label="Basic" {...a11yProps(0)} />
+              <Tab label="Advanced" {...a11yProps(1)} />
+            </Tabs>
+          </AppBar>
+          <TabPanel value={tab} index={0}>
+          </TabPanel>
+          <TabPanel value={tab} index={1}>
+            <TextField
               disabled={viewMode}
               variant="outlined"
               autoFocus
@@ -146,7 +153,7 @@ export default function RoomCategoryEditor(props: Props) {
               }}
               fullWidth
               value={roomCategory.name}
-              onChange={(e)=>handleChange(nameOf<RoomCategory>("name"), e.target.value)}
+              onChange={(e) => handleChange(nameOf<RoomCategory>("name"), e.target.value)}
             />
             <EnumProbabilityText<Size>
               label="Size"
@@ -182,19 +189,19 @@ export default function RoomCategoryEditor(props: Props) {
               probs={roomCategory.entranceTypes}
               onProbUpdate={(enumChanged: EntranceType, newValue: number) => handleProbUpdate(nameOf<RoomCategory>("entranceTypes"), enumChanged, newValue)}
             />
-        </TabPanel>
+          </TabPanel>
         </DialogContent>
 
         <DialogActions>
           <Button onClick={props.onCancelClick} color="primary">
             Cancel
           </Button>
-          {!viewMode && 
+          {!viewMode &&
             <Button onClick={handleSaveClick} variant="contained" color="primary">
-            Save
+              Save
             </Button>
           }
-          
+
         </DialogActions>
       </Dialog>
     </div>

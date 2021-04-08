@@ -75,55 +75,89 @@ def saveConfig(idToken):
                 config = config_collection.document()
                 requestData['id'] = config.id
 
-            # Save corridor categories in CorridorCategories collection in DB
+            # Save corridor category references in CorridorCategories collection in DB
             corridorCategories = requestData['corridorCategories']
             corridorCat_collection = users_collection.document(user_id).collection("CorridorCategories")
             # Update configuration to hold DB references
-            requestData['corridorCategories']['objects'] = saveCategories(corridorCategories, corridorCat_collection)
+            requestData['corridorCategories']['objects'] = saveReferences(corridorCategories, corridorCat_collection)
 
-            # Save room categories in RoomCategories collection in DB
+            # Save room category references in RoomCategories collection in DB
             roomCategories = requestData['roomCategories']
             roomCat_collection = users_collection.document(user_id).collection("RoomCategories")
             # Update configuration to hold DB references
-            requestData['roomCategories']['objects'] = saveCategories(roomCategories, roomCat_collection)
+            requestData['roomCategories']['objects'] = saveReferences(roomCategories, roomCat_collection)
 
             config.set(requestData) # TODO remove episilon including child nodes that have them
-            return jsonify({"valid": True, "response": "Configuration Saved"}), 200
+            return jsonify({"valid": True, "response": config.id}), 200
         else:
             return user_id
     except Exception as e:
         return f"An Error Occured: {e}"
 
-def saveCategories(categories, collection_ref):
+# REQ-28: Save.RoomCategory - The system should allow the user to save a Room Category that they have created in the database.
+@app.route("/user/<idToken>/room", methods=['POST'])
+def saveRoomCategory(idToken):
+    try:
+        requestData = request.get_json()
+        user_id = verifyToken(idToken)
+        if type(user_id) == str:
+            # Save room category in RoomCategories collection in DB
+            roomCat_collection = users_collection.document(user_id).collection("RoomCategories")
+            category = saveCategory(requestData, roomCat_collection)
+            return jsonify({"valid": True, "response": category.id}), 200
+        else:
+            return user_id
+    except Exception as e:
+        return f"An Error Occured: {e}"
+
+# REQ-37: Save.CorridorCategory - The system should allow the user to save a Corridor Category that they have created in the database.
+@app.route("/user/<idToken>/corridor", methods=['POST'])
+def saveCorridorCategory(idToken):
+    try:
+        requestData = request.get_json()
+        user_id = verifyToken(idToken)
+        if type(user_id) == str:
+            # Save corridor category in CorridorCategories collection in DB
+            corridorCat_collection = users_collection.document(user_id).collection("CorridorCategories")
+            category = saveCategory(requestData, corridorCat_collection)
+            return jsonify({"valid": True, "response": category.id}), 200
+        else:
+            return user_id
+    except Exception as e:
+        return f"An Error Occured: {e}"
+
+def saveReferences(data, collection_ref):
     references = []
-    for i in range(len(categories['objects'])):
-        category = categories['objects'][i]
-        dbCategory = saveCategory(category, collection_ref)
-        references.append(dbCategory)
+    for i in range(len(data['objects'])):
+        reference = data['objects'][i]
+        ref_id = reference['id']
+        db_reference = collection_ref.document(ref_id)
+        references.append(db_reference)
     return references
 
 # REQ-28: Save.RoomCategory - The system should allow the user to save a Room Category that they have created in the database.
 # REQ-37: Save.CorridorCategory - The system should allow the user to save a Corridor Category that they have created in the database.
-def saveCategory(category, collection_ref):
-    cat_id = category['id']
+def saveCategory(categoryData, collection_ref):
+    cat_id = categoryData['id']
     if cat_id:
         dbCategory = collection_ref.document(cat_id)
     else:
         dbCategory = collection_ref.document()
-        category['id'] = dbCategory.id
+        categoryData['id'] = dbCategory.id
 
-    dbCategory.set(category)
+    #Also update db for Monster, items, traps,
+    dbCategory.set(categoryData) # TODO remove episilon including child nodes that have them
     return dbCategory
 
 #getConfigAll WIP
-@app.route("/user/<idToken>/config/<name>", methods=['GET'])
-def getConfigByName(idToken, name): # ID
+@app.route("/user/<idToken>/config/<config_id>", methods=['GET'])
+def getConfigByName(idToken, config_id):
     try:
         user_id = verifyToken(idToken)
         if user_id:
             config_collection = users_collection.document(user_id).collection("Configurations")
             # Find matching document based on name
-            docs = config_collection.where('name', '==', name).get()
+            docs = config_collection.where('name', '==', config_id).get()
             if docs:
                 for doc in docs:
                     result = config_collection.document(doc.id).get()

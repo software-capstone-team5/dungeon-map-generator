@@ -7,7 +7,7 @@ import DialogContent from '@material-ui/core/DialogContent';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import EditIcon from '@material-ui/icons/Edit';
 
-import { AppBar, Tab, Tabs, Box, Typography, IconButton, makeStyles} from '@material-ui/core';
+import { AppBar, Tab, Tabs, Box, Typography, IconButton, makeStyles } from '@material-ui/core';
 import EnumProbabilityText from './common/EnumProbabilityText';
 import { CorridorCategory } from '../models/CorridorCategory';
 import { nameOf, valueOf } from '../utils/util';
@@ -17,9 +17,10 @@ import { EntranceType } from '../constants/EntranceType';
 import { CorridorWidth } from '../constants/CorridorWidth';
 
 import cloneDeep from 'lodash/cloneDeep';
+import DB from '../DB';
 
 
-const useStyles = makeStyles((theme) =>  ({
+const useStyles = makeStyles((theme) => ({
   root: {
     margin: 0,
     padding: theme.spacing(2),
@@ -63,7 +64,7 @@ type Props = {
   open: boolean;
   viewOnly?: boolean;
   corridorCategory?: CorridorCategory;
-  onCancelClick: ()=>void;
+  onCancelClick: () => void;
   onSave?: (rc: CorridorCategory) => void;
 }
 
@@ -73,7 +74,7 @@ CorridorCategoryEditor.defaultProps = {
 
 export default function CorridorCategoryEditor(props: Props) {
   const editMode: boolean = props.corridorCategory !== undefined
-  
+
   var initialCorridorCategory: CorridorCategory;
   if (props.corridorCategory !== undefined) {
     initialCorridorCategory = cloneDeep(props.corridorCategory);
@@ -92,7 +93,7 @@ export default function CorridorCategoryEditor(props: Props) {
   };
 
   const handleChange = (name: keyof CorridorCategory, value: valueOf<CorridorCategory>) => {
-    setCorridorCategory(Object.assign({}, corridorCategory, { [name]: value }) );
+    setCorridorCategory(Object.assign({}, corridorCategory, { [name]: value }));
   }
 
   const handleProbUpdate = (name: keyof CorridorCategory, key: any, newValue: number) => {
@@ -105,8 +106,14 @@ export default function CorridorCategoryEditor(props: Props) {
     setViewMode(false);
   }
 
-  const handleSaveClick = () => {
-    // TODO: Make call to backend
+  const handleSaveClick = async () => {
+    var result = await DB.saveCorridorCategory(corridorCategory);
+    if (result.valid) {
+      var id = result.response;
+      corridorCategory.id = id;
+    } else {
+      window.alert(result.response);
+    }
     props.onSave!(corridorCategory);
   }
 
@@ -117,7 +124,7 @@ export default function CorridorCategoryEditor(props: Props) {
           className={classes.root}
           disableTypography
           id="form-dialog-title">
-          <Typography component={'span'} variant="h6">{editMode ? "Edit": "Add"} Corridor Category</Typography>
+          <Typography component={'span'} variant="h6">{editMode ? "Edit" : "Add"} Corridor Category</Typography>
           {viewMode &&
             <IconButton aria-label="edit" className={classes.editButton} onClick={handleEditClick}>
               <EditIcon />
@@ -125,16 +132,16 @@ export default function CorridorCategoryEditor(props: Props) {
           }
         </DialogTitle>
         <DialogContent>
-        <AppBar color="default" position="static">
-          <Tabs value={tab} onChange={handleTabChange} aria-label="simple tabs example" variant="fullWidth">
-            <Tab label="Basic" {...a11yProps(0)} />
-            <Tab label="Advanced" {...a11yProps(1)} />
-          </Tabs>
-        </AppBar>
-        <TabPanel value={tab} index={0}>
-        </TabPanel>
-        <TabPanel value={tab} index={1}>
-          <TextField
+          <AppBar color="default" position="static">
+            <Tabs value={tab} onChange={handleTabChange} aria-label="simple tabs example" variant="fullWidth">
+              <Tab label="Basic" {...a11yProps(0)} />
+              <Tab label="Advanced" {...a11yProps(1)} />
+            </Tabs>
+          </AppBar>
+          <TabPanel value={tab} index={0}>
+          </TabPanel>
+          <TabPanel value={tab} index={1}>
+            <TextField
               disabled={viewMode}
               variant="outlined"
               autoFocus
@@ -146,7 +153,7 @@ export default function CorridorCategoryEditor(props: Props) {
               }}
               fullWidth
               value={corridorCategory.name}
-              onChange={(e)=>handleChange(nameOf<CorridorCategory>("name"), e.target.value)}
+              onChange={(e) => handleChange(nameOf<CorridorCategory>("name"), e.target.value)}
             />
             <EnumProbabilityText<CorridorWidth>
               label="Corridor Width"
@@ -175,19 +182,19 @@ export default function CorridorCategoryEditor(props: Props) {
               probs={corridorCategory.entranceTypes}
               onProbUpdate={(enumChanged: EntranceType, newValue: number) => handleProbUpdate(nameOf<CorridorCategory>("entranceTypes"), enumChanged, newValue)}
             />
-        </TabPanel>
+          </TabPanel>
         </DialogContent>
 
         <DialogActions>
           <Button onClick={props.onCancelClick} color="primary">
             Cancel
           </Button>
-          {!viewMode && 
+          {!viewMode &&
             <Button onClick={handleSaveClick} variant="contained" color="primary">
-            Save
+              Save
             </Button>
           }
-          
+
         </DialogActions>
       </Dialog>
     </div>
