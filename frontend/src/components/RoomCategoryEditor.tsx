@@ -16,6 +16,7 @@ import { RoomCategory } from '../models/RoomCategory';
 import { Monster } from '../models/Monster';
 import { Item } from '../models/Item';
 import { Trap } from '../models/Trap';
+import { TileSet } from '../models/TileSet';
 import { Probabilities } from '../generator/Probabilities';
 import { MonsterState } from '../constants/MonsterState';
 import { EntranceType } from '../constants/EntranceType';
@@ -25,9 +26,11 @@ import { RoomShape } from '../constants/RoomShape';
 import SelectTrap from './SelectTrap';
 import SelectMonster from './SelectMonster';
 import SelectItem from './SelectItem';
+import SelectTileSet from './SelectTileSet';
 import MonsterEditor from './MonsterEditor';
 import ItemEditor from './ItemEditor';
 import TrapEditor from './TrapEditor';
+import TileSetEditor from './TileSetEditor';
 
 import { nameOf, valueOf } from '../utils/util';
 import cloneDeep from 'lodash/cloneDeep';
@@ -117,6 +120,10 @@ export default function RoomCategoryEditor(props: Props) {
   const [trapToEdit, setTrapToEdit] = useState<Trap>()
   const [trapEditorOpen, setTrapEditorOpen] = useState<boolean>(false);
   const [selectTrapDialogOpen, setSelectTrapDialogOpen] = useState<boolean>(false);
+
+  const [tileSetToEdit, setTileSetToEdit] = useState<TileSet>()
+  const [tileSetEditorOpen, setTileSetEditorOpen] = useState<boolean>(false);
+  const [selectTileSetDialogOpen, setSelectTileSetDialogOpen] = useState<boolean>(false);
 
   const handleTabChange = (event: React.ChangeEvent<{}>, newValue: number) => {
     setTab(newValue);
@@ -210,6 +217,23 @@ export default function RoomCategoryEditor(props: Props) {
     setTrapToEdit(undefined);
   }
 
+  const handleTileSetClick = (tileSet: TileSet) => {
+    setTileSetToEdit(tileSet);
+    setTileSetEditorOpen(true);
+  }
+
+  const handleAddTileSetClick = () => {
+    setSelectTileSetDialogOpen(true);
+  }
+
+  const handleTileSetSave = (newTileSet: TileSet) => {
+    var updatedList = roomCategory.tileSets;
+    updatedList.updateObject(tileSetToEdit!, newTileSet);
+    handleChange(nameOf<RoomCategory>("tileSets"), updatedList);
+    setTileSetEditorOpen(false);
+    setTileSetToEdit(undefined);
+  }
+
   const handleEditClick = () => {
     setViewMode(false);
   }
@@ -275,7 +299,21 @@ export default function RoomCategoryEditor(props: Props) {
               probs={roomCategory.shapes}
               onProbUpdate={(enumChanged: RoomShape, newValue: number) => handleEnumProbUpdate(nameOf<RoomCategory>("shapes"), enumChanged, newValue)}
             />
-            {/* Tile assets */}
+            <div className={classes.listLabel}>
+                <FormLabel>Tile Sets</FormLabel>
+                <IconButton disabled={viewMode} onClick={handleAddTileSetClick} aria-label="add" color="primary">
+                    <AddBoxIcon/>
+                </IconButton>
+            </div>
+            <ProbabilityNameList
+              showProbs
+              showDelete={!viewMode}
+              disabled={viewMode}
+              list={roomCategory.tileSets}
+              onClick={handleTileSetClick}
+              onDeleteClick={(index) => handleDeleteClick(nameOf<RoomCategory>("tileSets"), index)}
+              onProbUpdate={(index, newValue) => handleListProbUpdate(nameOf<RoomCategory>("tileSets"), index, newValue)}
+            />
             <div className={classes.listLabel}>
                 <FormLabel>Monsters</FormLabel>
                 <IconButton disabled={viewMode} onClick={handleAddMonsterClick} aria-label="add" color="primary">
@@ -393,6 +431,21 @@ export default function RoomCategoryEditor(props: Props) {
               trap={trapToEdit}
               onSave={(i: Trap) => handleTrapSave(i)}
               onCancelClick={()=>setTrapEditorOpen(false)}
+          />
+      }
+      <SelectTileSet
+        open={selectTileSetDialogOpen}
+        exclude={roomCategory.tileSets.objects}
+        onSelect={(i) => handleSelect(nameOf<RoomCategory>("tileSets"), i)}
+        onCancelClick={() => setSelectTileSetDialogOpen(false)}
+      />
+      {tileSetEditorOpen &&
+          <TileSetEditor
+              viewOnly
+              open={tileSetEditorOpen}
+              tileSet={tileSetToEdit}
+              onSave={(i: TileSet) => handleTileSetSave(i)}
+              onCancelClick={()=>setTileSetEditorOpen(false)}
           />
       }
     </div>

@@ -32,5 +32,6 @@ export class RegionCategory {
 		this.monsters = new Probabilities<Monster>(null);
 		this.items = new Probabilities<Item>(null);
 		this.traps = new Probabilities<Trap>(null);
+		this.tileSets = new Probabilities<TileSet>(null);
 	}
 }
