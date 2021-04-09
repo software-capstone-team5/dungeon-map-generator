@@ -82,9 +82,9 @@ function App() {
         justify="space-evenly"
         alignItems="center"
         style={{ minHeight: '100vh' }}
-      > 
-        <ConfigurationEditor/>
-        
+      >
+        <ConfigurationEditor />
+
         <p></p>
         <p></p>
       </Grid>

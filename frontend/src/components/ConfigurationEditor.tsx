@@ -6,10 +6,11 @@ import MuiAccordion from '@material-ui/core/Accordion';
 import MuiAccordionSummary from '@material-ui/core/AccordionSummary';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 
-import {nameOf, valueOf} from '../utils/util';
-import {Configuration} from '../models/Configuration';
+import { nameOf, valueOf } from '../utils/util';
+import { Configuration } from '../models/Configuration';
 import MapLevelConfiguration from './MapLevelConfiguration';
 import RegionLevelConfiguration from './RegionLevelConfiguration';
+import { DB } from '../DB';
 
 import cloneDeep from 'lodash/cloneDeep';
 import { RoomCategory } from '../models/RoomCategory';
@@ -18,34 +19,34 @@ import { Monster } from '../models/Monster';
 
 const AccordionSummary = withStyles({
     root: {
-      backgroundColor: 'rgba(0, 0, 0, .03)',
-      borderBottom: '1px solid rgba(0, 0, 0, .125)',
-      marginBottom: -1,
-      minHeight: 56,
-      '&$expanded': {
+        backgroundColor: 'rgba(0, 0, 0, .03)',
+        borderBottom: '1px solid rgba(0, 0, 0, .125)',
+        marginBottom: -1,
         minHeight: 56,
-      },
+        '&$expanded': {
+            minHeight: 56,
+        },
     },
     content: {
-      '&$expanded': {
-        margin: '12px 0',
-      },
+        '&$expanded': {
+            margin: '12px 0',
+        },
     },
     expanded: {},
-  })(MuiAccordionSummary);
+})(MuiAccordionSummary);
 
 const Accordion = withStyles({
-root: {
-    border: '1px solid rgba(0, 0, 0, .125)',
-    boxShadow: 'none',
-    '&:before': {
-    display: 'none',
+    root: {
+        border: '1px solid rgba(0, 0, 0, .125)',
+        boxShadow: 'none',
+        '&:before': {
+            display: 'none',
+        },
+        '&$expanded': {
+            margin: 'auto',
+        },
     },
-    '&$expanded': {
-    margin: 'auto',
-    },
-},
-expanded: {},
+    expanded: {},
 })(MuiAccordion);
 
 
@@ -62,7 +63,7 @@ class ConfigurationEditor extends React.Component<Props, State> {
         super(props);
 
         if (props.configuration !== undefined) {
-            this.state = {configuration: cloneDeep(props.configuration)};
+            this.state = { configuration: cloneDeep(props.configuration) };
         } else {
             // This is just temporary test data
             var config = new Configuration();
@@ -88,7 +89,7 @@ class ConfigurationEditor extends React.Component<Props, State> {
             rrc2.name = "Treasure Room";
             config.roomCategories.add(rrc1, 0.5);
             config.roomCategories.add(rrc2, 0.5);
-            this.state = {configuration: config};
+            this.state = { configuration: config };
             // this.state = {configuration: new Configuration()};
         }
 
@@ -97,8 +98,16 @@ class ConfigurationEditor extends React.Component<Props, State> {
         this.handleChange = this.handleChange.bind(this);
     }
 
-    handleSave() {
-        // TODO Take this.state.configuration and send it to the backend
+    // REQ-18: Save.MapConfiguration - The system allows logged -in users to save the entire map configuration(both Map Level and Region Level) as a Preset.
+    async handleSave() {
+        // TODO Display error/success message?
+        var result = await DB.saveConfig(this.state.configuration);
+        if (result.valid) {
+            var id = result.response;
+            this.state.configuration.id = id;
+        } else {
+            window.alert(result.response)
+        }
     }
 
     handleChange(name: keyof Configuration, value: valueOf<Configuration>) {
@@ -118,7 +127,7 @@ class ConfigurationEditor extends React.Component<Props, State> {
                             shrink: true,
                         }}
                         value={this.state.configuration.name}
-                        onChange={(e: React.ChangeEvent<HTMLInputElement>)=>this.handleChange(nameOf<Configuration>("name"), e.target.value)}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => this.handleChange(nameOf<Configuration>("name"), e.target.value)}
                     />
                     <Accordion defaultExpanded>
                         <AccordionSummary
@@ -129,7 +138,7 @@ class ConfigurationEditor extends React.Component<Props, State> {
                             <Typography>Map Level Options</Typography>
                         </AccordionSummary>
                         <AccordionDetails>
-                            <MapLevelConfiguration configuration={this.state.configuration} onChange={this.handleChange}/>
+                            <MapLevelConfiguration configuration={this.state.configuration} onChange={this.handleChange} />
                         </AccordionDetails>
                     </Accordion>
                     <Accordion defaultExpanded>
@@ -141,7 +150,7 @@ class ConfigurationEditor extends React.Component<Props, State> {
                             <Typography>Region Level Options</Typography>
                         </AccordionSummary>
                         <AccordionDetails>
-                            <RegionLevelConfiguration configuration={this.state.configuration} onChange={this.handleChange}/>
+                            <RegionLevelConfiguration configuration={this.state.configuration} onChange={this.handleChange} />
                         </AccordionDetails>
                     </Accordion>
                 </Paper>
