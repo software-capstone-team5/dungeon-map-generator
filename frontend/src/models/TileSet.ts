@@ -1,5 +1,3 @@
-import { TileType } from "../constants/TileType";
-
 export class TileSet {
 	name: string;
 	tileSize: number = 48;

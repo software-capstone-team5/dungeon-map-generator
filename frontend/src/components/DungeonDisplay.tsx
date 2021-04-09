@@ -35,7 +35,6 @@ class DungeonDisplay extends Component {
 	constructor(props: Props) {
 		super(props)
 		this.props = props
-		// this.containerRef = React.createRef();
 		this.backgroundRef = React.createRef();
 		this.mainRef = React.createRef();
 		this.hiddenRef = React.createRef();
@@ -95,8 +94,8 @@ class DungeonDisplay extends Component {
 		
 		var width = dungeonMap.getWidth();
 		var height = dungeonMap.getHeight();
-		var canvasWidth = width * dungeonMap.tileSize;
-		var canvasHeight = height * dungeonMap.tileSize;
+		var canvasWidth = (width + 2) * dungeonMap.tileSize;
+		var canvasHeight = (height + 2) * dungeonMap.tileSize;
 		canvases.forEach((canvas) => {
 			canvas.width = canvasWidth;
 			canvas.height = canvasHeight;
@@ -106,18 +105,43 @@ class DungeonDisplay extends Component {
 		contexts[0].fillStyle = '#E0D3AF';
 		contexts[0].fillRect(0, 0, canvasWidth, canvasHeight);
 
-		for (var x = 0; x < width; x++){
-			for (var y = 0; y < height; y++){
+		// dungeonMap.corridors.forEach((corridor) => {
+		// 	corridor.locations.forEach((location) => {
+				// var startx = dungeonMap.tileSize * (location.x + 1);
+				// var starty = canvasHeight - dungeonMap.tileSize * (location.y + 2);
+		// 		if (corridor){
+		// 			if (location.y == 0 || location.y == height){
+		// 				var i = 0;
+		// 			}
+		// 			contexts[1].drawImage(corridor.tileSet.get(TileType.floor), startx, starty);
+		// 		}
+		// 		// this.drawWalls(corridor, dungeonMap, location.x, location.y, width, height, contexts[1], startx, starty);
+		// 	})
+		// });
+
+		// dungeonMap.rooms.forEach((room) => {
+		// 	room.locations.forEach((location) => {
+				// var startx = dungeonMap.tileSize * (location.x + 1);
+				// var starty = canvasHeight - dungeonMap.tileSize * (location.y + 2);
+		// 		if (room){
+		// 			if (location.y == 0 || location.y == height){
+		// 				var i = 0;
+		// 			}
+		// 			contexts[1].drawImage(room.tileSet.get(TileType.floor), startx, starty);
+		// 		}
+		// 		// this.drawWalls(room, dungeonMap, location.x, location.y, width, height, contexts[1], startx, starty);
+		// 	})
+		// });
+
+		for (var x = - 1; x < width + 1; x++){
+			for (var y = -1; y < height + 1; y++){
 				var region = dungeonMap.getRegionInstance(x, y);
-				var startx = dungeonMap.tileSize * x;
-				var starty =  canvasHeight - dungeonMap.tileSize * (y + 1);
-				if (region){
-					if (y == 0 || y == height){
-						var i = 0;
-					}
+				var startx = dungeonMap.tileSize * (x + 1);
+				var starty = canvasHeight - dungeonMap.tileSize * (y + 2);
+				if (region && !dungeonMap.isOutOfBounds(x, y)){
 					contexts[1].drawImage(region.tileSet.get(TileType.floor), startx, starty);
 				}
-				this.drawWalls(region, dungeonMap, x, y, width, height, contexts[1], startx, starty);
+				this.drawWalls(region, dungeonMap, x, y, contexts[1], startx, starty);
 			}
 		}
 
@@ -129,7 +153,7 @@ class DungeonDisplay extends Component {
 		});
 	}
 
-	private drawWalls(region: RegionInstance | null, dungeonMap: DungeonMap, x: number, y: number, width: number, height: number, context: any, startx: number, starty: number){
+	private drawWalls(region: RegionInstance | null, dungeonMap: DungeonMap, x: number, y: number, context: any, startx: number, starty: number){
 		var adjacent = [[new Coordinates(x + 1, y), TileType.wallRight],
 			[new Coordinates(x - 1, y), TileType.wallLeft],
 			[new Coordinates(x, y + 1), TileType.wallUp],
@@ -138,10 +162,12 @@ class DungeonDisplay extends Component {
 			var nextPoint = adjacent[i][0] as Coordinates;
 			var tileType = adjacent[i][1] as TileType;
 			var nextRegion = dungeonMap.getRegionInstance(nextPoint.x, nextPoint.y);
-			if (region && (nextRegion !== region || dungeonMap.isOutOfBounds(nextPoint.x, nextPoint.y))){
+			var currentIsOut = dungeonMap.isOutOfBounds(x, y);
+			var nextIsOut = dungeonMap.isOutOfBounds(nextPoint.x, nextPoint.y);
+			if (region && ((currentIsOut && !nextIsOut && nextRegion) || (!currentIsOut && (nextRegion !== region || nextIsOut)))){
 				context.drawImage(region.tileSet.get(tileType), startx, starty);
 			}
-			else if (nextRegion && nextRegion !== region && !dungeonMap.isOutOfBounds(nextPoint.x, nextPoint.y)){
+			else if (nextRegion && !nextIsOut && nextRegion !== region){
 				context.drawImage(nextRegion.tileSet.get(tileType), startx, starty);
 			}
 		}
@@ -149,35 +175,24 @@ class DungeonDisplay extends Component {
 
 	private drawEntrances(region: RegionInstance, dungeonMap: DungeonMap, context: any, hiddenContext: any, canvasHeight: number){
 		region.entrances.forEach((entrance) => {
-			var startx = dungeonMap.tileSize * entrance.location.x;
-			var starty =  canvasHeight - dungeonMap.tileSize * (entrance.location.y + 1);
+			if (!dungeonMap.isOutOfBounds(entrance.location.x, entrance.location.y) && dungeonMap.getRegionInstance(entrance.location.x, entrance.location.y) === region){
+				var contextToUse = entrance.type === EntranceType.secret ? hiddenContext : context;
+				var startx = dungeonMap.tileSize * (entrance.location.x + 1);
+				var starty = canvasHeight - dungeonMap.tileSize * (entrance.location.y + 2);
+	
+				var tile = this.getTileForEntrance(entrance.direction, entrance.type, region);
 
-			var tileTypes;
-			switch(entrance.direction){
-				case (Direction.left):
-					tileTypes = [TileType.regularDoorLeft, TileType.lockedDoorLeft, TileType.secretDoorLeft];
-					break;
-				case (Direction.right):
-					tileTypes = [TileType.regularDoorRight, TileType.lockedDoorRight, TileType.secretDoorRight];
-					break;
-				case (Direction.up):
-					tileTypes = [TileType.regularDoorUp, TileType.lockedDoorUp, TileType.secretDoorUp];
-					break;
-				case (Direction.down):
-					tileTypes = [TileType.regularDoorDown, TileType.lockedDoorDown, TileType.secretDoorDown];
-			}
-
-			switch(entrance.type){
-				case (EntranceType.regular):
-					context.drawImage(region.tileSet.get(tileTypes[0]), startx, starty);
-					break;
-				case (EntranceType.locked):
-					context.drawImage(region.tileSet.get(tileTypes[1]), startx, starty);
-					break
-				case (EntranceType.secret):
-					hiddenContext.drawImage(region.tileSet.get(tileTypes[2]), startx, starty);
-					
-			}
+				contextToUse.drawImage(tile, startx, starty);
+				
+				// add in the other side of external doors
+				var adjacentLocation = entrance.location.getNextLocation(entrance.direction);
+				if (adjacentLocation && (dungeonMap.isOutOfBounds(adjacentLocation.x, adjacentLocation.y) || !dungeonMap.getRegionInstance(adjacentLocation.x, adjacentLocation.y))){
+					startx = dungeonMap.tileSize * (adjacentLocation.x + 1);
+					starty = canvasHeight - dungeonMap.tileSize * (adjacentLocation.y + 2);
+					tile = this.getTileForEntrance(Direction.getOppositeDirection(entrance.direction), entrance.type, region);
+					contextToUse.drawImage(tile, startx, starty);
+				}
+			}			
 		})
 	}
 
@@ -188,6 +203,35 @@ class DungeonDisplay extends Component {
 			context.fillStyle = "rgba(255, 255, 255, 0)";
 			context.fillRect(0, 0, canvases[0].width, canvases[0].height);
 		})
+	}
+	
+	private getTileForEntrance(direction: Direction, type: EntranceType, region: RegionInstance): any{
+		var tileTypes;
+		switch(direction){
+			case (Direction.left):
+				tileTypes = [TileType.regularDoorLeft, TileType.lockedDoorLeft, TileType.secretDoorLeft];
+				break;
+			case (Direction.right):
+				tileTypes = [TileType.regularDoorRight, TileType.lockedDoorRight, TileType.secretDoorRight];
+				break;
+			case (Direction.up):
+				tileTypes = [TileType.regularDoorUp, TileType.lockedDoorUp, TileType.secretDoorUp];
+				break;
+			case (Direction.down):
+				tileTypes = [TileType.regularDoorDown, TileType.lockedDoorDown, TileType.secretDoorDown];
+		}
+		var tile;
+		switch(type){
+			case (EntranceType.regular):
+				tile = region.tileSet.get(tileTypes[0]);
+				break;
+			case (EntranceType.locked):
+				tile = region.tileSet.get(tileTypes[1]);
+				break
+			case (EntranceType.secret):
+				tile = region.tileSet.get(tileTypes[2]);
+		}
+		return tile;
 	}
 
 	private getCanvases(){

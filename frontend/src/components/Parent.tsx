@@ -18,6 +18,8 @@ import { CorridorWidth } from '../constants/CorridorWidth';
 import { RoomCategory } from '../models/RoomCategory';
 import { CorridorCategory } from '../models/CorridorCategory';
 import { TileType } from '../constants/TileType';
+import { CorridorLength } from '../constants/CorridorLength';
+import { CorridorComplexity } from '../constants/CorridorComplexity';
 
 type Props = {
     configuration?: Configuration;
@@ -38,6 +40,9 @@ class Parent extends React.Component<Props, State> {
             this.state = {configuration: props.configuration, map: null};
         } else {
             var defaultConfig = new Configuration();
+            defaultConfig.mapSize = Size.medium;
+            defaultConfig.corridorComplexity = CorridorComplexity.low;
+            defaultConfig.corridorLength = CorridorLength.long;
             var defaultCategory = {
                 tileSets: this.getDefaultTileSets(),
                 monsters: Probabilities.buildUniform([new Monster()]),
@@ -54,7 +59,7 @@ class Parent extends React.Component<Props, State> {
 
             defaultConfig.defaultCorridorCategory = new CorridorCategory();
             Object.assign(defaultConfig.defaultCorridorCategory, defaultCategory);
-            defaultConfig.defaultCorridorCategory.widths = Probabilities.buildUniform([CorridorWidth.thin, CorridorWidth.medium, CorridorWidth.wide]);
+            defaultConfig.defaultCorridorCategory.widths = Probabilities.buildUniform([CorridorWidth.thin]);
             
             // TODO: Retrieve actual defaults to pass to state instead of generating them above
             this.state = {configuration: defaultConfig, map: null};

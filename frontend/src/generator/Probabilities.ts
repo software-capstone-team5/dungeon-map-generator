@@ -30,6 +30,21 @@ export class Probabilities<T> {
 		return probabilities;
 	}
 
+	toMap(): Map<T | null, number>{
+		var map = new Map<T | null, number>();
+		
+		this.probSum.forEach((sum: number, index: number) => {
+			var prob = sum;
+			if (index > 0) {
+				prob -= this.probSum[index - 1];
+			}
+
+			map.set(this.objects[index], prob);
+		})
+
+		return map;
+	}
+
 	add(object: T | null, prob: number) {
 		this.objects.push(object);
 		this.probSum.push(prob);
@@ -98,12 +113,21 @@ export class Probabilities<T> {
 	}
 
 	private normalize(){
-		//TODO: Check that this actually works
-		if (this.probSum[this.probSum.length - 1] - 1 > this.epsilon){
-			var factor = 1/this.probSum[this.probSum.length - 1];
-			this.probSum.forEach((prob: number) => {
-				prob *= factor;
-			})
+		var length = this.probSum ? this.probSum.length : 0;
+		// TODO: Check if this is right
+		if (length === 1){
+			this.probSum[length - 1] = 1;
+		}
+		else if (length > 1 && this.probSum[length - 1] - 1 > this.epsilon){
+			var factor = 1/this.probSum[length - 1];
+			var probs = [this.probSum[0]];
+			for (var i = 1; i < length; i++) {
+				probs.push((this.probSum[i] - this.probSum[i - 1]));
+			}
+			this.probSum[0] = probs[0] * factor;
+			for (var i = 1; i < length; i++) {
+				this.probSum[i] = (probs[i] * factor) + this.probSum[i - 1];
+			}
 		}
 	}
 }

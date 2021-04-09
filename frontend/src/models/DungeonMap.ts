@@ -117,20 +117,17 @@ export class DungeonMap {
 		}
 	}
 
-	getRegionBorder(region: RegionInstance): Coordinates[] {
+	getRegionBorder(region: RegionInstance, onlyAvailable: boolean = false): Coordinates[] {
 		var border: Coordinates[] = [];
 		region.locations.forEach((location) => {
 			var locationKey = location.toString();
 			if (this.map.has(locationKey) && this.map.get(locationKey)![0] === region){
-				var adjacent = [new Coordinates(location.x + 1, location.y),
-								new Coordinates(location.x - 1, location.y),
-								new Coordinates(location.x, location.y + 1),
-								new Coordinates(location.x, location.y - 1)];
+				var adjacent = location.getAdjacent();
 				for (var i = 0; i < adjacent.length; i++){
 					var point = adjacent[i];
 					var pointKey = point.toString();
-					if (!this.map.has(pointKey) || this.map.get(pointKey)![0] !== region){
-						border.push(location);
+					if (!this.isOutOfBounds(point.x, point.y) && (!this.map.has(pointKey) || (!onlyAvailable && this.map.get(pointKey)![0] !== region))){
+						border.push(point);
 						break;
 					}
 				}
@@ -139,20 +136,19 @@ export class DungeonMap {
 		return border;
 	}
 
-	getMapBorder(): Coordinates[] {
+	getMapBorder(onlyRooms: boolean = false): Coordinates[] {
 		var border: Coordinates[] = [];
 		this.map.forEach((value, key) => {
-			var location: Coordinates = Coordinates.fromString(key);
-			var adjacent = [new Coordinates(location.x + 1, location.y),
-				new Coordinates(location.x - 1, location.y),
-				new Coordinates(location.x, location.y + 1),
-				new Coordinates(location.x, location.y - 1)];
-			for (var i = 0; i < adjacent.length; i++){
-				var point = adjacent[i];
-				var pointKey = point.toString();
-				if (!this.map.has(pointKey)){
-					border.push(location);
-					break;
+			if (value && value.length > 0 && (!onlyRooms || !value[0].isCorridor)){
+				var location: Coordinates = Coordinates.fromString(key);
+				var adjacent = location.getAdjacent();
+				for (var i = 0; i < adjacent.length; i++){
+					var point = adjacent[i];
+					var pointKey = point.toString();
+					if (!this.isOutOfBounds(point.x, point.y) && !this.map.has(pointKey)){
+						border.push(point);
+						break;
+					}
 				}
 			}
 		})

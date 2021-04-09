@@ -38,7 +38,7 @@ export class Configuration {
 			case Size.medium:
 				return 10;
 			case Size.large:
-				return 15;
+				return 40;
 		}
 	}
 
@@ -50,7 +50,7 @@ export class Configuration {
 			case Size.medium:
 				return 5;
 			case Size.large:
-				return 8;
+				return 10;
 		}
 	}
 
