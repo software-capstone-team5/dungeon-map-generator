@@ -8,7 +8,7 @@ import TextField from '@material-ui/core/TextField';
 import Paper from '@material-ui/core/Paper';
 import MuiAccordion from '@material-ui/core/Accordion';
 import MuiAccordionSummary from '@material-ui/core/AccordionSummary';
-import { Tooltip } from '@material-ui/core';
+import { Grid, Tooltip } from '@material-ui/core';
 import HelpOutlineIcon from '@material-ui/icons/HelpOutline';
 
 import { nameOf, valueOf } from '../utils/util';
@@ -19,9 +19,6 @@ import { DB } from '../DB';
 import Authenticator from '../Authenticator';
 
 import cloneDeep from 'lodash/cloneDeep';
-import { RoomCategory } from '../models/RoomCategory';
-import { CorridorCategory } from '../models/CorridorCategory';
-import { Monster } from '../models/Monster';
 
 const styles = (theme: Theme) => ({
     root: {
@@ -63,6 +60,9 @@ const useStyles = makeStyles((theme) =>  ({
     },
     customWidth: {
       maxWidth: 200,
+    },
+    button: {
+        padding: theme.spacing(2),
     }
 }));
 
@@ -82,6 +82,13 @@ function ConfigurationEditor(props: Props) {
         }
     });
 
+    useEffect(() => {
+        if (props.configuration !== undefined) {
+            setConfiguration(cloneDeep(props.configuration));
+        } else {
+            setConfiguration(new Configuration());
+        }
+    }, [props.configuration])
 
     const handleChange = (name: keyof Configuration, value: valueOf<Configuration>) => {
         setConfiguration(Object.assign({}, configuration, {[name]: value}))
@@ -90,8 +97,11 @@ function ConfigurationEditor(props: Props) {
     // REQ-18: Save.MapConfiguration - The system allows logged -in users to save the entire map configuration(both Map Level and Region Level) as a Preset.
     const handleSave = async () => {
         // TODO Display error/success message?
-        // configuration.roomCategories.normalize();
-        // configuration.corridorCategories.normalize();
+        if (!configuration.name) {
+
+        }
+        configuration.roomCategories.normalize();
+        configuration.corridorCategories.normalize();
 
         if (Authenticator.isLoggedIn()) {
             var result = await DB.saveConfig(configuration);
@@ -112,18 +122,30 @@ function ConfigurationEditor(props: Props) {
 
     return (
         <div>
-            <Typography variant="h5" gutterBottom>Configuration</Typography>
             <Paper>
-                <TextField
-                    variant="outlined"
-                    margin="dense"
-                    label="Name"
-                    InputLabelProps={{
-                        shrink: true,
-                    }}
-                    value={configuration.name}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>)=>handleChange(nameOf<Configuration>("name"), e.target.value)}
-                />
+                {configuration.name &&
+                    <Accordion expanded={true}>
+                    <AccordionSummary
+                        aria-controls="panel1a-content"
+                        id="panel1a-header"
+                    >
+                        <Typography>Name</Typography>
+                    </AccordionSummary>
+                    <AccordionDetails>
+                        <TextField
+                            variant="outlined"
+                            margin="dense"
+                            fullWidth
+                            InputLabelProps={{
+                                shrink: true,
+                            }}
+                            value={configuration.name}
+                            onChange={(e: React.ChangeEvent<HTMLInputElement>)=>handleChange(nameOf<Configuration>("name"), e.target.value)}
+                        />
+                    </AccordionDetails>
+                    </Accordion>
+                }
+                
                 <Accordion expanded={true}>
                     <AccordionSummary
                         aria-controls="panel1a-content"
@@ -150,8 +172,15 @@ function ConfigurationEditor(props: Props) {
                     </AccordionDetails>
                 </Accordion>
             </Paper>
-            <Button onClick={handleGenerate} variant="contained">Generate</Button>
-            <Button onClick={handleSave} variant="contained">Save</Button>
+            <Grid container direction="row" justify="center">
+                <div className={classes.button}>
+                <Button onClick={handleGenerate} variant="contained" color="secondary">Generate</Button>
+                </div>
+                <div className={classes.button}>
+                <Button onClick={handleSave} variant="contained" color="primary" disabled={!Authenticator.isLoggedIn()}>Save</Button>
+                </div>
+            </Grid>
+            
         </div>
     );
 }

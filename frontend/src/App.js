@@ -1,10 +1,13 @@
 import './App.css';
 import { useState, useEffect } from 'react';
-import { Grid, AppBar, Toolbar, Typography, Button, IconButton } from '@material-ui/core';
+import { Grid, AppBar, Toolbar, Typography, Button } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
 import MenuIcon from '@material-ui/icons/Menu';
+import IconButton from '@material-ui/core/IconButton';
+import ListIcon from '@material-ui/icons/List';
 
 import ConfigurationEditor from "./components/ConfigurationEditor";
+import SelectConfiguration from "./components/SelectConfiguration";
 
 import { Authenticator } from './Authenticator';
 
@@ -30,6 +33,8 @@ const useStyles = makeStyles((theme) => ({
 function App() {
   const classes = useStyles();
   const [loggedIn, setLoggedIn] = useState(null);
+  const [selectConfigDialogOpen, setSelectConfigDialogOpen] = useState(false);
+  const [configToEdit, setConfigToEdit] = useState();
 
   useEffect(() => {
     Authenticator.onAuthListener((result) => {
@@ -69,6 +74,20 @@ function App() {
     }
   }
 
+  const handleLoadConfigClick = () => {
+    setSelectConfigDialogOpen(true);
+  }
+
+  const handleNewConfigClick = () => {
+    setConfigToEdit();
+  }
+
+  const handleConfigSelect = (config) => {
+    // Pass it to the editor?
+    setConfigToEdit(config);
+    setSelectConfigDialogOpen(false);
+  }
+
   return (
     <div className="App">
       {loggedIn !== null && // TODO: do something more elegant, like a loading bar
@@ -101,7 +120,24 @@ function App() {
               alignItems="center"
               className={classes.content}
             >
-              <ConfigurationEditor/>
+              <div>
+                <Typography variant="h5" gutterBottom>Configuration</Typography>
+                <div>
+                  <IconButton onClick={handleLoadConfigClick} color="primary">
+                    <ListIcon />
+                  </IconButton>
+                  <Button onClick={handleNewConfigClick} >New</Button>
+                </div>
+                <ConfigurationEditor configuration={configToEdit}/>
+                {selectConfigDialogOpen &&
+                  <SelectConfiguration
+                      open={selectConfigDialogOpen}
+                      onSelect={handleConfigSelect}
+                      onCancelClick={() => setSelectConfigDialogOpen(false)}
+                  />
+                }
+              </div>
+              
 
               <p></p>
               <p></p>

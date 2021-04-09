@@ -1,5 +1,5 @@
 import { memo, useState } from 'react';
-import {makeStyles} from '@material-ui/core';
+import {FormLabel, makeStyles} from '@material-ui/core';
 import IconButton from '@material-ui/core/IconButton';
 import Typography from '@material-ui/core/Typography';
 import AddBoxIcon from '@material-ui/icons/AddBox';
@@ -91,7 +91,7 @@ const RegionLevelConfiguration = memo(
         return (
             <div style={{width: '100%'}}>
                 <div className={classes.listLabel}>
-                    <Typography >Rooms</Typography>
+                    <FormLabel>Rooms</FormLabel>
                     <IconButton onClick={handleAddRoomClick} aria-label="add" color="primary">
                         <AddBoxIcon/>
                     </IconButton>
@@ -106,7 +106,7 @@ const RegionLevelConfiguration = memo(
                     onProbUpdate={(newList) => props.onChange(nameOf<Configuration>("roomCategories"), newList)}
                 />
                 <div className={classes.listLabel}>
-                    <Typography>Corridors</Typography>
+                    <FormLabel>Corridors</FormLabel>
                     <IconButton onClick={handleAddCorridorClick} aria-label="add" color="primary">
                         <AddBoxIcon />
                     </IconButton>

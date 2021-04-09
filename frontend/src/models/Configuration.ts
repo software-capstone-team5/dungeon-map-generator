@@ -4,6 +4,7 @@ import { Size } from "../constants/Size";
 import { Probabilities } from "../generator/Probabilities";
 import { CorridorCategory } from "./CorridorCategory";
 import { RoomCategory } from "./RoomCategory";
+import { Type } from 'class-transformer';
 
 export class Configuration {
 	static maxDifficulty: number = 20;
@@ -14,7 +15,9 @@ export class Configuration {
 	corridorComplexity: CorridorComplexity = CorridorComplexity.medium;
 	corridorLength: CorridorLength = CorridorLength.medium;
 	difficulty: number = Configuration.maxDifficulty / 2;
+	@Type(() => Probabilities)
 	roomCategories: Probabilities<RoomCategory> = new Probabilities<RoomCategory>(null);
+	@Type(() => Probabilities)
 	corridorCategories: Probabilities<CorridorCategory> = new Probabilities<CorridorCategory>(null);
 	defaultRoomCategory: RoomCategory;
 	defaultCorridorCategory: CorridorCategory;
