@@ -119,18 +119,22 @@ const RegionLevelConfiguration = memo(
                     onDeleteClick={(index) => handleDeleteClick(nameOf<Configuration>("corridorCategories"), index)}
                     onProbUpdate={(newList) => props.onChange(nameOf<Configuration>("corridorCategories"), newList)}
                 />
-                <SelectRoomCategory
-                    open={addRoomDialogOpen}
-                    exclude={props.configuration.roomCategories.objects}
-                    onSelect={(rc) => handleSelect(nameOf<Configuration>("roomCategories"), rc)}
-                    onCancelClick={() => setAddRoomDialogOpen(false)}
-                />
-                <SelectCorridorCategory
-                    open={addCorridorDialogOpen}
-                    exclude={props.configuration.corridorCategories.objects}
-                    onSelect={(cc) => handleSelect(nameOf<Configuration>("corridorCategories"), cc)}
-                    onCancelClick={()=>setAddCorridorDialogOpen(false)}
-                />
+                {addRoomDialogOpen &&
+                    <SelectRoomCategory
+                        open={addRoomDialogOpen}
+                        exclude={props.configuration.roomCategories.objects}
+                        onSelect={(rc) => handleSelect(nameOf<Configuration>("roomCategories"), rc)}
+                        onCancelClick={() => setAddRoomDialogOpen(false)}
+                    />
+                }
+                {addCorridorDialogOpen &&
+                    <SelectCorridorCategory
+                        open={addCorridorDialogOpen}
+                        exclude={props.configuration.corridorCategories.objects}
+                        onSelect={(cc) => handleSelect(nameOf<Configuration>("corridorCategories"), cc)}
+                        onCancelClick={()=>setAddCorridorDialogOpen(false)}
+                    />
+                }
                 {roomEditorOpen &&
                     <RoomCategoryEditor
                         viewOnly

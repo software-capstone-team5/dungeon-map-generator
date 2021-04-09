@@ -41,6 +41,7 @@ import TrapEditor from './TrapEditor';
 import { nameOf, valueOf } from '../utils/util';
 import cloneDeep from 'lodash/cloneDeep';
 import DB from '../DB';
+import Authenticator from '../Authenticator';
 
 
 const useStyles = makeStyles((theme) => ({
@@ -241,6 +242,7 @@ export default function CorridorCategoryEditor(props: Props) {
     if (!corridorCategory.name) {
       return;
     }
+    // TODO: normalize tileset
     corridorCategory.widths.normalize();
     corridorCategory.states.normalize();
     corridorCategory.entranceTypes.normalize();
@@ -248,12 +250,14 @@ export default function CorridorCategoryEditor(props: Props) {
     corridorCategory.traps.normalize();
     corridorCategory.monsters.normalize();
 
-    var result = await DB.saveCorridorCategory(corridorCategory);
-    if (result.valid) {
-      var id = result.response;
-      corridorCategory.id = id;
-    } else {
-      window.alert(result.response);
+    if (Authenticator.isLoggedIn()) {
+      var result = await DB.saveCorridorCategory(corridorCategory);
+      if (result.valid) {
+        var id = result.response;
+        corridorCategory.id = id;
+      } else {
+        window.alert(result.response);
+      }
     }
     props.onSave!(corridorCategory);
   }

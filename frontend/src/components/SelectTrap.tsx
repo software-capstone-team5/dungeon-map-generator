@@ -7,8 +7,9 @@ import DialogTitle from '@material-ui/core/DialogTitle';
 import NameList from './common/NameList';
 import TrapEditor from './TrapEditor';
 import { Trap } from '../models/Trap';
-import { nameOf } from '../utils/util';
-import differenceBy from 'lodash/differenceBy';
+import { compareByID } from '../utils/util';
+import differenceWith from 'lodash/differenceWith';
+import DB from '../DB';
 
 type Props = {
   open: boolean;
@@ -21,19 +22,18 @@ export default function SelectTrap(props: Props) {
   const [traps, setTraps] = useState<Trap[]>([]);
   const [trapEditorOpen, setTrapEditorOpen] = useState(false);
 
-  // useEffect(()=> {
-  //   // TODO: Make an API call to get the trap 
-  //   // TEST DATA
-  //   var m = new Trap();
-  //   m.id = "11";
-  //   m.name = "Dragon";
-  //   var m2 = new Trap();
-  //   m2.id = "10";
-  //   m2.name = "Owlbear";
-  //   var apiList = [m, m2]
-  //   apiList = differenceBy(apiList, props.exclude, nameOf<Trap>("id"));
-  //   setTraps(apiList);
-  // }, [traps, props.exclude]);
+  // useEffect(() => {
+  //   let mounted = true;
+  //   // TODO: add a loading thing
+  //   DB.getAllTraps().then(result =>{
+  //     if (result.valid && mounted) {
+  //       var list = differenceWith(result.response, props.exclude, compareByID) as Trap[]
+  //       setTraps(list)
+  //     }
+  //   })
+  //   return () => {mounted = false};
+  // }, []);
+
 
   const handleSave = (trap: Trap) => {
     setTrapEditorOpen(false);

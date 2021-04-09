@@ -16,6 +16,7 @@ import { Configuration } from '../models/Configuration';
 import MapLevelConfiguration from './MapLevelConfiguration';
 import RegionLevelConfiguration from './RegionLevelConfiguration';
 import { DB } from '../DB';
+import Authenticator from '../Authenticator';
 
 import cloneDeep from 'lodash/cloneDeep';
 import { RoomCategory } from '../models/RoomCategory';
@@ -91,12 +92,15 @@ function ConfigurationEditor(props: Props) {
         // TODO Display error/success message?
         // configuration.roomCategories.normalize();
         // configuration.corridorCategories.normalize();
-        var result = await DB.saveConfig(configuration);
-        if (result.valid) {
-            var id = result.response;
-            configuration.id = id;
-        } else {
-            window.alert(result.response)
+
+        if (Authenticator.isLoggedIn()) {
+            var result = await DB.saveConfig(configuration);
+            if (result.valid) {
+                var id = result.response;
+                configuration.id = id;
+            } else {
+                window.alert(result.response)
+            }
         }
     }
 
