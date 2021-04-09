@@ -47,6 +47,16 @@ export class Authenticator {
         }
     }
 
+    static onAuthListener(func: (result: boolean) => void) {
+        firebase.auth().onAuthStateChanged(function(user) {
+            if (user) {
+                func(true);
+            } else {
+                func(false);
+            }
+        });
+    }
+
     static async getIDToken() {
         return await firebase.auth().currentUser?.getIdToken();
     }

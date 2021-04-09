@@ -1,8 +1,10 @@
 import { CorridorWidth } from "../constants/CorridorWidth";
 import { Probabilities } from "../generator/Probabilities";
 import { RegionCategory } from "./RegionCategory";
+import { Type } from 'class-transformer';
 
 export class CorridorCategory extends RegionCategory {
+	@Type(() => Probabilities)
 	widths: Probabilities<CorridorWidth>;
 
 	constructor() {

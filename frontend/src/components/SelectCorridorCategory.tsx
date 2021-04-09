@@ -7,8 +7,9 @@ import DialogTitle from '@material-ui/core/DialogTitle';
 import NameList from './common/NameList';
 import CorridorCategoryEditor from './CorridorCategoryEditor';
 import { CorridorCategory } from '../models/CorridorCategory';
-import { nameOf } from '../utils/util';
-import differenceBy from 'lodash/differenceBy';
+import { compareByID } from '../utils/util';
+import differenceWith from 'lodash/differenceWith';
+import DB from '../DB';
 
 type Props = {
   open: boolean;
@@ -21,19 +22,17 @@ export default function SelectCorridorCategory(props: Props) {
   const [corridorCategories, setCorridorCategories] = useState<CorridorCategory[]>([]);
   const [corridorEditorOpen, setCorridorEditorOpen] = useState(false);
 
-  useEffect(()=> {
-    // TODO: Make an API call to get the corridor categories
-    // TEST DATA
-    // var rc1 = new CorridorCategory();
-    // rc1.id = "11";
-    // rc1.name = "Dining Hall";
-    // var rc2 = new CorridorCategory();
-    // rc2.id = "10";
-    // rc2.name = "Ugly hall";
-    // var apiList = [rc1, rc2]
-    // apiList = differenceBy(apiList, props.exclude, nameOf<CorridorCategory>("id"));
-    // setCorridorCategories(apiList);
-  });
+  useEffect(() => {
+    let mounted = true;
+    // TODO: add a loading thing
+    DB.getAllCorridorCat().then(result =>{
+      if (result && result.valid && mounted) {
+        var list = differenceWith(result.response, props.exclude, compareByID) as CorridorCategory[]
+        setCorridorCategories(list)
+      }
+    })
+    return () => {mounted = false};
+  }, []);
 
   const handleSave = (cc: CorridorCategory) => {
     setCorridorEditorOpen(false);

@@ -7,8 +7,9 @@ import DialogTitle from '@material-ui/core/DialogTitle';
 import NameList from './common/NameList';
 import RoomCategoryEditor from './RoomCategoryEditor';
 import { RoomCategory } from '../models/RoomCategory';
-import { nameOf } from '../utils/util';
-import differenceBy from 'lodash/differenceBy';
+import { compareByID } from '../utils/util';
+import differenceWith from 'lodash/differenceWith';
+import DB from '../DB';
 
 type Props = {
   open: boolean;
@@ -21,19 +22,17 @@ export default function SelectRoomCategory(props: Props) {
   const [roomCategories, setRoomCategories] = useState<RoomCategory[]>([]);
   const [roomEditorOpen, setRoomEditorOpen] = useState(false);
 
-  useEffect(()=> {
-    // TODO: Make an API call to get the room categories
-    // TEST DATA
-    // var rc1 = new RoomCategory();
-    // rc1.id = "11";
-    // rc1.name = "Dining Hall";
-    // var rc2 = new RoomCategory();
-    // rc2.id = "10";
-    // rc2.name = "Bedroom";
-    // var apiList = [rc1, rc2]
-    // apiList = differenceBy(apiList, props.exclude, nameOf<RoomCategory>("id"));
-    // setRoomCategories(apiList);
-  });
+  useEffect(() => {
+    let mounted = true;
+    // TODO: add a loading thing
+    DB.getAllRoomCat().then(result =>{
+      if (result && result.valid && mounted) {
+        var list = differenceWith(result.response, props.exclude, compareByID) as RoomCategory[]
+        setRoomCategories(list)
+      }
+    })
+    return () => {mounted = false};
+  }, []);
 
   const handleSave = (rc: RoomCategory) => {
     setRoomEditorOpen(false);

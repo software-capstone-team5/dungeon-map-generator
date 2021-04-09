@@ -42,6 +42,7 @@ import TrapEditor from './TrapEditor';
 import { nameOf, valueOf } from '../utils/util';
 import cloneDeep from 'lodash/cloneDeep';
 import DB from '../DB';
+import Authenticator from '../Authenticator';
 
 
 const useStyles = makeStyles((theme) => ({
@@ -251,13 +252,16 @@ export default function RoomCategoryEditor(props: Props) {
     roomCategory.traps.normalize();
     roomCategory.monsters.normalize();
 
-    var result = await DB.saveRoomCategory(roomCategory);
-    if (result.valid) {
-      var id = result.response;
-      roomCategory.id = id;
-    } else {
-      window.alert(result.response);
+    if (Authenticator.isLoggedIn()) {
+      var result = await DB.saveRoomCategory(roomCategory);
+      if (result && result.valid) {
+        var id = result.response;
+        roomCategory.id = id;
+      } else {
+        window.alert(result.response);
+      }
     }
+
     props.onSave!(roomCategory);
   }
 

@@ -8,19 +8,21 @@ import TextField from '@material-ui/core/TextField';
 import Paper from '@material-ui/core/Paper';
 import MuiAccordion from '@material-ui/core/Accordion';
 import MuiAccordionSummary from '@material-ui/core/AccordionSummary';
-import { Tooltip } from '@material-ui/core';
+import Grid from '@material-ui/core/Grid';
+import Snackbar from '@material-ui/core/Snackbar';
+import Tooltip from '@material-ui/core/Tooltip';
 import HelpOutlineIcon from '@material-ui/icons/HelpOutline';
+import MuiAlert, { AlertProps } from '@material-ui/lab/Alert';
 
 import { nameOf, valueOf } from '../utils/util';
 import { Configuration } from '../models/Configuration';
 import MapLevelConfiguration from './MapLevelConfiguration';
 import RegionLevelConfiguration from './RegionLevelConfiguration';
+import NameUpdate from './NameUpdate';
 import { DB } from '../DB';
+import Authenticator from '../Authenticator';
 
 import cloneDeep from 'lodash/cloneDeep';
-import { RoomCategory } from '../models/RoomCategory';
-import { CorridorCategory } from '../models/CorridorCategory';
-import { Monster } from '../models/Monster';
 
 const styles = (theme: Theme) => ({
     root: {
@@ -55,6 +57,10 @@ const Accordion = withStyles({
     expanded: {},
 })(MuiAccordion);
 
+function Alert(props: AlertProps) {
+    return <MuiAlert elevation={6} variant="filled" {...props} />;
+}
+
 const useStyles = makeStyles((theme) =>  ({
     helpIcon: {
       "padding-left": theme.spacing(1),
@@ -62,6 +68,9 @@ const useStyles = makeStyles((theme) =>  ({
     },
     customWidth: {
       maxWidth: 200,
+    },
+    button: {
+        padding: theme.spacing(2),
     }
 }));
 
@@ -73,6 +82,17 @@ type Props = {
 function ConfigurationEditor(props: Props) {
     const classes = useStyles();
 
+    const [successAlert, setSuccessAlert] = useState(false);
+    const [showNameUpdate, setShowNameUpdate] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
+    const [viewMode, setViewMode] = useState(() => {
+        return false;
+        // if (props.configuration.default) {
+        //     return true;
+        // } else {
+        //     return false
+        // }
+    });
     const [configuration, setConfiguration] = useState<Configuration>(() => {
         if (props.configuration !== undefined) {
             return cloneDeep(props.configuration);
@@ -81,23 +101,43 @@ function ConfigurationEditor(props: Props) {
         }
     });
 
+    const disabled = isSaving || viewMode;
+
+    useEffect(() => {
+        if (props.configuration !== undefined) {
+            setConfiguration(cloneDeep(props.configuration));
+        } else {
+            setConfiguration(new Configuration());
+        }
+    }, [props.configuration])
 
     const handleChange = (name: keyof Configuration, value: valueOf<Configuration>) => {
         setConfiguration(Object.assign({}, configuration, {[name]: value}))
     }
 
     // REQ-18: Save.MapConfiguration - The system allows logged -in users to save the entire map configuration(both Map Level and Region Level) as a Preset.
-    const handleSave = async () => {
-        // TODO Display error/success message?
-        // configuration.roomCategories.normalize();
-        // configuration.corridorCategories.normalize();
-        var result = await DB.saveConfig(configuration);
-        if (result.valid) {
-            var id = result.response;
-            configuration.id = id;
-        } else {
-            window.alert(result.response)
+    const handleSave = async (name: string) => {
+        var configToSave = Object.assign({}, configuration, {name: name});
+        configToSave.roomCategories.normalize();
+        configToSave.corridorCategories.normalize();
+
+        if (Authenticator.isLoggedIn()) {
+            setIsSaving(true);
+            var result = await DB.saveConfig(configToSave);
+            if (result && result.valid) {
+                var id = result.response;
+                configToSave.id = id;
+                setConfiguration(configToSave);
+                setSuccessAlert(true);
+            } else {
+                window.alert(result.response)
+            }
+            setIsSaving(false);
         }
+    }
+
+    const handleSaveClick = () => {
+        setShowNameUpdate(true);
     }
 
     const handleGenerate = () => {
@@ -106,20 +146,58 @@ function ConfigurationEditor(props: Props) {
         // TODO: Generate
     }
 
+    const handleAlertClose = (event?: React.SyntheticEvent, reason?: string) => {
+        if (reason === 'clickaway') {
+          return;
+        }
+        setSuccessAlert(false);
+    };
+
+    const handleNameConfirm = (name: string) => {
+        setShowNameUpdate(false);
+        handleSave(name);
+    }
+
     return (
         <div>
-            <Typography variant="h5" gutterBottom>Configuration</Typography>
-            <Paper>
-                <TextField
-                    variant="outlined"
-                    margin="dense"
-                    label="Name"
-                    InputLabelProps={{
-                        shrink: true,
-                    }}
-                    value={configuration.name}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>)=>handleChange(nameOf<Configuration>("name"), e.target.value)}
+            {showNameUpdate &&
+                <NameUpdate
+                    oldName={configuration.name}
+                    open={showNameUpdate}
+                    onNameConfirm={handleNameConfirm}
+                    onCancel={() => setShowNameUpdate(false)}
                 />
+            }
+            <Snackbar open={successAlert} autoHideDuration={6000} onClose={handleAlertClose}>
+                <Alert onClose={handleAlertClose} severity="success">
+                    Configuration saved!
+                </Alert>
+            </Snackbar>
+            <Paper>
+                {configuration.name &&
+                    <Accordion expanded={true}>
+                    <AccordionSummary
+                        aria-controls="panel1a-content"
+                        id="panel1a-header"
+                    >
+                        <Typography>Name</Typography>
+                    </AccordionSummary>
+                    <AccordionDetails>
+                        <TextField
+                            disabled
+                            variant="outlined"
+                            margin="dense"
+                            fullWidth
+                            InputLabelProps={{
+                                shrink: true,
+                            }}
+                            value={configuration.name}
+                            onChange={(e: React.ChangeEvent<HTMLInputElement>)=>handleChange(nameOf<Configuration>("name"), e.target.value)}
+                        />
+                    </AccordionDetails>
+                    </Accordion>
+                }
+                
                 <Accordion expanded={true}>
                     <AccordionSummary
                         aria-controls="panel1a-content"
@@ -146,8 +224,15 @@ function ConfigurationEditor(props: Props) {
                     </AccordionDetails>
                 </Accordion>
             </Paper>
-            <Button onClick={handleGenerate} variant="contained">Generate</Button>
-            <Button onClick={handleSave} variant="contained">Save</Button>
+            <Grid container direction="row" justify="center">
+                <div className={classes.button}>
+                <Button disabled={isSaving} onClick={handleGenerate} variant="contained" color="secondary">Generate</Button>
+                </div>
+                <div className={classes.button}>
+                <Button onClick={handleSaveClick} variant="contained" color="primary" disabled={!Authenticator.isLoggedIn() || disabled}>Save</Button>
+                </div>
+            </Grid>
+            
         </div>
     );
 }

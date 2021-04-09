@@ -41,12 +41,13 @@ const MapLevelConfiguration = React.memo(
             </div>
         );
     },
-    (prevProps, nextProps) =>
-        // Returns true when we want to avoid rerendering
-        prevProps.configuration.difficulty === nextProps.configuration.difficulty &&
-        prevProps.configuration.mapSize === nextProps.configuration.mapSize &&
-        prevProps.configuration.corridorComplexity === nextProps.configuration.corridorComplexity &&
-        prevProps.configuration.corridorLength === nextProps.configuration.corridorLength
+    // TODO : Figure out why this doesn't work?
+    // (prevProps, nextProps) =>
+    //     // Returns true when we want to avoid rerendering
+    //     prevProps.configuration.difficulty === nextProps.configuration.difficulty &&
+    //     prevProps.configuration.mapSize === nextProps.configuration.mapSize &&
+    //     prevProps.configuration.corridorComplexity === nextProps.configuration.corridorComplexity &&
+    //     prevProps.configuration.corridorLength === nextProps.configuration.corridorLength
 );
 
 export default MapLevelConfiguration;

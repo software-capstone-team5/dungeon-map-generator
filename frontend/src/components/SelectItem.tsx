@@ -7,8 +7,9 @@ import DialogTitle from '@material-ui/core/DialogTitle';
 import NameList from './common/NameList';
 import ItemEditor from './ItemEditor';
 import { Item } from '../models/Item';
-import { nameOf } from '../utils/util';
-import differenceBy from 'lodash/differenceBy';
+import { compareByID } from '../utils/util';
+import differenceWith from 'lodash/differenceWith';
+import DB from '../DB';
 
 type Props = {
   open: boolean;
@@ -21,19 +22,17 @@ export default function SelectItem(props: Props) {
   const [Items, setItems] = useState<Item[]>([]);
   const [ItemEditorOpen, setItemEditorOpen] = useState(false);
 
-  // useEffect(()=> {
-  //   // TODO: Make an API call to get the Item 
-  //   // TEST DATA
-  //   var m = new Item();
-  //   m.id = "11";
-  //   m.name = "Dragon";
-  //   var m2 = new Item();
-  //   m2.id = "10";
-  //   m2.name = "Owlbear";
-  //   var apiList = [m, m2]
-  //   apiList = differenceBy(apiList, props.exclude, nameOf<Item>("id"));
-  //   setItems(apiList);
-  // }, [Items, props.exclude]);
+  // useEffect(() => {
+  //   let mounted = true;
+  //   // TODO: add a loading thing
+  //   DB.getAllItems().then(result =>{
+  //     if (result && result.valid && mounted) {
+  //       var list = differenceWith(result.response, props.exclude, compareByID) as Item[]
+  //       setItems(list)
+  //     }
+  //   })
+  //   return () => {mounted = false};
+  // }, []);
 
   const handleSave = (item: Item) => {
     setItemEditorOpen(false);
