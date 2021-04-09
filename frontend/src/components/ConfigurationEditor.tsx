@@ -11,10 +11,11 @@ import MuiAccordionSummary from '@material-ui/core/AccordionSummary';
 import { Tooltip } from '@material-ui/core';
 import HelpOutlineIcon from '@material-ui/icons/HelpOutline';
 
-import {nameOf, valueOf} from '../utils/util';
-import {Configuration} from '../models/Configuration';
+import { nameOf, valueOf } from '../utils/util';
+import { Configuration } from '../models/Configuration';
 import MapLevelConfiguration from './MapLevelConfiguration';
 import RegionLevelConfiguration from './RegionLevelConfiguration';
+import { DB } from '../DB';
 
 import cloneDeep from 'lodash/cloneDeep';
 import { RoomCategory } from '../models/RoomCategory';
@@ -23,13 +24,13 @@ import { Monster } from '../models/Monster';
 
 const styles = (theme: Theme) => ({
     root: {
-      backgroundColor: 'rgba(0, 0, 0, .03)',
-      borderBottom: '1px solid rgba(0, 0, 0, .125)',
-      marginBottom: -1,
-      minHeight: 56,
-      '&$expanded': {
+        backgroundColor: 'rgba(0, 0, 0, .03)',
+        borderBottom: '1px solid rgba(0, 0, 0, .125)',
+        marginBottom: -1,
         minHeight: 56,
-      },
+        '&$expanded': {
+            minHeight: 56,
+        },
     },
     content: {
         '&$expanded': {
@@ -41,17 +42,17 @@ const styles = (theme: Theme) => ({
 const AccordionSummary = withStyles(styles)(MuiAccordionSummary);
 
 const Accordion = withStyles({
-root: {
-    border: '1px solid rgba(0, 0, 0, .125)',
-    boxShadow: 'none',
-    '&:before': {
-    display: 'none',
+    root: {
+        border: '1px solid rgba(0, 0, 0, .125)',
+        boxShadow: 'none',
+        '&:before': {
+            display: 'none',
+        },
+        '&$expanded': {
+            margin: 'auto',
+        },
     },
-    '&$expanded': {
-    margin: 'auto',
-    },
-},
-expanded: {},
+    expanded: {},
 })(MuiAccordion);
 
 const useStyles = makeStyles((theme) =>  ({
@@ -80,14 +81,23 @@ function ConfigurationEditor(props: Props) {
         }
     });
 
-    const handleSave = () => {
-        // configuration.roomCategories.normalize();
-        // configuration.corridorCategories.normalize();
-        // TODO: Take configuration and send it to the backend
-    }
 
     const handleChange = (name: keyof Configuration, value: valueOf<Configuration>) => {
         setConfiguration(Object.assign({}, configuration, {[name]: value}))
+    }
+
+    // REQ-18: Save.MapConfiguration - The system allows logged -in users to save the entire map configuration(both Map Level and Region Level) as a Preset.
+    const handleSave = async () => {
+        // TODO Display error/success message?
+        // configuration.roomCategories.normalize();
+        // configuration.corridorCategories.normalize();
+        var result = await DB.saveConfig(configuration);
+        if (result.valid) {
+            var id = result.response;
+            configuration.id = id;
+        } else {
+            window.alert(result.response)
+        }
     }
 
     const handleGenerate = () => {

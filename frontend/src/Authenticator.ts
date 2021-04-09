@@ -2,6 +2,7 @@ import { default as firebaseKey } from "./certs/firebase_key.json"
 import firebase from "firebase/app";
 import "firebase/auth";
 import "firebase/firestore";
+import { BACKEND_URL } from "./constants/Backend"
 
 export class Authenticator {
     static provider = new firebase.auth.GoogleAuthProvider();
@@ -16,7 +17,7 @@ export class Authenticator {
                 body: JSON.stringify({ idToken: token })
             };
 
-            var response = await fetch(`http://localhost:5000/login`, requestOptions);
+            var response = await fetch(`${BACKEND_URL}/login`, requestOptions);
             var data = await response.json();
             if (!data.valid) {
                 await Authenticator.logoutUser();
@@ -31,7 +32,7 @@ export class Authenticator {
         try {
             await firebase.auth().signOut();
             return true;
-        } catch(err) {
+        } catch (err) {
             console.log(err);
             return false;
         }
@@ -46,6 +47,10 @@ export class Authenticator {
         }
     }
 
+    static async getIDToken() {
+        return await firebase.auth().currentUser?.getIdToken();
+    }
+
     // REQ-1: Request.Registration - The system will allow the user to register a DMG account through a linked Google Account.
     static async registerUser() {
         try {
@@ -57,11 +62,8 @@ export class Authenticator {
                 body: JSON.stringify({ idToken: token })
             };
 
-            var response = await fetch(`http://localhost:5000/register`, requestOptions);
+            var response = await fetch(`${BACKEND_URL}/register`, requestOptions);
             var data = await response.json();
-            if (!data.valid) {
-                await Authenticator.logoutUser();
-            }
             return data
         } catch (error) {
             console.log(error);
