@@ -126,7 +126,7 @@ function App() {
                   <IconButton onClick={handleLoadConfigClick} color="primary">
                     <ListIcon />
                   </IconButton>
-                  <Button onClick={handleNewConfigClick} >New</Button>
+                  <Button onClick={handleNewConfigClick} color="primary" variant="outlined">New</Button>
                 </div>
                 <ConfigurationEditor configuration={configToEdit}/>
                 {selectConfigDialogOpen &&
