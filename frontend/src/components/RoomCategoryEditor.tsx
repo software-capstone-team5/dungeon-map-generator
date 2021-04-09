@@ -254,7 +254,7 @@ export default function RoomCategoryEditor(props: Props) {
 
     if (Authenticator.isLoggedIn()) {
       var result = await DB.saveRoomCategory(roomCategory);
-      if (result.valid) {
+      if (result && result.valid) {
         var id = result.response;
         roomCategory.id = id;
       } else {

@@ -252,7 +252,7 @@ export default function CorridorCategoryEditor(props: Props) {
 
     if (Authenticator.isLoggedIn()) {
       var result = await DB.saveCorridorCategory(corridorCategory);
-      if (result.valid) {
+      if (result && result.valid) {
         var id = result.response;
         corridorCategory.id = id;
       } else {

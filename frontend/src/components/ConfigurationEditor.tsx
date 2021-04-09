@@ -124,7 +124,7 @@ function ConfigurationEditor(props: Props) {
         if (Authenticator.isLoggedIn()) {
             setIsSaving(true);
             var result = await DB.saveConfig(configToSave);
-            if (result.valid) {
+            if (result && result.valid) {
                 var id = result.response;
                 configToSave.id = id;
                 setConfiguration(configToSave);
