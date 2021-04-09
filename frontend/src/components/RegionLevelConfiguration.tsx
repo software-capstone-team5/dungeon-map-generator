@@ -9,7 +9,6 @@ import { CorridorCategory } from '../models/CorridorCategory';
 import { RegionCategory } from '../models/RegionCategory';
 import { RoomCategory } from '../models/RoomCategory';
 import { nameOf, valueOf } from '../utils/util';
-import findIndex from 'lodash/findIndex';
 
 import ProbabilityNameList from "./common/ProbabilityNameList"
 import CorridorCategoryEditor from './CorridorCategoryEditor';
