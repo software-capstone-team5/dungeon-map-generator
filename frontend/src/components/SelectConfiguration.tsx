@@ -24,7 +24,7 @@ export default function SelectConfiguration(props: Props) {
     let mounted = true;
     // TODO: add a loading thing
     DB.getAllConfig().then(result =>{
-      if (result.valid && mounted) {
+      if (result && result.valid && mounted) {
         var list = differenceWith(result.response, props.exclude, compareByID) as Configuration[]
         setConfigurations(list)
       }

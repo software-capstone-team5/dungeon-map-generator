@@ -26,7 +26,7 @@ export default function SelectRoomCategory(props: Props) {
     let mounted = true;
     // TODO: add a loading thing
     DB.getAllRoomCat().then(result =>{
-      if (result.valid && mounted) {
+      if (result && result.valid && mounted) {
         var list = differenceWith(result.response, props.exclude, compareByID) as RoomCategory[]
         setRoomCategories(list)
       }

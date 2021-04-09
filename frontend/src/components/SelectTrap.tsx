@@ -26,7 +26,7 @@ export default function SelectTrap(props: Props) {
   //   let mounted = true;
   //   // TODO: add a loading thing
   //   DB.getAllTraps().then(result =>{
-  //     if (result.valid && mounted) {
+  //     if (result && result.valid && mounted) {
   //       var list = differenceWith(result.response, props.exclude, compareByID) as Trap[]
   //       setTraps(list)
   //     }

@@ -26,7 +26,7 @@ export default function SelectMonster(props: Props) {
   //   let mounted = true;
   //   // TODO: add a loading thing
   //   DB.getAllMonsters().then(result =>{
-  //     if (result.valid && mounted) {
+  //     if (result && result.valid && mounted) {
   //       var list = differenceWith(result.response, props.exclude, compareByID) as Monster[]
   //       setMonsters(list)
   //     }
