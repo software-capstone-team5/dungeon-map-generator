@@ -7,7 +7,7 @@ import DialogContent from '@material-ui/core/DialogContent';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import EditIcon from '@material-ui/icons/Edit';
 
-import { Typography, IconButton, makeStyles, Slider} from '@material-ui/core';
+import { Typography, IconButton, makeStyles, Slider, FormLabel} from '@material-ui/core';
 import { Trap } from '../models/Trap';
 import { nameOf, valueOf } from '../utils/util';
 import cloneDeep from 'lodash/cloneDeep';
@@ -137,9 +137,9 @@ export default function TrapEditor(props: Props) {
               value={trap.description}
               onChange={(e)=>handleChange(nameOf<Trap>("description"), e.target.value)}
             />
-            <Typography id="challenge-slider" gutterBottom>
+            <FormLabel id="challenge-slider">
                 Difficulty Challenge
-            </Typography>
+            </FormLabel>
             <Slider
                 aria-labelledby="challenge-slider"
                 disabled={viewMode}

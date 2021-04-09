@@ -7,7 +7,7 @@ import DialogContent from '@material-ui/core/DialogContent';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import EditIcon from '@material-ui/icons/Edit';
 
-import { Typography, IconButton, makeStyles, Slider} from '@material-ui/core';
+import { Typography, IconButton, makeStyles, Slider, FormLabel} from '@material-ui/core';
 import { Monster } from '../models/Monster';
 import { nameOf, valueOf } from '../utils/util';
 import cloneDeep from 'lodash/cloneDeep';
@@ -126,7 +126,7 @@ export default function MonsterEditor(props: Props) {
             <TextField
               disabled={viewMode}
               variant="outlined"
-              // margin="dense"
+              margin="dense"
               label="Description"
               multiline
               rows={4}
@@ -137,9 +137,9 @@ export default function MonsterEditor(props: Props) {
               value={monster.description}
               onChange={(e)=>handleChange(nameOf<Monster>("description"), e.target.value)}
             />
-            <Typography id="challenge-slider" gutterBottom>
+            <FormLabel id="challenge-slider">
                 Challenge Rating
-            </Typography>
+            </FormLabel>
             <Slider
                 aria-labelledby="challenge-slider"
                 disabled={viewMode}
