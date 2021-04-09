@@ -5,11 +5,14 @@ import { makeStyles } from '@material-ui/core/styles';
 import MenuIcon from '@material-ui/icons/Menu';
 import IconButton from '@material-ui/core/IconButton';
 import ListIcon from '@material-ui/icons/List';
+import Menu from '@material-ui/core/Menu';
+import MenuItem from '@material-ui/core/MenuItem';
 
 import ConfigurationEditor from "./components/ConfigurationEditor";
 import SelectConfiguration from "./components/SelectConfiguration";
 
 import { Authenticator } from './Authenticator';
+import ImportMonsters from './components/ImportMonsters';
 
 const useStyles = makeStyles((theme) => ({
   menuButton: {
@@ -88,16 +91,47 @@ function App() {
     setSelectConfigDialogOpen(false);
   }
 
+  const [menuAnchorEl, setMenuAnchorEl] = useState(null);
+  const [importMonstersOpen, setImportMonstersOpen] = useState(false);
+
+  const handleMenuClick = (event) => {
+    setMenuAnchorEl(event.currentTarget);
+  };
+
+  const handleClose = () => {
+    setMenuAnchorEl(null);
+  };
+
+  const importMonstersClick = () => {
+    setImportMonstersOpen(true);
+    handleClose();
+  }
+
+  
+
   return (
     <div className="App">
       {loggedIn !== null && // TODO: do something more elegant, like a loading bar
+        <div>
+          <Menu
+            id="simple-menu"
+            anchorEl={menuAnchorEl}
+            keepMounted
+            open={Boolean(menuAnchorEl)}
+            onClose={handleClose}
+          >
+            <MenuItem onClick={importMonstersClick}>Import Monsters</MenuItem>
+          </Menu>
+          <ImportMonsters open={importMonstersOpen} onCancelClick={()=>setImportMonstersOpen(false)}></ImportMonsters>
           <Grid container direction="column" className={classes.topContainer}>
             <div>
               <AppBar position="static">
                 <Toolbar>
-                  <IconButton edge="start" className={classes.menuButton} color="inherit" aria-label="menu">
-                    <MenuIcon />
-                  </IconButton>
+                  {loggedIn &&
+                    <IconButton edge="start" onClick={handleMenuClick} className={classes.menuButton} color="inherit" aria-label="menu">
+                      <MenuIcon />
+                    </IconButton>
+                  }
                   <Typography variant="h6" className={classes.title}>
                     Dungeon Map Generator
                   </Typography>
@@ -143,6 +177,7 @@ function App() {
               <p></p>
             </Grid>
           </Grid>
+          </div>
       }
     </div>
   );
