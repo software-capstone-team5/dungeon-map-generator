@@ -17,18 +17,8 @@ export class RegionCategory {
 	traps: Probabilities<Trap>;
 
 	constructor() {
-		this.states = new Probabilities<MonsterState>(null);
-		var len = Object.values(MonsterState).length;
-		Object.values(MonsterState).forEach((x: MonsterState) => {
-			this.states.add(x, 1/len);
-		});
-
-		this.entranceTypes = new Probabilities<EntranceType>(null);
-		len = Object.values(EntranceType).length;
-		Object.values(EntranceType).forEach((x:EntranceType) => {
-			this.entranceTypes.add(x, 1/len);
-		});
-
+		this.states = Probabilities.buildUniform(Object.values(MonsterState));
+		this.entranceTypes = Probabilities.buildUniform(Object.values(EntranceType));
 		this.monsters = new Probabilities<Monster>(null);
 		this.items = new Probabilities<Item>(null);
 		this.traps = new Probabilities<Trap>(null);

@@ -7,7 +7,7 @@ import DialogContent from '@material-ui/core/DialogContent';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import EditIcon from '@material-ui/icons/Edit';
 
-import { Typography, IconButton, makeStyles, Slider} from '@material-ui/core';
+import { Typography, IconButton, makeStyles, Slider, FormLabel} from '@material-ui/core';
 import { Trap } from '../models/Trap';
 import { nameOf, valueOf } from '../utils/util';
 import cloneDeep from 'lodash/cloneDeep';
@@ -34,26 +34,39 @@ type Props = {
   onSave?: (trap: Trap) => void;
 }
 
+type Errors = {
+  name: boolean;
+}
+
 TrapEditor.defaultProps = {
   viewOnly: false
 }
 
 export default function TrapEditor(props: Props) {
   const editMode: boolean = props.trap !== undefined
-  
-  var initialTrap: Trap;
-  if (props.trap !== undefined) {
-    initialTrap = cloneDeep(props.trap);
-  } else {
-    initialTrap = new Trap();
-  }
-
   const classes = useStyles();
-  //TODO: Set to 0 so basic is default, do it when basic is complete
-  const [trap, setTrap] = useState(initialTrap);
+  
   const [viewMode, setViewMode] = useState(props.viewOnly);
-
+  const [errors, setErrors] = useState<Errors>({
+    name: false
+  });
+  const [trap, setTrap] = useState<Trap>(() => {
+    if (props.trap !== undefined) {
+      return cloneDeep(props.trap);
+    } else {
+      return new Trap();
+    }
+  });
+  
   const handleChange = (name: keyof Trap, value: valueOf<Trap>) => {
+    if (name === nameOf<Trap>("name")){
+      if (value) {
+        setErrors({
+          ...errors,
+          name: false
+        })
+      }
+    }
     setTrap(Object.assign({}, trap, { [name]: value }) );
   }
 
@@ -62,8 +75,20 @@ export default function TrapEditor(props: Props) {
   }
 
   const handleSaveClick = () => {
+    if (!trap.name) {
+      return;
+    }
     // TODO: Make call to backend
     props.onSave!(trap);
+  }
+
+  const handleNameBlur = () => {
+    if (!trap.name) {
+      setErrors({
+        ...errors,
+        name: true
+      })
+    }
   }
 
   return (
@@ -82,6 +107,9 @@ export default function TrapEditor(props: Props) {
         </DialogTitle>
         <DialogContent>
           <TextField
+              required
+              error={errors.name}
+              onBlur={handleNameBlur}
               disabled={viewMode}
               variant="outlined"
               autoFocus
@@ -109,9 +137,9 @@ export default function TrapEditor(props: Props) {
               value={trap.description}
               onChange={(e)=>handleChange(nameOf<Trap>("description"), e.target.value)}
             />
-            <Typography id="challenge-slider" gutterBottom>
+            <FormLabel id="challenge-slider">
                 Difficulty Challenge
-            </Typography>
+            </FormLabel>
             <Slider
                 aria-labelledby="challenge-slider"
                 disabled={viewMode}

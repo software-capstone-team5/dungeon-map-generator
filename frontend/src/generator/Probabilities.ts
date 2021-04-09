@@ -3,7 +3,7 @@ export class Probabilities<T> {
 	objects: T[] = [];
 	probSum: number[] = [];
 
-	constructor(chances: Map<T, number> | null){
+	constructor(chances: Map<T, number> | null, normalize = true){
 		if (chances != null){
 			var last = 0;
 			chances.forEach((prob: number, key: T) => {
@@ -11,8 +11,10 @@ export class Probabilities<T> {
 				last += prob;
 				this.probSum.push(last);
 			})
-	
-			this.normalize();
+			
+			if (normalize) {
+				this.normalize();
+			}
 		}
 	}
 
@@ -30,10 +32,14 @@ export class Probabilities<T> {
 		return probabilities;
 	}
 
-	add(object: T, prob: number) {
+	add(object: T) {
 		this.objects.push(object);
-		this.probSum.push(prob);
-		this.normalize();
+		if (this.probSum.length - 1 >= 0) {
+			// This will give it a zero probability, if there are other items in the list
+			this.probSum.push(this.probSum[this.probSum.length-1]);
+		} else {
+			this.probSum.push(1);
+		}
 	}
 
 	remove(index: number) {
@@ -42,15 +48,6 @@ export class Probabilities<T> {
 			this.probSum.splice(index, 1);
 			this.normalize();
 		}
-	}
-
-	update(object: T, newValue: number) {
-		this.objects.forEach((key: T, i: number) => {
-			if (key === object) {
-				this.probSum[i] = newValue;
-				return;
-			}
-		})
 	}
 
 	updateObject(object: T, newObject: T) {
@@ -94,12 +91,27 @@ export class Probabilities<T> {
 		return picks;
 	}
 
-	private normalize(){
-		if (this.probSum[this.probSum.length - 1] - 1 > this.epsilon){
+	normalize(){
+		if (1 - this.probSum[this.probSum.length - 1] > this.epsilon){
 			var factor = 1/this.probSum[this.probSum.length - 1];
-			this.probSum.forEach((prob: number) => {
+			this.probSum.forEach((prob: number, index: number) => {
 				prob *= factor;
+				this.probSum[index] = prob;
 			})
 		}
 	}
+
+	toMap(): Map<T, number>{
+        var map = new Map<T, number>();
+
+        this.probSum.forEach((sum: number, index: number) => {
+            var prob = sum;
+            if (index > 0) {
+                prob -= this.probSum[index - 1];
+            }
+            map.set(this.objects[index], parseFloat(prob.toFixed(4)));
+        })
+
+        return map;
+    }
 }

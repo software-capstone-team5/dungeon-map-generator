@@ -7,7 +7,7 @@ import DialogContent from '@material-ui/core/DialogContent';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import EditIcon from '@material-ui/icons/Edit';
 
-import { Typography, IconButton, makeStyles, Slider} from '@material-ui/core';
+import { Typography, IconButton, makeStyles, Slider, FormLabel} from '@material-ui/core';
 import { Monster } from '../models/Monster';
 import { nameOf, valueOf } from '../utils/util';
 import cloneDeep from 'lodash/cloneDeep';
@@ -34,26 +34,39 @@ type Props = {
   onSave?: (rc: Monster) => void;
 }
 
+type Errors = {
+  name: boolean;
+}
+
 MonsterEditor.defaultProps = {
   viewOnly: false
 }
 
 export default function MonsterEditor(props: Props) {
   const editMode: boolean = props.monster !== undefined
-  
-  var initialMonster: Monster;
-  if (props.monster !== undefined) {
-    initialMonster = cloneDeep(props.monster);
-  } else {
-    initialMonster = new Monster();
-  }
-
   const classes = useStyles();
-  //TODO: Set to 0 so basic is default, do it when basic is complete
-  const [monster, setMonster] = useState(initialMonster);
+  
   const [viewMode, setViewMode] = useState(props.viewOnly);
-
+  const [errors, setErrors] = useState<Errors>({
+    name: false
+  });
+  const [monster, setMonster] = useState<Monster>(() => {
+    if (props.monster !== undefined) {
+      return cloneDeep(props.monster);
+    } else {
+      return new Monster();
+    }
+  });
+ 
   const handleChange = (name: keyof Monster, value: valueOf<Monster>) => {
+    if (name === nameOf<Monster>("name")){
+      if (value) {
+        setErrors({
+          ...errors,
+          name: false
+        })
+      }
+    }
     setMonster(Object.assign({}, monster, { [name]: value }) );
   }
 
@@ -62,8 +75,20 @@ export default function MonsterEditor(props: Props) {
   }
 
   const handleSaveClick = () => {
+    if (!monster.name) {
+      return;
+    }
     // TODO: Make call to backend
     props.onSave!(monster);
+  }
+
+  const handleNameBlur = () => {
+    if (!monster.name) {
+      setErrors({
+        ...errors,
+        name: true
+      })
+    }
   }
 
   return (
@@ -82,6 +107,9 @@ export default function MonsterEditor(props: Props) {
         </DialogTitle>
         <DialogContent>
           <TextField
+              required
+              error={errors.name}
+              onBlur={handleNameBlur}
               disabled={viewMode}
               variant="outlined"
               autoFocus
@@ -98,7 +126,7 @@ export default function MonsterEditor(props: Props) {
             <TextField
               disabled={viewMode}
               variant="outlined"
-              // margin="dense"
+              margin="dense"
               label="Description"
               multiline
               rows={4}
@@ -109,9 +137,9 @@ export default function MonsterEditor(props: Props) {
               value={monster.description}
               onChange={(e)=>handleChange(nameOf<Monster>("description"), e.target.value)}
             />
-            <Typography id="challenge-slider" gutterBottom>
+            <FormLabel id="challenge-slider">
                 Challenge Rating
-            </Typography>
+            </FormLabel>
             <Slider
                 aria-labelledby="challenge-slider"
                 disabled={viewMode}

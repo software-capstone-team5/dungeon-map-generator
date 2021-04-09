@@ -10,16 +10,7 @@ export class RoomCategory extends RegionCategory {
 	constructor() {
 		super()
 
-		this.sizes = new Probabilities<Size>(null);
-		var len = Object.values(Size).length;
-		Object.values(Size).forEach((x: Size) => {
-			this.sizes.add(x, 1/len);
-		});
-
-		this.shapes = new Probabilities<RoomShape>(null);
-		len = Object.values(RoomShape).length;
-		Object.values(RoomShape).forEach((x: RoomShape) => {
-			this.shapes.add(x, 1/len);
-		});
+		this.sizes = Probabilities.buildUniform(Object.values(Size));
+		this.shapes = Probabilities.buildUniform(Object.values(RoomShape));
 	}
 }

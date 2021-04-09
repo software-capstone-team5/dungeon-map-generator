@@ -1,12 +1,22 @@
 import { useState } from 'react';
 
-import { AppBar, Tab, Tabs, Box, Typography, IconButton, makeStyles, FormLabel } from '@material-ui/core';
+import { makeStyles } from '@material-ui/core';
+import AppBar from '@material-ui/core/AppBar';
+import Tab from '@material-ui/core/Tab';
+import Tabs from '@material-ui/core/Tabs';
+import Box from '@material-ui/core/Box';
+import Typography from '@material-ui/core/Typography';
+import IconButton from '@material-ui/core/IconButton';
+import FormLabel from '@material-ui/core/FormLabel';
 import Button from '@material-ui/core/Button';
 import TextField from '@material-ui/core/TextField';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogTitle from '@material-ui/core/DialogTitle';
+import Tooltip from '@material-ui/core/Tooltip';
+
+import HelpOutlineIcon from '@material-ui/icons/HelpOutline';
 import EditIcon from '@material-ui/icons/Edit';
 import AddBoxIcon from '@material-ui/icons/AddBox';
 
@@ -49,6 +59,13 @@ const useStyles = makeStyles((theme) => ({
     alignItems: 'center',
     flexWrap: 'wrap',
   },
+  helpIcon: {
+    "padding-left": theme.spacing(1),
+    "padding-right": theme.spacing(1)
+  },
+  customWidth: {
+    maxWidth: 200,
+  }
 }));
 
 function a11yProps(index: number) {
@@ -86,24 +103,31 @@ type Props = {
   onSave?: (rc: CorridorCategory) => void;
 }
 
+type Errors = {
+  name: boolean;
+}
+
 CorridorCategoryEditor.defaultProps = {
   viewOnly: false
 }
 
 export default function CorridorCategoryEditor(props: Props) {
   const editMode: boolean = props.corridorCategory !== undefined
-
-  var initialCorridorCategory: CorridorCategory;
-  if (props.corridorCategory !== undefined) {
-    initialCorridorCategory = cloneDeep(props.corridorCategory);
-  } else {
-    initialCorridorCategory = new CorridorCategory();
-  }
-
   const classes = useStyles();
+
+  const [corridorCategory, setCorridorCategory] = useState(() => {
+    if (props.corridorCategory !== undefined) {
+      return cloneDeep(props.corridorCategory);
+    } else {
+      return new CorridorCategory();
+    }
+  });
+
+  const [errors, setErrors] = useState<Errors>({
+    name: false
+  });
   //TODO: Set to 0 so basic is default, do it when basic is complete
   const [tab, setTab] = useState(1);
-  const [corridorCategory, setCorridorCategory] = useState(initialCorridorCategory);
   const [viewMode, setViewMode] = useState(props.viewOnly);
 
   const [monsterToEdit, setMonsterToEdit] = useState<Monster>()
@@ -123,32 +147,28 @@ export default function CorridorCategoryEditor(props: Props) {
   };
 
   const handleChange = (name: keyof CorridorCategory, value: valueOf<CorridorCategory>) => {
-    setCorridorCategory(Object.assign({}, corridorCategory, { [name]: value }));
-  }
-
-  const handleEnumProbUpdate = (name: keyof CorridorCategory, key: any, newValue: number) => {
-    var updatedList = (corridorCategory[name]) as Probabilities<any>;
-    updatedList.update(key, newValue);
-    handleChange(name, updatedList);
+    if (name === nameOf<CorridorCategory>("name")){
+      if (value) {
+        setErrors({
+          ...errors,
+          name: false
+        })
+      }
+    }
+    setCorridorCategory(Object.assign({}, corridorCategory, { [name]: value }) );
   }
 
   const handleDeleteClick = (name: keyof CorridorCategory, index: number) => {
-    var updatedList = (corridorCategory[name]) as Probabilities<any>;
+    var updatedList = Object.create(corridorCategory[name] as Probabilities<any>);
+    updatedList = Object.assign(updatedList, corridorCategory[name]);
     updatedList.remove(index);
     handleChange(name, updatedList);
   }
 
-  const handleListProbUpdate = (name: keyof CorridorCategory, index: number, newValue: number) => {
-    var updatedList = (corridorCategory[name]) as Probabilities<any>;
-    updatedList.probSum[index] = newValue;
-    // TODO: normalize?
-    handleChange(name, updatedList);
-  }
-
   const handleSelect = (name: keyof CorridorCategory, item: any) => {
-    var updatedList = (corridorCategory[name]) as Probabilities<any>;
-    updatedList.add(item, 0.5);
-    // TODO: Normalize?
+    var updatedList = Object.create(corridorCategory[name] as Probabilities<any>);
+    updatedList = Object.assign(updatedList, corridorCategory[name]);
+    updatedList.add(item);
     handleChange(name, updatedList);
     closeSelectDialogs();
   }
@@ -169,7 +189,8 @@ export default function CorridorCategoryEditor(props: Props) {
   }
 
   const handleMonsterSave = (newMonster: Monster) => {
-    var updatedList = corridorCategory.monsters;
+    var updatedList = Object.create(corridorCategory.monsters as Probabilities<Monster>);
+    updatedList = Object.assign(updatedList, corridorCategory.monsters);
     updatedList.updateObject(monsterToEdit!, newMonster);
     handleChange(nameOf<CorridorCategory>("monsters"), updatedList);
     setMonsterEditorOpen(false);
@@ -186,7 +207,8 @@ export default function CorridorCategoryEditor(props: Props) {
   }
 
   const handleItemSave = (newItem: Item) => {
-    var updatedList = corridorCategory.items;
+    var updatedList = Object.create(corridorCategory.items as Probabilities<Item>);
+    updatedList = Object.assign(updatedList, corridorCategory.items);
     updatedList.updateObject(itemToEdit!, newItem);
     handleChange(nameOf<CorridorCategory>("items"), updatedList);
     setItemEditorOpen(false);
@@ -203,7 +225,8 @@ export default function CorridorCategoryEditor(props: Props) {
   }
 
   const handleTrapSave = (newTrap: Trap) => {
-    var updatedList = corridorCategory.traps;
+    var updatedList = Object.create(corridorCategory.traps as Probabilities<Trap>);
+    updatedList = Object.assign(updatedList, corridorCategory.traps);
     updatedList.updateObject(trapToEdit!, newTrap);
     handleChange(nameOf<CorridorCategory>("traps"), updatedList);
     setTrapEditorOpen(false);
@@ -215,6 +238,16 @@ export default function CorridorCategoryEditor(props: Props) {
   }
 
   const handleSaveClick = async () => {
+    if (!corridorCategory.name) {
+      return;
+    }
+    corridorCategory.widths.normalize();
+    corridorCategory.states.normalize();
+    corridorCategory.entranceTypes.normalize();
+    corridorCategory.items.normalize();
+    corridorCategory.traps.normalize();
+    corridorCategory.monsters.normalize();
+
     var result = await DB.saveCorridorCategory(corridorCategory);
     if (result.valid) {
       var id = result.response;
@@ -227,6 +260,15 @@ export default function CorridorCategoryEditor(props: Props) {
 
   const handleClose = () => {
     setCorridorCategory(new CorridorCategory());
+  }
+
+  const handleNameBlur = () => {
+    if (!corridorCategory.name) {
+      setErrors({
+        ...errors,
+        name: true
+      })
+    }
   }
 
   return (
@@ -244,16 +286,28 @@ export default function CorridorCategoryEditor(props: Props) {
           }
         </DialogTitle>
         <DialogContent>
-          <AppBar color="default" position="static">
-            <Tabs value={tab} onChange={handleTabChange} aria-label="simple tabs example" variant="fullWidth">
-              <Tab label="Basic" {...a11yProps(0)} />
-              <Tab label="Advanced" {...a11yProps(1)} />
-            </Tabs>
-          </AppBar>
-          <TabPanel value={tab} index={0}>
-          </TabPanel>
-          <TabPanel value={tab} index={1}>
-            <TextField
+        <AppBar color="default" position="static">
+          <Tabs value={tab} onChange={handleTabChange} aria-label="simple tabs example" variant="fullWidth" indicatorColor="primary" textColor="primary">
+            <Tab label="Basic" {...a11yProps(0)} />
+            <Tab 
+              label={
+                <div className={classes.listLabel}>
+                Advanced
+                <Tooltip title="The probabilities in each list will be normalized if they don't sum up to 100%" classes={{ tooltip: classes.customWidth }}>
+                  <HelpOutlineIcon className={classes.helpIcon} color="primary"></HelpOutlineIcon>
+                </Tooltip>
+                </div>}
+              {...a11yProps(1)} 
+            />
+          </Tabs>
+        </AppBar>
+        <TabPanel value={tab} index={0}>
+        </TabPanel>
+        <TabPanel value={tab} index={1}>
+          <TextField
+              required
+              error={errors.name}
+              onBlur={handleNameBlur}
               disabled={viewMode}
               variant="outlined"
               autoFocus
@@ -272,7 +326,7 @@ export default function CorridorCategoryEditor(props: Props) {
               enum={CorridorWidth}
               disabled={viewMode}
               probs={corridorCategory.widths}
-              onProbUpdate={(enumChanged: CorridorWidth, newValue: number) => handleEnumProbUpdate(nameOf<CorridorCategory>("widths"), enumChanged, newValue)}
+              onProbUpdate={(newList: Probabilities<CorridorWidth>) => handleChange(nameOf<CorridorCategory>("widths"), newList)}
             />
             {/* Tile assets */}
             <div className={classes.listLabel}>
@@ -288,14 +342,14 @@ export default function CorridorCategoryEditor(props: Props) {
               list={corridorCategory.monsters}
               onClick={handleMonsterClick}
               onDeleteClick={(index) => handleDeleteClick(nameOf<CorridorCategory>("monsters"), index)}
-              onProbUpdate={(index, newValue) => handleListProbUpdate(nameOf<CorridorCategory>("monsters"), index, newValue)}
+              onProbUpdate={(newList) => handleChange(nameOf<CorridorCategory>("monsters"), newList)}
             />
             <EnumProbabilityText<MonsterState>
               label="Monster State"
               enum={MonsterState}
               disabled={viewMode}
               probs={corridorCategory.states}
-              onProbUpdate={(enumChanged: MonsterState, newValue: number) => handleEnumProbUpdate(nameOf<CorridorCategory>("states"), enumChanged, newValue)}
+              onProbUpdate={(newList: Probabilities<MonsterState>) => handleChange(nameOf<CorridorCategory>("states"), newList)}
             />
             <div className={classes.listLabel}>
               <FormLabel>Items</FormLabel>
@@ -310,7 +364,7 @@ export default function CorridorCategoryEditor(props: Props) {
               list={corridorCategory.items}
               onClick={handleItemClick}
               onDeleteClick={(index) => handleDeleteClick(nameOf<CorridorCategory>("items"), index)}
-              onProbUpdate={(index, newValue) => handleListProbUpdate(nameOf<CorridorCategory>("items"), index, newValue)}
+              onProbUpdate={(newList) => handleChange(nameOf<CorridorCategory>("items"), newList)}
             />
             <div className={classes.listLabel}>
               <FormLabel>Traps</FormLabel>
@@ -325,14 +379,14 @@ export default function CorridorCategoryEditor(props: Props) {
               list={corridorCategory.traps}
               onClick={handleTrapClick}
               onDeleteClick={(index) => handleDeleteClick(nameOf<CorridorCategory>("traps"), index)}
-              onProbUpdate={(index, newValue) => handleListProbUpdate(nameOf<CorridorCategory>("traps"), index, newValue)}
+              onProbUpdate={(newList) => handleChange(nameOf<CorridorCategory>("traps"), newList)}
             />
             <EnumProbabilityText<EntranceType>
               label="Entrance Type"
               enum={EntranceType}
               disabled={viewMode}
               probs={corridorCategory.entranceTypes}
-              onProbUpdate={(enumChanged: EntranceType, newValue: number) => handleEnumProbUpdate(nameOf<CorridorCategory>("entranceTypes"), enumChanged, newValue)}
+              onProbUpdate={(newList: Probabilities<EntranceType>) => handleChange(nameOf<CorridorCategory>("entranceTypes"), newList)}
             />
           </TabPanel>
         </DialogContent>

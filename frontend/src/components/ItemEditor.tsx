@@ -34,26 +34,43 @@ type Props = {
   onSave?: (item: Item) => void;
 }
 
+type Errors = {
+  name: boolean;
+}
+
 ItemEditor.defaultProps = {
   viewOnly: false
 }
 
 export default function ItemEditor(props: Props) {
   const editMode: boolean = props.item !== undefined
-  
-  var initialItem: Item;
-  if (props.item !== undefined) {
-    initialItem = cloneDeep(props.item);
-  } else {
-    initialItem = new Item();
-  }
-
   const classes = useStyles();
-  //TODO: Set to 0 so basic is default, do it when basic is complete
-  const [item, setItem] = useState(initialItem);
+  
   const [viewMode, setViewMode] = useState(props.viewOnly);
-
+  const [errors, setErrors] = useState<Errors>({
+    name: false
+  });
+  const [item, setItem] = useState<Item>(() => {
+    if (props.item !== undefined) {
+      return cloneDeep(props.item);
+    } else {
+      return new Item();
+    }
+  });
+  
   const handleChange = (name: keyof Item, value: valueOf<Item>) => {
+    if (name === nameOf<Item>("name")){
+      if (value) {
+        setErrors({
+          ...errors,
+          name: false
+        })
+      }
+    } else if (name === nameOf<Item>("value")) {
+      if (Number.isNaN(value) || value < 0 ) {
+        return
+      }
+    }
     setItem(Object.assign({}, item, { [name]: value }) );
   }
 
@@ -62,8 +79,20 @@ export default function ItemEditor(props: Props) {
   }
 
   const handleSaveClick = () => {
+    if (!item.name) {
+      return;
+    }
     // TODO: Make call to backend
     props.onSave!(item);
+  }
+
+  const handleNameBlur = () => {
+    if (!item.name) {
+      setErrors({
+        ...errors,
+        name: true
+      })
+    }
   }
 
   return (
@@ -82,6 +111,9 @@ export default function ItemEditor(props: Props) {
         </DialogTitle>
         <DialogContent>
           <TextField
+              required
+              error={errors.name}
+              onBlur={handleNameBlur}
               disabled={viewMode}
               variant="outlined"
               autoFocus
@@ -96,6 +128,7 @@ export default function ItemEditor(props: Props) {
               onChange={(e)=>handleChange(nameOf<Item>("name"), e.target.value)}
             />
             <TextField
+              required
               disabled={viewMode}
               type="number"
               variant="outlined"
