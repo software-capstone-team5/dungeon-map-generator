@@ -22,17 +22,17 @@ export default function SelectItem(props: Props) {
   const [Items, setItems] = useState<Item[]>([]);
   const [ItemEditorOpen, setItemEditorOpen] = useState(false);
 
-  // useEffect(() => {
-  //   let mounted = true;
-  //   // TODO: add a loading thing
-  //   DB.getAllItems().then(result =>{
-  //     if (result && result.valid && mounted) {
-  //       var list = differenceWith(result.response, props.exclude, compareByID) as Item[]
-  //       setItems(list)
-  //     }
-  //   })
-  //   return () => {mounted = false};
-  // }, []);
+  useEffect(() => {
+    let mounted = true;
+    // TODO: add a loading thing
+    DB.getAllItems().then(result => {
+      if (result && result.valid && mounted) {
+        var list = differenceWith(result.response, props.exclude, compareByID) as Item[]
+        setItems(list)
+      }
+    })
+    return () => { mounted = false };
+  }, []);
 
   const handleSave = (item: Item) => {
     setItemEditorOpen(false);
@@ -41,14 +41,14 @@ export default function SelectItem(props: Props) {
 
   return (
     <div>
-      <Dialog 
+      <Dialog
         open={props.open}
         aria-labelledby="form-dialog-title"
       >
         <DialogTitle id="form-dialog-title">Select Item</DialogTitle>
         <DialogContent>
           <NameList<Item> list={Items} onClick={(item: Item) => props.onSelect(item)}></NameList>
-          <Button onClick={()=>setItemEditorOpen(true)} variant="outlined" style={{width: "100%"}} color="primary">
+          <Button onClick={() => setItemEditorOpen(true)} variant="outlined" style={{ width: "100%" }} color="primary">
             Add New
           </Button>
         </DialogContent>
@@ -59,11 +59,11 @@ export default function SelectItem(props: Props) {
         </DialogActions>
       </Dialog>
       {ItemEditorOpen &&
-          <ItemEditor
-              open={ItemEditorOpen}
-              onSave={handleSave}
-              onCancelClick={()=>setItemEditorOpen(false)}
-          />
+        <ItemEditor
+          open={ItemEditorOpen}
+          onSave={handleSave}
+          onCancelClick={() => setItemEditorOpen(false)}
+        />
       }
     </div>
   );

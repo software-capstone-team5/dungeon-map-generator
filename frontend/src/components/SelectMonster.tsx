@@ -22,17 +22,17 @@ export default function SelectMonster(props: Props) {
   const [monsters, setMonsters] = useState<Monster[]>([]);
   const [monsterEditorOpen, setMonsterEditorOpen] = useState(false);
 
-  // useEffect(() => {
-  //   let mounted = true;
-  //   // TODO: add a loading thing
-  //   DB.getAllMonsters().then(result =>{
-  //     if (result && result.valid && mounted) {
-  //       var list = differenceWith(result.response, props.exclude, compareByID) as Monster[]
-  //       setMonsters(list)
-  //     }
-  //   })
-  //   return () => {mounted = false};
-  // }, []);
+  useEffect(() => {
+    let mounted = true;
+    // TODO: add a loading thing
+    DB.getAllMonsters().then(result => {
+      if (result && result.valid && mounted) {
+        var list = differenceWith(result.response, props.exclude, compareByID) as Monster[]
+        setMonsters(list)
+      }
+    })
+    return () => { mounted = false };
+  }, []);
 
   const handleSave = (cc: Monster) => {
     setMonsterEditorOpen(false);
@@ -41,14 +41,14 @@ export default function SelectMonster(props: Props) {
 
   return (
     <div>
-      <Dialog 
+      <Dialog
         open={props.open}
         aria-labelledby="form-dialog-title"
       >
         <DialogTitle id="form-dialog-title">Select Monster</DialogTitle>
         <DialogContent>
           <NameList<Monster> list={monsters} onClick={(m: Monster) => props.onSelect(m)}></NameList>
-          <Button onClick={()=>setMonsterEditorOpen(true)} variant="outlined" style={{width: "100%"}} color="primary">
+          <Button onClick={() => setMonsterEditorOpen(true)} variant="outlined" style={{ width: "100%" }} color="primary">
             Add New
           </Button>
         </DialogContent>
@@ -59,11 +59,11 @@ export default function SelectMonster(props: Props) {
         </DialogActions>
       </Dialog>
       {monsterEditorOpen &&
-          <MonsterEditor
-              open={monsterEditorOpen}
-              onSave={handleSave}
-              onCancelClick={()=>setMonsterEditorOpen(false)}
-          />
+        <MonsterEditor
+          open={monsterEditorOpen}
+          onSave={handleSave}
+          onCancelClick={() => setMonsterEditorOpen(false)}
+        />
       }
     </div>
   );
