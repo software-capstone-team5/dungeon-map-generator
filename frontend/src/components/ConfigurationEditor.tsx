@@ -1,28 +1,28 @@
-import React, { useEffect, useState } from 'react';
-
-import { makeStyles, Theme, withStyles } from '@material-ui/core/styles';
-import Button from '@material-ui/core/Button';
-import Typography from '@material-ui/core/Typography';
-import AccordionDetails from '@material-ui/core/AccordionDetails';
-import TextField from '@material-ui/core/TextField';
-import Paper from '@material-ui/core/Paper';
 import MuiAccordion from '@material-ui/core/Accordion';
+import AccordionDetails from '@material-ui/core/AccordionDetails';
 import MuiAccordionSummary from '@material-ui/core/AccordionSummary';
+import Button from '@material-ui/core/Button';
 import Grid from '@material-ui/core/Grid';
+import Paper from '@material-ui/core/Paper';
 import Snackbar from '@material-ui/core/Snackbar';
+import { makeStyles, Theme, withStyles } from '@material-ui/core/styles';
+import TextField from '@material-ui/core/TextField';
 import Tooltip from '@material-ui/core/Tooltip';
+import Typography from '@material-ui/core/Typography';
 import HelpOutlineIcon from '@material-ui/icons/HelpOutline';
-import MuiAlert, { AlertProps } from '@material-ui/lab/Alert';
-
-import { nameOf, valueOf } from '../utils/util';
-import { Configuration } from '../models/Configuration';
-import MapLevelConfiguration from './MapLevelConfiguration';
-import RegionLevelConfiguration from './RegionLevelConfiguration';
-import NameUpdate from './NameUpdate';
-import { DB } from '../DB';
-import Authenticator from '../Authenticator';
-
+import MuiAlert, { AlertProps, Color } from '@material-ui/lab/Alert';
 import cloneDeep from 'lodash/cloneDeep';
+import React, { useEffect, useState } from 'react';
+import Authenticator from '../Authenticator';
+import { DB } from '../DB';
+import { Configuration } from '../models/Configuration';
+import { nameOf, valueOf } from '../utils/util';
+import MapLevelConfiguration from './MapLevelConfiguration';
+import NameUpdate from './NameUpdate';
+import RegionLevelConfiguration from './RegionLevelConfiguration';
+
+
+
 
 const styles = (theme: Theme) => ({
     root: {
@@ -79,10 +79,16 @@ type Props = {
     configuration?: Configuration;
 }
 
+
+
 function ConfigurationEditor(props: Props) {
     const classes = useStyles();
 
-    const [successAlert, setSuccessAlert] = useState(false);
+    const [alert, setAlert] = useState({
+        message: "",
+        severity: "success",
+        active: false,
+    });
     const [showNameUpdate, setShowNameUpdate] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const [viewMode, setViewMode] = useState(() => {
@@ -128,7 +134,11 @@ function ConfigurationEditor(props: Props) {
                 var id = result.response;
                 configToSave.id = id;
                 setConfiguration(configToSave);
-                setSuccessAlert(true);
+                setAlert({
+                    message: "Configuration saved!",
+                    severity: "success",
+                    active: true
+                });
             } else {
                 window.alert(result.response)
             }
@@ -137,6 +147,40 @@ function ConfigurationEditor(props: Props) {
     }
 
     const handleSaveClick = () => {
+        if (configuration.defaultRoomCategory) {
+            if (!configuration.defaultRoomCategory.canBeUsedAsDefault()) {
+                setAlert({
+                    active: true,
+                    message: "Room used for Default Room cannot be used as a default.",
+                    severity: "error"
+                });
+                return;
+            }
+        } else {
+            setAlert({
+                active: true,
+                message: "Default Room is not set.",
+                severity: "error"
+            });
+            return;
+        }
+        if (configuration.defaultCorridorCategory) {
+            if (!configuration.defaultCorridorCategory.canBeUsedAsDefault()) {
+                setAlert({
+                    active: true,
+                    message: "Corridor used for Default Corridor cannot be used as a default.",
+                    severity: "error"
+                });
+                return;
+            }
+        } else {
+            setAlert({
+                active: true,
+                message: "Default Corridor is not set.",
+                severity: "error"
+            });
+            return;
+        }
         setShowNameUpdate(true);
     }
 
@@ -150,7 +194,7 @@ function ConfigurationEditor(props: Props) {
         if (reason === 'clickaway') {
           return;
         }
-        setSuccessAlert(false);
+        setAlert({...alert, active: false});
     };
 
     const handleNameConfirm = (name: string) => {
@@ -168,9 +212,9 @@ function ConfigurationEditor(props: Props) {
                     onCancel={() => setShowNameUpdate(false)}
                 />
             }
-            <Snackbar open={successAlert} autoHideDuration={6000} onClose={handleAlertClose}>
-                <Alert onClose={handleAlertClose} severity="success">
-                    Configuration saved!
+            <Snackbar open={alert.active} autoHideDuration={6000} onClose={handleAlertClose}>
+                <Alert onClose={handleAlertClose} severity={alert.severity as Color}>
+                    {alert.message}
                 </Alert>
             </Snackbar>
             <Paper>
