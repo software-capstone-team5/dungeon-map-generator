@@ -6,8 +6,8 @@ import DialogTitle from '@material-ui/core/DialogTitle';
 import Typography from '@material-ui/core/Typography';
 import { useState } from 'react';
 import readXlsxFile from 'read-excel-file';
+import { DB } from '../DB';
 import { Monster } from '../models/Monster';
-
 
 
 type Props = {
@@ -17,90 +17,94 @@ type Props = {
 
 export default function ImportMonsters(props: Props) {
 
-    const [error, setError] = useState(false);
-    const [errorMessages, setErrorMessages] = useState<string[]>([]);
-    const [monsters, setMonsters] = useState<Monster[]>([]);
-    const [noFile, setNoFile] = useState(true);
+  const [error, setError] = useState(false);
+  const [errorMessages, setErrorMessages] = useState<string[]>([]);
+  const [monsters, setMonsters] = useState<Monster[]>([]);
+  const [noFile, setNoFile] = useState(true);
 
-    const handleFileUpload = (event: any) => {
-        var regex = /^([a-zA-Z0-9\s_\\.\-:])+(.xlsx)$/;
-        if (!regex.test(event.target.value)) {
-            setErrorMessages(["File type is invalid."])
-            setError(true);
-            return;
+  const handleFileUpload = (event: any) => {
+    var regex = /^([a-zA-Z0-9\s_\\.\-:])+(.xlsx)$/;
+    if (!regex.test(event.target.value)) {
+      setErrorMessages(["File type is invalid."])
+      setError(true);
+      return;
+    }
+    var file = event.target.files[0];
+    var monstersList: Monster[] = [];
+    readXlsxFile(file).then((rows: any[]) => {
+      var errorFound = false;
+      var errors: string[] = [];
+
+      for (var i = 0; i < rows.length; i++) {
+        var row = rows[i];
+        var rowNumber = i + 1;
+        if (row.length !== 3) {
+          errorFound = true;
+          errors.push("Number of columns in the spreadsheet is not 3.")
+          break;
         }
-        var file = event.target.files[0];
-        var monstersList = [];
-        readXlsxFile(file).then((rows: any[]) => {
-            var errorFound = false;
-            var errors: string[] = [];
+        var monster = new Monster();
+        monster.name = row[0].toString();
+        monster.description = row[1].toString();
+        if (!Number.isInteger(row[2])) {
+          errorFound = true;
+          errors.push("Row #" + rowNumber + ": Third column is not an integer.");
+          continue;
+        } else if (row[2] < Monster.minChallenge || row[2] > Monster.maxChallenge) {
+          errorFound = true;
+          errors.push("Row #" + rowNumber + ": Third column is not between " + Monster.minChallenge + " and " + Monster.maxChallenge + ".");
+          continue;
+        }
+        monster.challenge = row[2];
+        monstersList.push(monster);
+      }
 
-            for (var i=0; i < rows.length; i++) {
-              var row = rows[i];
-              var rowNumber = i + 1;
-              if (row.length !== 3) {
-                errorFound = true;
-                errors.push("Number of columns in the spreadsheet is not 3.")
-                break;
-              }
-              var monster = new Monster();
-              monster.name = row[0].toString();
-              monster.description = row[1].toString();
-              if (!Number.isInteger(row[2])) {
-                errorFound = true;
-                errors.push("Row #" + rowNumber + ": Third column is not an integer.");
-                continue;
-              } else if  (row[2] < Monster.minChallenge || row[2] > Monster.maxChallenge) {
-                errorFound = true;
-                errors.push("Row #" + rowNumber + ": Third column is not between " + Monster.minChallenge + " and " +  Monster.maxChallenge + ".");
-                continue;
-              }
-              monster.challenge = row[2];
-              monstersList.push(monster);
-            }
-            
-            setErrorMessages(errors);
-            setError(errorFound);
-            setNoFile(false);
-            setMonsters(monsters);
-        })
+      setErrorMessages(errors);
+      setError(errorFound);
+      setNoFile(false);
+      setMonsters(monstersList);
+    })
+  }
+
+  const handleSave = async () => {
+    // TODO: send 'monsters' to the backend
+    var result = await DB.saveMonsters(monsters);
+    if (!result.valid) {
+      window.alert(result.response);
     }
+    props.onCancelClick();
+  }
 
-    const handleSave = () => {
-        // TODO: send 'monsters' to the backend
-        props.onCancelClick();
-    }
-
-    const errorMessageTexts = errorMessages.map((message: string, index: number) =>
-      <div key={index}>
-        <Typography variant="caption" color="error">{message}</Typography>
-      </div>
-    )
+  const errorMessageTexts = errorMessages.map((message: string, index: number) =>
+    <div key={index}>
+      <Typography variant="caption" color="error">{message}</Typography>
+    </div>
+  )
 
   return (
     <div>
       <Dialog open={props.open} aria-labelledby="form-dialog-title">
         <DialogTitle>
-              Import Monsters from Excel
+          Import Monsters from Excel
         </DialogTitle>
         <DialogContent>
-         <Typography>Monsters need to be in an Excel spreadsheet (.xlsx) in this format</Typography>
-         <Typography style={{paddingTop: 20}} color="textSecondary" align="center">NAME | DESCRIPTION | CHALLENGE RATING</Typography>
-         <div style={{paddingTop: 20, paddingBottom: 20}}>
+          <Typography>Monsters need to be in an Excel spreadsheet (.xlsx) in this format</Typography>
+          <Typography style={{ paddingTop: 20 }} color="textSecondary" align="center">NAME | DESCRIPTION | CHALLENGE RATING</Typography>
+          <div style={{ paddingTop: 20, paddingBottom: 20 }}>
             <input type="file" accept=".xlsx" onChange={handleFileUpload} />
-         </div>
-         {error && errorMessageTexts}
-            
+          </div>
+          {error && errorMessageTexts}
+
         </DialogContent>
 
         <DialogActions>
-        <Button onClick={props.onCancelClick} color="primary">
-        Cancel
+          <Button onClick={props.onCancelClick} color="primary">
+            Cancel
         </Button>
-        <Button disabled={error || noFile} onClick={handleSave} variant="contained" color="primary">
+          <Button disabled={error || noFile} onClick={handleSave} variant="contained" color="primary">
             Import
         </Button>
-        
+
         </DialogActions>
       </Dialog>
     </div>

@@ -195,6 +195,25 @@ def saveMonster(idToken):
     except Exception as e:
         return f"An Error Occured: {e}"
 
+# REQ-11: Import.Monsters
+@app.route("/user/<idToken>/monsters", methods=['POST'])
+def saveMonsters(idToken):
+    try:
+        requestData = request.get_json()
+        user_id = verifyToken(idToken)
+        if type(user_id) == str:
+            monster_collection = users_collection.document(user_id).collection("Monsters")
+            monster_ids = []
+            for monster in requestData:
+                monsterData, dbMonster = getDBID(monster, monster_collection)
+                dbMonster.set(monsterData)
+                monster_ids.append(dbMonster.id)
+            return jsonify({"valid": True, "response": monster_ids}), 200
+        else:
+            return user_id
+    except Exception as e:
+        return f"An Error Occured: {e}"
+
 
 @app.route("/user/<idToken>/item", methods=['POST'])
 def saveItem(idToken):
