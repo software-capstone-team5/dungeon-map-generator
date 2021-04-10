@@ -6,9 +6,9 @@ import { Type } from 'class-transformer';
 
 export class RoomCategory extends RegionCategory {
 	@Type(() => Probabilities)
-	sizes: Probabilities<Size>;
+	sizes: Probabilities<Size> | null;
 	@Type(() => Probabilities)
-	shapes: Probabilities<RoomShape>;
+	shapes: Probabilities<RoomShape> | null;
 
 	constructor() {
 		super()

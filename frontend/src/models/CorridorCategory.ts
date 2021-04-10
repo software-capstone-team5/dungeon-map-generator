@@ -5,7 +5,7 @@ import { Type } from 'class-transformer';
 
 export class CorridorCategory extends RegionCategory {
 	@Type(() => Probabilities)
-	widths: Probabilities<CorridorWidth>;
+	widths: Probabilities<CorridorWidth> | null;
 
 	constructor() {
 		super();

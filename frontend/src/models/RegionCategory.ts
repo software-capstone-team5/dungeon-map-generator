@@ -11,17 +11,17 @@ export class RegionCategory {
 	id: string = "";
 	name: string = "";
 	@Type(() => Probabilities)
-	tileSets: Probabilities<TileSet>;
+	tileSets: Probabilities<TileSet> | null;
 	@Type(() => Probabilities)
-	monsters: Probabilities<Monster>;
+	monsters: Probabilities<Monster> | null;
 	@Type(() => Probabilities)
-	states: Probabilities<MonsterState>;
+	states: Probabilities<MonsterState> | null;
 	@Type(() => Probabilities)
-	items: Probabilities<Item>;
+	items: Probabilities<Item> | null;
 	@Type(() => Probabilities)
-	entranceTypes: Probabilities<EntranceType>;
+	entranceTypes: Probabilities<EntranceType> | null;
 	@Type(() => Probabilities)
-	traps: Probabilities<Trap>;
+	traps: Probabilities<Trap> | null;
 
 	constructor() {
 		this.states = Probabilities.buildUniform(Object.values(MonsterState));
