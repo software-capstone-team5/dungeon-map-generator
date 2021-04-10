@@ -72,11 +72,9 @@ const useStyles = makeStyles((theme) =>  ({
     }
 }));
 
-
 type Props = {
     configuration?: Configuration;
 }
-
 
 
 function ConfigurationEditor(props: Props) {
@@ -116,7 +114,7 @@ function ConfigurationEditor(props: Props) {
     }, [props.configuration])
 
     const handleChange = (name: keyof Configuration, value: valueOf<Configuration>) => {
-        setConfiguration(Object.assign(Object.create(configuration), configuration, {[name]: value}))
+        setConfiguration(Object.assign(Object.create(Object.getPrototypeOf(configuration)), configuration, {[name]: value}))
     }
 
     // REQ-18: Save.MapConfiguration - The system allows logged -in users to save the entire map configuration(both Map Level and Region Level) as a Preset.
@@ -248,7 +246,7 @@ function ConfigurationEditor(props: Props) {
                         <Typography>Map Level Options</Typography>
                     </AccordionSummary>
                     <AccordionDetails>
-                        <MapLevelConfiguration configuration={configuration} onChange={handleChange}/>
+                        <MapLevelConfiguration isSaving={isSaving} configuration={configuration} onChange={handleChange}/>
                     </AccordionDetails>
                 </Accordion>
                 <Accordion expanded={true}>
@@ -274,7 +272,7 @@ function ConfigurationEditor(props: Props) {
                         </Tooltip>
                     </AccordionSummary>
                     <AccordionDetails>
-                        <RegionLevelConfiguration configuration={configuration} onChange={handleChange}/>
+                        <RegionLevelConfiguration isSaving={isSaving} configuration={configuration} onChange={handleChange}/>
                     </AccordionDetails>
                 </Accordion>
             </Paper>

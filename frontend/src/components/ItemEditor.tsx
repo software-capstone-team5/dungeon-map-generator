@@ -75,7 +75,7 @@ export default function ItemEditor(props: Props) {
         return
       }
     }
-    setItem(Object.assign(Object.create(item), item, { [name]: value }) );
+    setItem(Object.assign(Object.create(Object.getPrototypeOf(item)), item, { [name]: value }) );
   }
 
   const handleEditClick = () => {

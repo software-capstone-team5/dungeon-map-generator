@@ -1,12 +1,11 @@
-import { makeStyles } from '@material-ui/core/styles';
-import DeleteIcon from '@material-ui/icons/Delete';
 import {
-  List,
+  IconButton, List,
   ListItem,
   ListItemSecondaryAction,
-  ListItemText,
-  IconButton
+  ListItemText
 } from '@material-ui/core';
+import { makeStyles } from '@material-ui/core/styles';
+import DeleteIcon from '@material-ui/icons/Delete';
 
 
 const useStyles = makeStyles((theme) => ({
@@ -28,13 +27,15 @@ interface hasName {
 
 type Props<T extends hasName> = {
   list: T[];
+  disabled?: boolean;
   showDelete?: boolean;
   onClick?: (item: T) => void;
   onDeleteClick?: (index: number) => void;
 }
 
 NameList.defaultProps = {
-  showDelete: false
+  showDelete: false,
+  disabled: false,
 }
 
 function NameList<T extends hasName> (props: Props<T>) {
@@ -42,13 +43,13 @@ function NameList<T extends hasName> (props: Props<T>) {
     const classes = useStyles();
 
     const listItems = props.list.map((item: T, i: number) =>
-      <ListItem button onClick={(e)=>props.onClick!(item)} key={i}>
+      <ListItem button={(!props.disabled) as true} onClick={(e)=>props.onClick!(item)} key={i}>
         <ListItemText
           primary={item.name}
         />
         {props.showDelete &&
           <ListItemSecondaryAction>
-            <IconButton onClick={()=>props.onDeleteClick!(i)} edge="end" aria-label="delete">
+            <IconButton disabled={props.disabled} onClick={()=>props.onDeleteClick!(i)} edge="end" aria-label="delete">
               <DeleteIcon />
             </IconButton>
           </ListItemSecondaryAction>

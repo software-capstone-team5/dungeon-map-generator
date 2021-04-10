@@ -69,7 +69,7 @@ export default function MonsterEditor(props: Props) {
         })
       }
     }
-    setMonster(Object.assign(Object.create(monster), monster, { [name]: value }) );
+    setMonster(Object.assign(Object.create(Object.getPrototypeOf(monster)), monster, { [name]: value }) );
   }
 
   const handleEditClick = () => {

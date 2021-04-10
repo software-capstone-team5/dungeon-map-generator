@@ -27,12 +27,15 @@ const useStyles = makeStyles({
 });
 
 type Props = {
+    isSaving: boolean;
     configuration: Configuration;
     onChange: (name: keyof Configuration, value: valueOf<Configuration>)=>void;
 }
 
 const RegionLevelConfiguration = memo(
     (props: Props) => {
+        var disabled = props.isSaving || props.configuration.premade;
+
         const classes = useStyles();
         const [addRoomDialogOpen, setAddRoomDialogOpen] = useState(false);
         const [addCorridorDialogOpen, setAddCorridorDialogOpen] = useState(false);
@@ -44,7 +47,7 @@ const RegionLevelConfiguration = memo(
         const [selectingDefault, setSelectingDefault] = useState(false);
 
         const handleDeleteClick = (name: keyof Configuration, index: number) => {
-            var updatedList = Object.create(props.configuration[name] as Probabilities<any>);
+            var updatedList = Object.create(Object.getPrototypeOf(props.configuration[name]) as Probabilities<any>);
             updatedList = Object.assign(updatedList, props.configuration[name]);
             updatedList.remove(index);
             props.onChange(name, updatedList);
@@ -59,7 +62,7 @@ const RegionLevelConfiguration = memo(
          }
 
         const handleSelect = (name: keyof Configuration, rc: RegionCategory) => {
-            var updatedList = Object.create(props.configuration[name] as Probabilities<any>);
+            var updatedList = Object.create(Object.getPrototypeOf(props.configuration[name]) as Probabilities<any>);
             updatedList = Object.assign(updatedList, props.configuration[name]);
             updatedList.add(rc);
             props.onChange(name, updatedList);
@@ -124,7 +127,7 @@ const RegionLevelConfiguration = memo(
         }
 
         const handleSave = (name: keyof Configuration, rc: RegionCategory) => {
-            var updatedList = Object.create(props.configuration[name] as Probabilities<any>);
+            var updatedList = Object.create(Object.getPrototypeOf(props.configuration[name]) as Probabilities<any>);
             updatedList = Object.assign(updatedList, props.configuration[name]) as Probabilities<any>;
             if (roomCategoryToEdit !== undefined) {
                 updatedList.updateObject(roomCategoryToEdit, rc);
@@ -141,23 +144,25 @@ const RegionLevelConfiguration = memo(
         return (
             <div style={{width: '100%'}}>
                 <div className={classes.listLabel}>
-                    <FormLabel required>Default Room</FormLabel>
-                    <IconButton onClick={handleSelectDefaultRoomClick} aria-label="add" color="primary">
+                    <FormLabel disabled={disabled} required>Default Room</FormLabel>
+                    <IconButton disabled={disabled} onClick={handleSelectDefaultRoomClick} aria-label="add" color="primary">
                         <ListIcon/>
                     </IconButton>
                 </div>
                 <NameList
+                    disabled={disabled}
                     onClick={handleDefaultRoomClick}
                     list={props.configuration.defaultRoomCategory ? [props.configuration.defaultRoomCategory] : []}
                 />
                 <div className={classes.listLabel}>
-                    <FormLabel>Rooms</FormLabel>
-                    <IconButton onClick={handleAddRoomClick} aria-label="add" color="primary">
+                    <FormLabel disabled={disabled}>Rooms</FormLabel>
+                    <IconButton disabled={disabled} onClick={handleAddRoomClick} aria-label="add" color="primary">
                         <AddBoxIcon/>
                     </IconButton>
                 </div>
 
                 <ProbabilityNameList
+                    disabled={disabled}
                     showProbs
                     showDelete
                     list={props.configuration.roomCategories}
@@ -166,22 +171,24 @@ const RegionLevelConfiguration = memo(
                     onProbUpdate={(newList) => props.onChange(nameOf<Configuration>("roomCategories"), newList!)}
                 />
                 <div className={classes.listLabel}>
-                    <FormLabel required>Default Corridor</FormLabel>
-                    <IconButton onClick={handleSelectDefaultCorridorClick} aria-label="add" color="primary">
+                    <FormLabel disabled={disabled} required>Default Corridor</FormLabel>
+                    <IconButton disabled={disabled} onClick={handleSelectDefaultCorridorClick} aria-label="add" color="primary">
                         <ListIcon/>
                     </IconButton>
                 </div>
                 <NameList
+                    disabled={disabled}
                     onClick={handleDefaultCorridorClick}
                     list={props.configuration.defaultCorridorCategory ? [props.configuration.defaultCorridorCategory] : []}
                 />
                 <div className={classes.listLabel}>
-                    <FormLabel>Corridors</FormLabel>
-                    <IconButton onClick={handleAddCorridorClick} aria-label="add" color="primary">
+                    <FormLabel disabled={disabled}>Corridors</FormLabel>
+                    <IconButton disabled={disabled} onClick={handleAddCorridorClick} aria-label="add" color="primary">
                         <AddBoxIcon />
                     </IconButton>
                 </div>
                 <ProbabilityNameList
+                    disabled={disabled}
                     showProbs
                     showDelete
                     list={props.configuration.corridorCategories}
@@ -232,7 +239,9 @@ const RegionLevelConfiguration = memo(
         prevProps.configuration.roomCategories === nextProps.configuration.roomCategories &&
         prevProps.configuration.corridorCategories === nextProps.configuration.corridorCategories &&
         prevProps.configuration.defaultRoomCategory === nextProps.configuration.defaultRoomCategory &&
-        prevProps.configuration.defaultCorridorCategory === nextProps.configuration.defaultCorridorCategory
+        prevProps.configuration.defaultCorridorCategory === nextProps.configuration.defaultCorridorCategory &&
+        prevProps.configuration.premade === nextProps.configuration.premade &&
+        prevProps.isSaving === nextProps.isSaving
 )
 
 
