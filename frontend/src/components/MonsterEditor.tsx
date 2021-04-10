@@ -1,18 +1,18 @@
-import { useState } from 'react';
+import { FormLabel, IconButton, makeStyles, Slider, Typography } from '@material-ui/core';
 import Button from '@material-ui/core/Button';
-import TextField from '@material-ui/core/TextField';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogTitle from '@material-ui/core/DialogTitle';
+import TextField from '@material-ui/core/TextField';
 import EditIcon from '@material-ui/icons/Edit';
-
-import { Typography, IconButton, makeStyles, Slider, FormLabel } from '@material-ui/core';
-import { Monster } from '../models/Monster';
-import { nameOf, valueOf } from '../utils/util';
 import cloneDeep from 'lodash/cloneDeep';
+import { useState } from 'react';
 import { Authenticator } from '../Authenticator';
 import { DB } from '../DB';
+import { Monster } from '../models/Monster';
+import { nameOf, valueOf } from '../utils/util';
+
 
 
 const useStyles = makeStyles((theme) => ({
@@ -69,7 +69,7 @@ export default function MonsterEditor(props: Props) {
         })
       }
     }
-    setMonster(Object.assign({}, monster, { [name]: value }));
+    setMonster(Object.assign(Object.create(monster), monster, { [name]: value }) );
   }
 
   const handleEditClick = () => {

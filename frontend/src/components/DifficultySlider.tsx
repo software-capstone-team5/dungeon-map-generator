@@ -1,6 +1,5 @@
-import { FormLabel } from '@material-ui/core';
+import FormLabel from '@material-ui/core/FormLabel';
 import Slider from '@material-ui/core/Slider';
-import Typography from '@material-ui/core/Typography';
 import {Configuration} from '../models/Configuration';
 
 type Props = {

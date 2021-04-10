@@ -1,18 +1,18 @@
-import './App.css';
-import { useState, useEffect } from 'react';
-import { Grid, AppBar, Toolbar, Typography, Button } from '@material-ui/core';
-import { makeStyles } from '@material-ui/core/styles';
-import MenuIcon from '@material-ui/icons/Menu';
+import { AppBar, Button, Grid, Toolbar, Typography } from '@material-ui/core';
 import IconButton from '@material-ui/core/IconButton';
-import ListIcon from '@material-ui/icons/List';
 import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
-
+import { makeStyles } from '@material-ui/core/styles';
+import ListIcon from '@material-ui/icons/List';
+import MenuIcon from '@material-ui/icons/Menu';
+import { useEffect, useState } from 'react';
+import './App.css';
+import { Authenticator } from './Authenticator';
 import ConfigurationEditor from "./components/ConfigurationEditor";
+import ImportMonsters from './components/ImportMonsters';
 import SelectConfiguration from "./components/SelectConfiguration";
 
-import { Authenticator } from './Authenticator';
-import ImportMonsters from './components/ImportMonsters';
+
 
 const useStyles = makeStyles((theme) => ({
   menuButton: {
@@ -119,7 +119,9 @@ function App() {
       >
         <MenuItem onClick={importMonstersClick}>Import Monsters</MenuItem>
       </Menu>
-      <ImportMonsters open={importMonstersOpen} onCancelClick={()=>setImportMonstersOpen(false)}></ImportMonsters>
+      {importMonstersOpen &&
+        <ImportMonsters open={importMonstersOpen} onCancelClick={()=>setImportMonstersOpen(false)}></ImportMonsters>
+      }
       {loggedIn !== null && // TODO: do something more elegant, like a loading bar
           <Grid container direction="column" className={classes.topContainer}>
             <div>

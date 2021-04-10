@@ -1,14 +1,13 @@
-import { useState } from 'react';
-import readXlsxFile from 'read-excel-file';
 import Button from '@material-ui/core/Button';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import Typography from '@material-ui/core/Typography';
-
-import { Monster } from '../models/Monster';
+import { useState } from 'react';
+import readXlsxFile from 'read-excel-file';
 import { DB } from '../DB';
+import { Monster } from '../models/Monster';
 
 
 type Props = {
@@ -21,10 +20,10 @@ export default function ImportMonsters(props: Props) {
   const [error, setError] = useState(false);
   const [errorMessages, setErrorMessages] = useState<string[]>([]);
   const [monsters, setMonsters] = useState<Monster[]>([]);
+  const [noFile, setNoFile] = useState(true);
 
   const handleFileUpload = (event: any) => {
     var regex = /^([a-zA-Z0-9\s_\\.\-:])+(.xlsx)$/;
-    console.log(event.target.value)
     if (!regex.test(event.target.value)) {
       setErrorMessages(["File type is invalid."])
       setError(true);
@@ -62,6 +61,7 @@ export default function ImportMonsters(props: Props) {
 
       setErrorMessages(errors);
       setError(errorFound);
+      setNoFile(false);
       setMonsters(monstersList);
     })
   }
@@ -101,7 +101,7 @@ export default function ImportMonsters(props: Props) {
           <Button onClick={props.onCancelClick} color="primary">
             Cancel
         </Button>
-          <Button disabled={error} onClick={handleSave} variant="contained" color="primary">
+          <Button disabled={error || noFile} onClick={handleSave} variant="contained" color="primary">
             Import
         </Button>
 

@@ -1,21 +1,26 @@
-import { useEffect, useState } from 'react';
 import Button from '@material-ui/core/Button';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogTitle from '@material-ui/core/DialogTitle';
-import NameList from './common/NameList';
-import CorridorCategoryEditor from './CorridorCategoryEditor';
+import differenceWith from 'lodash/differenceWith';
+import { useEffect, useState } from 'react';
+import DB from '../DB';
 import { CorridorCategory } from '../models/CorridorCategory';
 import { compareByID } from '../utils/util';
-import differenceWith from 'lodash/differenceWith';
-import DB from '../DB';
+import NameList from './common/NameList';
+import CorridorCategoryEditor from './CorridorCategoryEditor';
 
 type Props = {
   open: boolean;
   exclude: CorridorCategory[];
+  onlyAllowDefaults: boolean;
   onSelect: (rc: CorridorCategory) => void;
   onCancelClick: () => void;
+}
+
+SelectCorridorCategory.defaultProps = {
+  onlyAllowDefaults: false
 }
 
 export default function SelectCorridorCategory(props: Props) {
@@ -28,6 +33,9 @@ export default function SelectCorridorCategory(props: Props) {
     DB.getAllCorridorCat().then(result =>{
       if (result && result.valid && mounted) {
         var list = differenceWith(result.response, props.exclude, compareByID) as CorridorCategory[]
+        if (props.onlyAllowDefaults) {
+          list = list.filter(rc => rc.canBeUsedAsDefault())
+        }
         setCorridorCategories(list)
       }
     })
@@ -45,7 +53,7 @@ export default function SelectCorridorCategory(props: Props) {
         open={props.open}
         aria-labelledby="form-dialog-title"
       >
-        <DialogTitle id="form-dialog-title">Select Corridor Category</DialogTitle>
+        <DialogTitle id="form-dialog-title">Select {props.onlyAllowDefaults ? "Default" : ""} Corridor Category</DialogTitle>
         <DialogContent>
           <NameList<CorridorCategory> list={corridorCategories} onClick={(rc: CorridorCategory) => props.onSelect(rc)}></NameList>
           <Button onClick={()=>setCorridorEditorOpen(true)} variant="outlined" style={{width: "100%"}} color="primary">
