@@ -1,9 +1,6 @@
 import { useState } from 'react';
 
 import { makeStyles } from '@material-ui/core';
-import AppBar from '@material-ui/core/AppBar';
-import Tab from '@material-ui/core/Tab';
-import Tabs from '@material-ui/core/Tabs';
 import Box from '@material-ui/core/Box';
 import Typography from '@material-ui/core/Typography';
 import IconButton from '@material-ui/core/IconButton';
@@ -15,6 +12,7 @@ import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import Tooltip from '@material-ui/core/Tooltip';
+import Grid from '@material-ui/core/Grid';
 
 import HelpOutlineIcon from '@material-ui/icons/HelpOutline';
 import EditIcon from '@material-ui/icons/Edit';
@@ -285,7 +283,12 @@ export default function RoomCategoryEditor(props: Props) {
           className={classes.root}
           disableTypography
           id="form-dialog-title">
-          <Typography component={'span'} variant="h6">{editMode ? "Edit" : "Add"} Room Category</Typography>
+            <Grid container alignItems="center">
+              <Typography component={'span'} variant="h6">{editMode ? "Edit" : "Add"} Room Category</Typography>
+              <Tooltip title="The probabilities in each list will be normalized if they don't sum up to 100%" classes={{ tooltip: classes.customWidth }}>
+                  <HelpOutlineIcon className={classes.helpIcon} color="primary"></HelpOutlineIcon>
+              </Tooltip>
+            </Grid>
           {viewMode && editMode &&
             <IconButton aria-label="edit" className={classes.editButton} onClick={handleEditClick}>
               <EditIcon />
@@ -293,24 +296,6 @@ export default function RoomCategoryEditor(props: Props) {
           }
         </DialogTitle>
         <DialogContent>
-        <AppBar color="default" position="static">
-          <Tabs value={tab} onChange={handleTabChange} aria-label="simple tabs example" variant="fullWidth" indicatorColor="primary" textColor="primary">
-            <Tab label="Basic" {...a11yProps(0)} />
-            <Tab 
-              label={
-                <div className={classes.listLabel}>
-                Advanced
-                <Tooltip title="The probabilities in each list will be normalized if they don't sum up to 100%" classes={{ tooltip: classes.customWidth }}>
-                  <HelpOutlineIcon className={classes.helpIcon} color="primary"></HelpOutlineIcon>
-                </Tooltip>
-                </div>}
-              {...a11yProps(1)} 
-            />
-          </Tabs>
-        </AppBar>
-        <TabPanel value={tab} index={0}>
-        </TabPanel>
-        <TabPanel value={tab} index={1}>
           <TextField
               required
               error={errors.name}
@@ -402,7 +387,6 @@ export default function RoomCategoryEditor(props: Props) {
               probs={roomCategory.entranceTypes}
               onProbUpdate={(newList: Probabilities<EntranceType>) => handleChange(nameOf<RoomCategory>("entranceTypes"), newList)}
             />
-          </TabPanel>
         </DialogContent>
 
         <DialogActions>
