@@ -5,9 +5,11 @@ import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogTitle from '@material-ui/core/DialogTitle';
+import Typography from '@material-ui/core/Typography';
+import IconButton from '@material-ui/core/IconButton';
 import EditIcon from '@material-ui/icons/Edit';
 
-import { Typography, IconButton, makeStyles, Slider} from '@material-ui/core';
+import { makeStyles} from '@material-ui/core';
 import { Item } from '../models/Item';
 import { nameOf, valueOf } from '../utils/util';
 import cloneDeep from 'lodash/cloneDeep';
@@ -71,7 +73,7 @@ export default function ItemEditor(props: Props) {
         return
       }
     }
-    setItem(Object.assign({}, item, { [name]: value }) );
+    setItem(Object.assign(Object.create(item), item, { [name]: value }) );
   }
 
   const handleEditClick = () => {

@@ -1,7 +1,6 @@
 import { memo, useState } from 'react';
 import {FormLabel, makeStyles} from '@material-ui/core';
 import IconButton from '@material-ui/core/IconButton';
-import Typography from '@material-ui/core/Typography';
 import AddBoxIcon from '@material-ui/icons/AddBox';
 import { Probabilities } from '../generator/Probabilities';
 import { Configuration } from '../models/Configuration';
@@ -103,7 +102,7 @@ const RegionLevelConfiguration = memo(
                     list={props.configuration.roomCategories}
                     onClick={handleRoomClick}
                     onDeleteClick={(index) => handleDeleteClick(nameOf<Configuration>("roomCategories"), index)}
-                    onProbUpdate={(newList) => props.onChange(nameOf<Configuration>("roomCategories"), newList)}
+                    onProbUpdate={(newList) => props.onChange(nameOf<Configuration>("roomCategories"), newList!)}
                 />
                 <div className={classes.listLabel}>
                     <FormLabel>Corridors</FormLabel>
@@ -117,7 +116,7 @@ const RegionLevelConfiguration = memo(
                     list={props.configuration.corridorCategories}
                     onClick={handleCorridorClick}
                     onDeleteClick={(index) => handleDeleteClick(nameOf<Configuration>("corridorCategories"), index)}
-                    onProbUpdate={(newList) => props.onChange(nameOf<Configuration>("corridorCategories"), newList)}
+                    onProbUpdate={(newList) => props.onChange(nameOf<Configuration>("corridorCategories"), newList!)}
                 />
                 {addRoomDialogOpen &&
                     <SelectRoomCategory

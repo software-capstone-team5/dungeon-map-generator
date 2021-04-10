@@ -112,7 +112,7 @@ function ConfigurationEditor(props: Props) {
     }, [props.configuration])
 
     const handleChange = (name: keyof Configuration, value: valueOf<Configuration>) => {
-        setConfiguration(Object.assign({}, configuration, {[name]: value}))
+        setConfiguration(Object.assign(Object.create(configuration), configuration, {[name]: value}))
     }
 
     // REQ-18: Save.MapConfiguration - The system allows logged -in users to save the entire map configuration(both Map Level and Region Level) as a Preset.
