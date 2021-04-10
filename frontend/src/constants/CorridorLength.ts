@@ -1,5 +1,5 @@
 export enum CorridorLength {
-	short = 'SHORT',
-	medium = 'MEDIUM',
-	long = 'LONG'
+	short = 'Short',
+	medium = 'Medium',
+	long = 'Long'
 }

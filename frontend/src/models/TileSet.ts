@@ -1,4 +1,5 @@
 export class TileSet {
+	id: string = "";
 	name: string;
 	tileSize: number = 48;
 	set: Map<string, HTMLImageElement> = new Map<string, HTMLImageElement>(); // key is TileType, value is image url? Better way to represent this for react?

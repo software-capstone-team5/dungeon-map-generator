@@ -3,7 +3,7 @@ export class Probabilities<T> {
 	objects: (T | null)[] = [];
 	probSum: number[] = [];
 
-	constructor(chances: Map<T | null, number> | null){
+	constructor(chances: Map<T, number> | null, normalize = true){
 		if (chances != null){
 			var last = 0;
 			chances.forEach((prob: number, key: T | null) => {
@@ -11,8 +11,10 @@ export class Probabilities<T> {
 				last += prob;
 				this.probSum.push(last);
 			})
-	
-			this.normalize();
+			
+			if (normalize) {
+				this.normalize();
+			}
 		}
 	}
 
@@ -31,24 +33,27 @@ export class Probabilities<T> {
 	}
 
 	toMap(): Map<T | null, number>{
-		var map = new Map<T | null, number>();
-		
-		this.probSum.forEach((sum: number, index: number) => {
-			var prob = sum;
-			if (index > 0) {
-				prob -= this.probSum[index - 1];
-			}
+        var map = new Map<T | null, number>();
 
-			map.set(this.objects[index], prob);
-		})
+        this.probSum.forEach((sum: number, index: number) => {
+            var prob = sum;
+            if (index > 0) {
+                prob -= this.probSum[index - 1];
+            }
+            map.set(this.objects[index], parseFloat(prob.toFixed(4)));
+        })
 
-		return map;
-	}
+        return map;
+    }
 
-	add(object: T | null, prob: number) {
+	add(object: T) {
 		this.objects.push(object);
-		this.probSum.push(prob);
-		this.normalize();
+		if (this.probSum.length - 1 >= 0) {
+			// This will give it a zero probability, if there are other items in the list
+			this.probSum.push(this.probSum[this.probSum.length-1]);
+		} else {
+			this.probSum.push(1);
+		}
 	}
 
 	remove(index: number) {
@@ -59,16 +64,16 @@ export class Probabilities<T> {
 		}
 	}
 
-	update(object: T | null, newValue: number) {
-		this.objects.forEach((key: T | null, i: number) => {
-			if (key === object) {
-				this.probSum[i] = newValue;
-				return;
-			}
-		})
+	updateObject(object: T, newObject: T) {
+		var index = this.objects.indexOf(object);
+		this.objects[index] = newObject;
 	}
 
 	randPickOne(): T | null{
+		if (!this.objects || this.objects.length == 0){
+			return null;
+		}
+
 		var rand = Math.random();
 		var i = 0;
 		while (i < this.probSum.length - 1 && this.probSum[i] < rand){
@@ -79,6 +84,10 @@ export class Probabilities<T> {
 	}
 
 	randPickMany(amountModifier: number, allowDuplicates: boolean = true): T[]{
+		if (!this.objects || this.objects.length == 0){
+			return [];
+		}
+
 		var picks: T[] = [];
 		var rand = Math.random();
 		for (var i = 0; i < rand*amountModifier; i++){
@@ -96,6 +105,10 @@ export class Probabilities<T> {
 	}
 
 	randPickNum(num: number, allowDuplicates: boolean = true, countNull: boolean = true): T[]{
+		if (!this.objects || this.objects.length == 0){
+			return [];
+		}
+		
 		var picks: T[] = [];
 		var numNulls = 0;
 		while(picks.length + numNulls < num) {
@@ -112,13 +125,12 @@ export class Probabilities<T> {
 		return picks;
 	}
 
-	private normalize(){
+	normalize(){
 		var length = this.probSum ? this.probSum.length : 0;
-		// TODO: Check if this is right
 		if (length === 1){
 			this.probSum[length - 1] = 1;
 		}
-		else if (length > 1 && this.probSum[length - 1] - 1 > this.epsilon){
+		else if (length > 1 && Math.abs(this.probSum[length - 1] - 1) > this.epsilon){
 			var factor = 1/this.probSum[length - 1];
 			var probs = [this.probSum[0]];
 			for (var i = 1; i < length; i++) {

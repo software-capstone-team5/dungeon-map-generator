@@ -1,5 +1,5 @@
 export enum RoomShape {
-	square = 'SQUARE',
-	rectangle = 'RECTANGLE',
-	nonRectangular = 'NON_RECTANGULAR',
+	square = 'Square',
+	rectangle = 'Rectangle',
+	nonRectangular = 'Irregular',
 }
