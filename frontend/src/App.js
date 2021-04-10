@@ -107,22 +107,20 @@ function App() {
     handleClose();
   }
 
-  
 
   return (
     <div className="App">
+      <Menu
+        id="simple-menu"
+        anchorEl={menuAnchorEl}
+        keepMounted
+        open={Boolean(menuAnchorEl)}
+        onClose={handleClose}
+      >
+        <MenuItem onClick={importMonstersClick}>Import Monsters</MenuItem>
+      </Menu>
+      <ImportMonsters open={importMonstersOpen} onCancelClick={()=>setImportMonstersOpen(false)}></ImportMonsters>
       {loggedIn !== null && // TODO: do something more elegant, like a loading bar
-        <div>
-          <Menu
-            id="simple-menu"
-            anchorEl={menuAnchorEl}
-            keepMounted
-            open={Boolean(menuAnchorEl)}
-            onClose={handleClose}
-          >
-            <MenuItem onClick={importMonstersClick}>Import Monsters</MenuItem>
-          </Menu>
-          <ImportMonsters open={importMonstersOpen} onCancelClick={()=>setImportMonstersOpen(false)}></ImportMonsters>
           <Grid container direction="column" className={classes.topContainer}>
             <div>
               <AppBar position="static">
@@ -177,7 +175,6 @@ function App() {
               <p></p>
             </Grid>
           </Grid>
-          </div>
       }
     </div>
   );

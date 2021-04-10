@@ -18,42 +18,48 @@ type Props = {
 export default function ImportMonsters(props: Props) {
 
     const [error, setError] = useState(false);
-    const [errorMessage, setErrorMessage] = useState("");
+    const [errorMessages, setErrorMessages] = useState<string[]>([]);
     const [monsters, setMonsters] = useState<Monster[]>([]);
 
     const handleFileUpload = (event: any) => {
         var regex = /^([a-zA-Z0-9\s_\\.\-:])+(.xlsx)$/;
         console.log(event.target.value)
         if (!regex.test(event.target.value)) {
-            setErrorMessage("File type is invalid.")
+            setErrorMessages(["File type is invalid."])
             setError(true);
             return;
         }
         var file = event.target.files[0];
-        var monstersList = new Array();
+        var monstersList = [];
         readXlsxFile(file).then((rows: any[]) => {
             var errorFound = false;
-            rows.forEach((row) => {
-                if (errorFound) {
-                    return;
-                }
-                if (row.length !== 3) {
-                    errorFound = true;
-                    setErrorMessage("Length of row is not 3.")
-                    return;
-                }
-                var monster = new Monster();
-                monster.name = row[0].toString();
-                monster.description = row[1].toString();
-                if (!Number.isInteger(row[2]) || row[2] < Monster.minChallenge || row[2] > Monster.maxChallenge) {
-                    errorFound = true;
-                    setErrorMessage("Third column is not an integer, or it is not between " + Monster.minChallenge + " and " +  Monster.maxChallenge + ".")
-                    return;
-                }
-                monster.challenge = row[2];
-                monstersList.push(monster);
-            })
+            var errors: string[] = [];
+
+            for (var i=0; i < rows.length; i++) {
+              var row = rows[i];
+              var rowNumber = i + 1;
+              if (row.length !== 3) {
+                errorFound = true;
+                errors.push("Number of columns in the spreadsheet is not 3.")
+                break;
+              }
+              var monster = new Monster();
+              monster.name = row[0].toString();
+              monster.description = row[1].toString();
+              if (!Number.isInteger(row[2])) {
+                errorFound = true;
+                errors.push("Row #" + rowNumber + ": Third column is not an integer.");
+                continue;
+              } else if  (row[2] < Monster.minChallenge || row[2] > Monster.maxChallenge) {
+                errorFound = true;
+                errors.push("Row #" + rowNumber + ": Third column is not between " + Monster.minChallenge + " and " +  Monster.maxChallenge + ".");
+                continue;
+              }
+              monster.challenge = row[2];
+              monstersList.push(monster);
+            }
             
+            setErrorMessages(errors);
             setError(errorFound);
             setMonsters(monsters);
         })
@@ -63,6 +69,12 @@ export default function ImportMonsters(props: Props) {
         // TODO: send 'monsters' to the backend
         props.onCancelClick();
     }
+
+    const errorMessageTexts = errorMessages.map((message: string, index: number) =>
+      <div key={index}>
+        <Typography variant="caption" color="error">{message}</Typography>
+      </div>
+    )
 
   return (
     <div>
@@ -76,7 +88,7 @@ export default function ImportMonsters(props: Props) {
          <div style={{paddingTop: 20, paddingBottom: 20}}>
             <input type="file" accept=".xlsx" onChange={handleFileUpload} />
          </div>
-         <Typography variant="caption" color="error">{error && errorMessage}</Typography>
+         {error && errorMessageTexts}
             
         </DialogContent>
 
