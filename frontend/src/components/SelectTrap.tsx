@@ -22,17 +22,17 @@ export default function SelectTrap(props: Props) {
   const [traps, setTraps] = useState<Trap[]>([]);
   const [trapEditorOpen, setTrapEditorOpen] = useState(false);
 
-  // useEffect(() => {
-  //   let mounted = true;
-  //   // TODO: add a loading thing
-  //   DB.getAllTraps().then(result =>{
-  //     if (result && result.valid && mounted) {
-  //       var list = differenceWith(result.response, props.exclude, compareByID) as Trap[]
-  //       setTraps(list)
-  //     }
-  //   })
-  //   return () => {mounted = false};
-  // }, []);
+  useEffect(() => {
+    let mounted = true;
+    // TODO: add a loading thing
+    DB.getAllTraps().then(result => {
+      if (result && result.valid && mounted) {
+        var list = differenceWith(result.response, props.exclude, compareByID) as Trap[]
+        setTraps(list)
+      }
+    })
+    return () => { mounted = false };
+  }, []);
 
 
   const handleSave = (trap: Trap) => {
@@ -42,14 +42,14 @@ export default function SelectTrap(props: Props) {
 
   return (
     <div>
-      <Dialog 
+      <Dialog
         open={props.open}
         aria-labelledby="form-dialog-title"
       >
         <DialogTitle id="form-dialog-title">Select Trap</DialogTitle>
         <DialogContent>
           <NameList<Trap> list={traps} onClick={(trap: Trap) => props.onSelect(trap)}></NameList>
-          <Button onClick={()=>setTrapEditorOpen(true)} variant="outlined" style={{width: "100%"}} color="primary">
+          <Button onClick={() => setTrapEditorOpen(true)} variant="outlined" style={{ width: "100%" }} color="primary">
             Add New
           </Button>
         </DialogContent>
@@ -60,11 +60,11 @@ export default function SelectTrap(props: Props) {
         </DialogActions>
       </Dialog>
       {trapEditorOpen &&
-          <TrapEditor
-              open={trapEditorOpen}
-              onSave={handleSave}
-              onCancelClick={()=>setTrapEditorOpen(false)}
-          />
+        <TrapEditor
+          open={trapEditorOpen}
+          onSave={handleSave}
+          onCancelClick={() => setTrapEditorOpen(false)}
+        />
       }
     </div>
   );

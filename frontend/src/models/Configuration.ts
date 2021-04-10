@@ -1,16 +1,17 @@
+import { Type } from 'class-transformer';
 import { CorridorComplexity } from "../constants/CorridorComplexity";
 import { CorridorLength } from "../constants/CorridorLength";
 import { Size } from "../constants/Size";
 import { Probabilities } from "../generator/Probabilities";
 import { CorridorCategory } from "./CorridorCategory";
 import { RoomCategory } from "./RoomCategory";
-import { Type } from 'class-transformer';
 
 export class Configuration {
 	static maxDifficulty: number = 20;
 	static minDifficulty: number = 1;
 	id: string = "";
 	name: string = "";
+	premade: boolean = false;
 	mapSize: Size = Size.medium;
 	corridorComplexity: CorridorComplexity = CorridorComplexity.medium;
 	corridorLength: CorridorLength = CorridorLength.medium;

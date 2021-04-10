@@ -1,5 +1,5 @@
 export enum CorridorWidth {
-	thin = 'THIN',
-	medium = 'MEDIUM',
-	wide = 'WIDE'
+	thin = 'Thin',
+	medium = 'Medium',
+	wide = 'Wide'
 }

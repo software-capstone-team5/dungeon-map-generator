@@ -1,19 +1,23 @@
-import { useState } from 'react';
+import { makeStyles } from '@material-ui/core';
 import Button from '@material-ui/core/Button';
-import TextField from '@material-ui/core/TextField';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogTitle from '@material-ui/core/DialogTitle';
+import IconButton from '@material-ui/core/IconButton';
+import TextField from '@material-ui/core/TextField';
+import Typography from '@material-ui/core/Typography';
 import EditIcon from '@material-ui/icons/Edit';
-
-import { Typography, IconButton, makeStyles, Slider} from '@material-ui/core';
+import cloneDeep from 'lodash/cloneDeep';
+import { useState } from 'react';
+import { Authenticator } from '../Authenticator';
+import { DB } from '../DB';
 import { Item } from '../models/Item';
 import { nameOf, valueOf } from '../utils/util';
-import cloneDeep from 'lodash/cloneDeep';
 
 
-const useStyles = makeStyles((theme) =>  ({
+
+const useStyles = makeStyles((theme) => ({
   root: {
     margin: 0,
     padding: theme.spacing(2),
@@ -30,7 +34,7 @@ type Props = {
   open: boolean;
   viewOnly?: boolean;
   item?: Item;
-  onCancelClick: ()=>void;
+  onCancelClick: () => void;
   onSave?: (item: Item) => void;
 }
 
@@ -45,7 +49,7 @@ ItemEditor.defaultProps = {
 export default function ItemEditor(props: Props) {
   const editMode: boolean = props.item !== undefined
   const classes = useStyles();
-  
+
   const [viewMode, setViewMode] = useState(props.viewOnly);
   const [errors, setErrors] = useState<Errors>({
     name: false
@@ -57,9 +61,9 @@ export default function ItemEditor(props: Props) {
       return new Item();
     }
   });
-  
+
   const handleChange = (name: keyof Item, value: valueOf<Item>) => {
-    if (name === nameOf<Item>("name")){
+    if (name === nameOf<Item>("name")) {
       if (value) {
         setErrors({
           ...errors,
@@ -67,22 +71,32 @@ export default function ItemEditor(props: Props) {
         })
       }
     } else if (name === nameOf<Item>("value")) {
-      if (Number.isNaN(value) || value < 0 ) {
+      if (Number.isNaN(value) || value < 0) {
         return
       }
     }
-    setItem(Object.assign({}, item, { [name]: value }) );
+    setItem(Object.assign(Object.create(item), item, { [name]: value }) );
   }
 
   const handleEditClick = () => {
     setViewMode(false);
   }
 
-  const handleSaveClick = () => {
+  const handleSaveClick = async () => {
     if (!item.name) {
       return;
     }
-    // TODO: Make call to backend
+
+    if (Authenticator.isLoggedIn()) {
+      var result = await DB.saveItem(item);
+      if (result && result.valid) {
+        var id = result.response;
+        item.id = id;
+      } else {
+        window.alert(result.response);
+      }
+    }
+
     props.onSave!(item);
   }
 
@@ -102,7 +116,7 @@ export default function ItemEditor(props: Props) {
           className={classes.root}
           disableTypography
           id="form-dialog-title">
-          <Typography component={'span'} variant="h6">{editMode ? "Edit": "Add"} Item</Typography>
+          <Typography component={'span'} variant="h6">{editMode ? "Edit" : "Add"} Item</Typography>
           {viewMode && editMode &&
             <IconButton aria-label="edit" className={classes.editButton} onClick={handleEditClick}>
               <EditIcon />
@@ -111,63 +125,63 @@ export default function ItemEditor(props: Props) {
         </DialogTitle>
         <DialogContent>
           <TextField
-              required
-              error={errors.name}
-              onBlur={handleNameBlur}
-              disabled={viewMode}
-              variant="outlined"
-              autoFocus
-              margin="dense"
-              id="name"
-              label="Name"
-              InputLabelProps={{
-                shrink: true,
-              }}
-              fullWidth
-              value={item.name}
-              onChange={(e)=>handleChange(nameOf<Item>("name"), e.target.value)}
-            />
-            <TextField
-              required
-              disabled={viewMode}
-              type="number"
-              variant="outlined"
-              margin="dense"
-              id="value"
-              label="Value"
-              InputLabelProps={{
-                shrink: true,
-              }}
-              value={item.value}
-              onChange={(e)=>handleChange(nameOf<Item>("value"), parseFloat(e.target.value))}
-            />
-            <TextField
-              disabled={viewMode}
-              variant="outlined"
-              margin="dense"
-              label="Description"
-              multiline
-              rows={4}
-              InputLabelProps={{
-                shrink: true,
-              }}
-              fullWidth
-              value={item.description}
-              onChange={(e)=>handleChange(nameOf<Item>("description"), e.target.value)}
-            />
-            
+            required
+            error={errors.name}
+            onBlur={handleNameBlur}
+            disabled={viewMode}
+            variant="outlined"
+            autoFocus
+            margin="dense"
+            id="name"
+            label="Name"
+            InputLabelProps={{
+              shrink: true,
+            }}
+            fullWidth
+            value={item.name}
+            onChange={(e) => handleChange(nameOf<Item>("name"), e.target.value)}
+          />
+          <TextField
+            required
+            disabled={viewMode}
+            type="number"
+            variant="outlined"
+            margin="dense"
+            id="value"
+            label="Value"
+            InputLabelProps={{
+              shrink: true,
+            }}
+            value={item.value}
+            onChange={(e) => handleChange(nameOf<Item>("value"), parseFloat(e.target.value))}
+          />
+          <TextField
+            disabled={viewMode}
+            variant="outlined"
+            margin="dense"
+            label="Description"
+            multiline
+            rows={4}
+            InputLabelProps={{
+              shrink: true,
+            }}
+            fullWidth
+            value={item.description}
+            onChange={(e) => handleChange(nameOf<Item>("description"), e.target.value)}
+          />
+
         </DialogContent>
 
         <DialogActions>
           <Button onClick={props.onCancelClick} color="primary">
             Cancel
           </Button>
-          {!viewMode && 
+          {!viewMode &&
             <Button onClick={handleSaveClick} variant="contained" color="primary">
-            Save
+              Save
             </Button>
           }
-          
+
         </DialogActions>
       </Dialog>
     </div>

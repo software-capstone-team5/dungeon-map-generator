@@ -153,8 +153,8 @@ def getRooms(idToken):
             result = []
             for room in rooms.stream():
                 roomDict = room.to_dict()
-                # roomCategory = getCategoryReferences(roomDict)
-                result.append(roomDict) # TODO Replace with roomCategory
+                roomCategory = getCategoryReferences(roomDict)
+                result.append(roomCategory)
             return jsonify({"valid": True, "response": result}), 200
         else:
             return jsonify({"valid": False, "response": "No ID provided"}), 400
@@ -171,8 +171,123 @@ def getCorridors(idToken):
             result = []
             for corridor in corridors.stream():
                 corridorDict = corridor.to_dict()
-                # corridorCategory = getCategoryReferences(corridorDict)
-                result.append(corridorDict) # TODO Replace with corridorCategory
+                corridorCategory = getCategoryReferences(corridorDict)
+                result.append(corridorCategory)
+            return jsonify({"valid": True, "response": result}), 200
+        else:
+            return jsonify({"valid": False, "response": "No ID provided"}), 400
+    except Exception as e:
+        return f"An Error Occured: {e}"
+
+# REQ-10: Add.Monster - The systems shall allow a logged in user to fill out and submit a form to add a new monster to the database.
+@app.route("/user/<idToken>/monster", methods=['POST'])
+def saveMonster(idToken):
+    try:
+        requestData = request.get_json()
+        user_id = verifyToken(idToken)
+        if type(user_id) == str:
+            monster_collection = users_collection.document(user_id).collection("Monsters")
+            monsterData, dbMonster = getDBID(requestData, monster_collection)
+            dbMonster.set(monsterData)
+            return jsonify({"valid": True, "response": dbMonster.id}), 200
+        else:
+            return user_id
+    except Exception as e:
+        return f"An Error Occured: {e}"
+
+# REQ-11: Import.Monsters
+@app.route("/user/<idToken>/monsters", methods=['POST'])
+def saveMonsters(idToken):
+    try:
+        requestData = request.get_json()
+        user_id = verifyToken(idToken)
+        if type(user_id) == str:
+            monster_collection = users_collection.document(user_id).collection("Monsters")
+            monster_ids = []
+            for monster in requestData:
+                monsterData, dbMonster = getDBID(monster, monster_collection)
+                dbMonster.set(monsterData)
+                monster_ids.append(dbMonster.id)
+            return jsonify({"valid": True, "response": monster_ids}), 200
+        else:
+            return user_id
+    except Exception as e:
+        return f"An Error Occured: {e}"
+
+
+@app.route("/user/<idToken>/item", methods=['POST'])
+def saveItem(idToken):
+    try:
+        requestData = request.get_json()
+        user_id = verifyToken(idToken)
+        if type(user_id) == str:
+            item_collection = users_collection.document(user_id).collection("Items")
+            itemData, dbItem = getDBID(requestData, item_collection)
+            dbItem.set(itemData)
+            return jsonify({"valid": True, "response": dbItem.id}), 200
+        else:
+            return user_id
+    except Exception as e:
+        return f"An Error Occured: {e}"
+
+@app.route("/user/<idToken>/trap", methods=['POST'])
+def saveTrap(idToken):
+    try:
+        requestData = request.get_json()
+        user_id = verifyToken(idToken)
+        if type(user_id) == str:
+            trap_collection = users_collection.document(user_id).collection("Traps")
+            trapData, dbTrap = getDBID(requestData, trap_collection)
+            dbTrap.set(trapData)
+            return jsonify({"valid": True, "response": dbTrap.id}), 200
+        else:
+            return user_id
+    except Exception as e:
+        return f"An Error Occured: {e}"
+
+# REQ-10: Add.Monster
+@app.route("/user/<idToken>/monster", methods=['GET'])
+def getMonsters(idToken):
+    try:
+        user_id = verifyToken(idToken)
+        if user_id:
+            monsters = users_collection.document(user_id).collection("Monsters")
+            result = []
+            for monster in monsters.stream():
+                monsterDict = monster.to_dict()
+                result.append(monsterDict)
+            return jsonify({"valid": True, "response": result}), 200
+        else:
+            return jsonify({"valid": False, "response": "No ID provided"}), 400
+    except Exception as e:
+        return f"An Error Occured: {e}"
+
+@app.route("/user/<idToken>/item", methods=['GET'])
+def getItems(idToken):
+    try:
+        user_id = verifyToken(idToken)
+        if user_id:
+            items = users_collection.document(user_id).collection("Items")
+            result = []
+            for item in items.stream():
+                itemDict = item.to_dict()
+                result.append(itemDict)
+            return jsonify({"valid": True, "response": result}), 200
+        else:
+            return jsonify({"valid": False, "response": "No ID provided"}), 400
+    except Exception as e:
+        return f"An Error Occured: {e}"
+
+@app.route("/user/<idToken>/trap", methods=['GET'])
+def getTraps(idToken):
+    try:
+        user_id = verifyToken(idToken)
+        if user_id:
+            traps = users_collection.document(user_id).collection("Traps")
+            result = []
+            for trap in traps.stream():
+                trapDict = trap.to_dict()
+                result.append(trapDict)
             return jsonify({"valid": True, "response": result}), 200
         else:
             return jsonify({"valid": False, "response": "No ID provided"}), 400

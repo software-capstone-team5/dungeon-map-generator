@@ -1,7 +1,7 @@
+import { Type } from 'class-transformer';
 import { CorridorWidth } from "../constants/CorridorWidth";
 import { Probabilities } from "../generator/Probabilities";
 import { RegionCategory } from "./RegionCategory";
-import { Type } from 'class-transformer';
 
 export class CorridorCategory extends RegionCategory {
 	@Type(() => Probabilities)
@@ -12,5 +12,9 @@ export class CorridorCategory extends RegionCategory {
 		super();
 
 		this.widths = Probabilities.buildUniform(Object.values(CorridorWidth));
+	}
+
+	canBeUsedAsDefault() : boolean {
+		return Boolean(super.canBeUsedAsDefault() && this.widths);
 	}
 }

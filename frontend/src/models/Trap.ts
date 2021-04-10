@@ -1,5 +1,6 @@
 export class Trap {
 	id: string = "";
+	premade: boolean = false;
 	name: string = "";
 	description: string = "";
 	difficulty: number = Trap.maxDifficulty/2;

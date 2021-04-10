@@ -1,19 +1,21 @@
-import { useState } from 'react';
+import { FormLabel, IconButton, makeStyles, Slider, Typography } from '@material-ui/core';
 import Button from '@material-ui/core/Button';
-import TextField from '@material-ui/core/TextField';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogTitle from '@material-ui/core/DialogTitle';
+import TextField from '@material-ui/core/TextField';
 import EditIcon from '@material-ui/icons/Edit';
-
-import { Typography, IconButton, makeStyles, Slider, FormLabel} from '@material-ui/core';
+import cloneDeep from 'lodash/cloneDeep';
+import { useState } from 'react';
+import { Authenticator } from '../Authenticator';
+import { DB } from '../DB';
 import { Monster } from '../models/Monster';
 import { nameOf, valueOf } from '../utils/util';
-import cloneDeep from 'lodash/cloneDeep';
 
 
-const useStyles = makeStyles((theme) =>  ({
+
+const useStyles = makeStyles((theme) => ({
   root: {
     margin: 0,
     padding: theme.spacing(2),
@@ -30,7 +32,7 @@ type Props = {
   open: boolean;
   viewOnly?: boolean;
   monster?: Monster;
-  onCancelClick: ()=>void;
+  onCancelClick: () => void;
   onSave?: (rc: Monster) => void;
 }
 
@@ -45,7 +47,7 @@ MonsterEditor.defaultProps = {
 export default function MonsterEditor(props: Props) {
   const editMode: boolean = props.monster !== undefined
   const classes = useStyles();
-  
+
   const [viewMode, setViewMode] = useState(props.viewOnly);
   const [errors, setErrors] = useState<Errors>({
     name: false
@@ -57,9 +59,9 @@ export default function MonsterEditor(props: Props) {
       return new Monster();
     }
   });
- 
+
   const handleChange = (name: keyof Monster, value: valueOf<Monster>) => {
-    if (name === nameOf<Monster>("name")){
+    if (name === nameOf<Monster>("name")) {
       if (value) {
         setErrors({
           ...errors,
@@ -67,18 +69,28 @@ export default function MonsterEditor(props: Props) {
         })
       }
     }
-    setMonster(Object.assign({}, monster, { [name]: value }) );
+    setMonster(Object.assign(Object.create(monster), monster, { [name]: value }) );
   }
 
   const handleEditClick = () => {
     setViewMode(false);
   }
 
-  const handleSaveClick = () => {
+  const handleSaveClick = async () => {
     if (!monster.name) {
       return;
     }
-    // TODO: Make call to backend
+
+    if (Authenticator.isLoggedIn()) {
+      var result = await DB.saveMonster(monster);
+      if (result && result.valid) {
+        var id = result.response;
+        monster.id = id;
+      } else {
+        window.alert(result.response);
+      }
+    }
+
     props.onSave!(monster);
   }
 
@@ -98,7 +110,7 @@ export default function MonsterEditor(props: Props) {
           className={classes.root}
           disableTypography
           id="form-dialog-title">
-          <Typography component={'span'} variant="h6">{editMode ? "Edit": "Add"} Monster</Typography>
+          <Typography component={'span'} variant="h6">{editMode ? "Edit" : "Add"} Monster</Typography>
           {viewMode && editMode &&
             <IconButton aria-label="edit" className={classes.editButton} onClick={handleEditClick}>
               <EditIcon />
@@ -107,62 +119,62 @@ export default function MonsterEditor(props: Props) {
         </DialogTitle>
         <DialogContent>
           <TextField
-              required
-              error={errors.name}
-              onBlur={handleNameBlur}
-              disabled={viewMode}
-              variant="outlined"
-              autoFocus
-              margin="dense"
-              id="name"
-              label="Name"
-              InputLabelProps={{
-                shrink: true,
-              }}
-              fullWidth
-              value={monster.name}
-              onChange={(e)=>handleChange(nameOf<Monster>("name"), e.target.value)}
-            />
-            <TextField
-              disabled={viewMode}
-              variant="outlined"
-              margin="dense"
-              label="Description"
-              multiline
-              rows={4}
-              InputLabelProps={{
-                shrink: true,
-              }}
-              fullWidth
-              value={monster.description}
-              onChange={(e)=>handleChange(nameOf<Monster>("description"), e.target.value)}
-            />
-            <FormLabel id="challenge-slider">
-                Challenge Rating
+            required
+            error={errors.name}
+            onBlur={handleNameBlur}
+            disabled={viewMode}
+            variant="outlined"
+            autoFocus
+            margin="dense"
+            id="name"
+            label="Name"
+            InputLabelProps={{
+              shrink: true,
+            }}
+            fullWidth
+            value={monster.name}
+            onChange={(e) => handleChange(nameOf<Monster>("name"), e.target.value)}
+          />
+          <TextField
+            disabled={viewMode}
+            variant="outlined"
+            margin="dense"
+            label="Description"
+            multiline
+            rows={4}
+            InputLabelProps={{
+              shrink: true,
+            }}
+            fullWidth
+            value={monster.description}
+            onChange={(e) => handleChange(nameOf<Monster>("description"), e.target.value)}
+          />
+          <FormLabel id="challenge-slider">
+            Challenge Rating
             </FormLabel>
-            <Slider
-                aria-labelledby="challenge-slider"
-                disabled={viewMode}
-                value={monster.challenge}
-                onChange={(e,v) => handleChange(nameOf<Monster>("challenge"), v as number)}
-                valueLabelDisplay="auto"
-                step={1}
-                marks
-                min={Monster.minChallenge}
-                max={Monster.maxChallenge}
-            />
+          <Slider
+            aria-labelledby="challenge-slider"
+            disabled={viewMode}
+            value={monster.challenge}
+            onChange={(e, v) => handleChange(nameOf<Monster>("challenge"), v as number)}
+            valueLabelDisplay="auto"
+            step={1}
+            marks
+            min={Monster.minChallenge}
+            max={Monster.maxChallenge}
+          />
         </DialogContent>
 
         <DialogActions>
           <Button onClick={props.onCancelClick} color="primary">
             Cancel
           </Button>
-          {!viewMode && 
+          {!viewMode &&
             <Button onClick={handleSaveClick} variant="contained" color="primary">
-            Save
+              Save
             </Button>
           }
-          
+
         </DialogActions>
       </Dialog>
     </div>

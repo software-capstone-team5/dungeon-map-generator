@@ -1,5 +1,7 @@
 
 import { makeStyles } from '@material-ui/core';
+import Checkbox from '@material-ui/core/Checkbox';
+import FormControlLabel from '@material-ui/core/FormControlLabel';
 import FormControl from '@material-ui/core/FormControl';
 import FormLabel from '@material-ui/core/FormLabel';
 import InputLabel from '@material-ui/core/InputLabel';
@@ -12,9 +14,9 @@ import { Probabilities } from '../../generator/Probabilities';
 type Props<EnumType extends number | string> = {
     disabled?: boolean;
     label: string;
-    probs: Probabilities<EnumType>;
+    probs: Probabilities<EnumType> | null;
     enum: {[s: string]: EnumType};
-    onProbUpdate: (newList: Probabilities<EnumType>) => void;
+    onProbUpdate: (newList: Probabilities<EnumType> | null) => void;
 };
 
 const useStyles = makeStyles((theme) => ({
@@ -33,7 +35,9 @@ EnumProbabilityText.defaultProps = {
 
 function EnumProbabilityText<EnumType extends number | string>(props: Props<EnumType>) {
     const classes = useStyles();
-    var pureProbs = props.probs.toMap();
+
+    var pureProbs = props.probs ? props.probs.toMap() : new Map<EnumType, number>();
+    var isDefaultChecked = props.probs === null;
 
     const handleProbabilityChange = (enumChanged: EnumType, newValue: number) => {
         if (newValue < 0 || newValue > 100 || Number.isNaN(newValue)) {
@@ -46,6 +50,14 @@ function EnumProbabilityText<EnumType extends number | string>(props: Props<Enum
         props.onProbUpdate!(newList);
     }
 
+    const handleCheckboxChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        if (event.target.checked) {
+            props.onProbUpdate(null);
+        } else {
+            props.onProbUpdate(Probabilities.buildUniform(Object.values(props.enum)));
+        }
+    }
+
     return (
         <Grid
             container
@@ -53,14 +65,16 @@ function EnumProbabilityText<EnumType extends number | string>(props: Props<Enum
             direction="row"
             alignItems="center"
         >
-            <FormLabel className={classes.label}>{props.label}</FormLabel>
+            <FormControl className={classes.label} disabled={props.disabled|| isDefaultChecked}>
+                <FormLabel>{props.label}</FormLabel>
+            </FormControl>
             {Object.values(props.enum).map((x: EnumType, i: number) =>
-                    <FormControl key={x} disabled={props.disabled} fullWidth className={classes.margin} variant="outlined">
+                    <FormControl key={x} disabled={props.disabled || isDefaultChecked} fullWidth className={classes.margin} variant="outlined">
                         <InputLabel htmlFor={"enum-prob-input-" + i}>{x}</InputLabel>
                         <OutlinedInput
                             id={"enum-prob-input-" + i}
                             type="number"
-                            value={+(pureProbs.get(x)!*100).toFixed(2)}
+                            value={isDefaultChecked ? "" : +(pureProbs.get(x)!*100).toFixed(2)}
                             onChange={(e)=>handleProbabilityChange(x, parseFloat(e.target.value))}
                             endAdornment={<InputAdornment position="end">%</InputAdornment>}
                             inputProps={{ inputprops: { min: "0", max: "100", step: "1" },  style: { textAlign: "right" } }}
@@ -68,6 +82,18 @@ function EnumProbabilityText<EnumType extends number | string>(props: Props<Enum
                         />
                     </FormControl>
             )}
+            <FormControlLabel
+                disabled={props.disabled}
+                control={
+                <Checkbox
+                    checked={isDefaultChecked}
+                    onChange={handleCheckboxChange}
+                    name="useDefault"
+                    color="default"
+                />
+                }
+                label="Use Default"
+            />
         </Grid>
     );
     

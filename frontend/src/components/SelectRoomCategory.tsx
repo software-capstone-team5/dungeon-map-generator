@@ -1,21 +1,26 @@
-import { useEffect, useState } from 'react';
 import Button from '@material-ui/core/Button';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogTitle from '@material-ui/core/DialogTitle';
-import NameList from './common/NameList';
-import RoomCategoryEditor from './RoomCategoryEditor';
+import differenceWith from 'lodash/differenceWith';
+import { useEffect, useState } from 'react';
+import DB from '../DB';
 import { RoomCategory } from '../models/RoomCategory';
 import { compareByID } from '../utils/util';
-import differenceWith from 'lodash/differenceWith';
-import DB from '../DB';
+import NameList from './common/NameList';
+import RoomCategoryEditor from './RoomCategoryEditor';
 
 type Props = {
   open: boolean;
   exclude: RoomCategory[];
+  onlyAllowDefaults?: boolean;
   onSelect: (rc: RoomCategory) => void;
   onCancelClick: () => void;
+}
+
+SelectRoomCategory.defaultProps = {
+  onlyAllowDefaults: false
 }
 
 export default function SelectRoomCategory(props: Props) {
@@ -28,6 +33,9 @@ export default function SelectRoomCategory(props: Props) {
     DB.getAllRoomCat().then(result =>{
       if (result && result.valid && mounted) {
         var list = differenceWith(result.response, props.exclude, compareByID) as RoomCategory[]
+        if (props.onlyAllowDefaults) {
+          list = list.filter(rc => rc.canBeUsedAsDefault())
+        }
         setRoomCategories(list)
       }
     })
@@ -45,7 +53,7 @@ export default function SelectRoomCategory(props: Props) {
         open={props.open}
         aria-labelledby="form-dialog-title"
       >
-        <DialogTitle id="form-dialog-title">Select Room Category</DialogTitle>
+        <DialogTitle id="form-dialog-title">Select {props.onlyAllowDefaults ? "Default" : ""} Room Category</DialogTitle>
         <DialogContent>
           <NameList<RoomCategory> list={roomCategories} onClick={(rc: RoomCategory) => props.onSelect(rc)}></NameList>
           <Button onClick={()=>setRoomEditorOpen(true)} variant="outlined" style={{width: "100%"}} color="primary">
