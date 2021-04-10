@@ -1,47 +1,42 @@
-import { useState } from 'react';
-
 import { makeStyles } from '@material-ui/core';
-import Typography from '@material-ui/core/Typography';
-import IconButton from '@material-ui/core/IconButton';
-import FormLabel from '@material-ui/core/FormLabel';
 import Button from '@material-ui/core/Button';
-import TextField from '@material-ui/core/TextField';
+import Checkbox from '@material-ui/core/Checkbox';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogTitle from '@material-ui/core/DialogTitle';
-import Tooltip from '@material-ui/core/Tooltip';
-import Grid from '@material-ui/core/Grid';
 import FormControl from '@material-ui/core/FormControl';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
-import Checkbox from '@material-ui/core/Checkbox';
-
-import HelpOutlineIcon from '@material-ui/icons/HelpOutline';
-import EditIcon from '@material-ui/icons/Edit';
+import FormLabel from '@material-ui/core/FormLabel';
+import Grid from '@material-ui/core/Grid';
+import IconButton from '@material-ui/core/IconButton';
+import TextField from '@material-ui/core/TextField';
+import Tooltip from '@material-ui/core/Tooltip';
+import Typography from '@material-ui/core/Typography';
 import AddBoxIcon from '@material-ui/icons/AddBox';
-
+import EditIcon from '@material-ui/icons/Edit';
+import HelpOutlineIcon from '@material-ui/icons/HelpOutline';
+import cloneDeep from 'lodash/cloneDeep';
+import { useState } from 'react';
+import Authenticator from '../Authenticator';
+import { CorridorWidth } from '../constants/CorridorWidth';
+import { EntranceType } from '../constants/EntranceType';
+import { MonsterState } from '../constants/MonsterState';
+import DB from '../DB';
+import { Probabilities } from '../generator/Probabilities';
+import { CorridorCategory } from '../models/CorridorCategory';
+import { Item } from '../models/Item';
+import { Monster } from '../models/Monster';
+import { Trap } from '../models/Trap';
+import { nameOf, valueOf } from '../utils/util';
 import EnumProbabilityText from './common/EnumProbabilityText';
 import ProbabilityNameList from './common/ProbabilityNameList';
-import { CorridorCategory } from '../models/CorridorCategory';
-import { Monster } from '../models/Monster';
-import { Item } from '../models/Item';
-import { Trap } from '../models/Trap';
-import { Probabilities } from '../generator/Probabilities';
-import { MonsterState } from '../constants/MonsterState';
-import { EntranceType } from '../constants/EntranceType';
-import { CorridorWidth } from '../constants/CorridorWidth';
-
-import SelectTrap from './SelectTrap';
-import SelectMonster from './SelectMonster';
-import SelectItem from './SelectItem';
-import MonsterEditor from './MonsterEditor';
 import ItemEditor from './ItemEditor';
+import MonsterEditor from './MonsterEditor';
+import SelectItem from './SelectItem';
+import SelectMonster from './SelectMonster';
+import SelectTrap from './SelectTrap';
 import TrapEditor from './TrapEditor';
-
-import { nameOf, valueOf } from '../utils/util';
-import cloneDeep from 'lodash/cloneDeep';
-import DB from '../DB';
-import Authenticator from '../Authenticator';
 
 
 const useStyles = makeStyles((theme) => ({
@@ -288,7 +283,19 @@ export default function CorridorCategoryEditor(props: Props) {
           id="form-dialog-title">
           <Grid container alignItems="center">
               <Typography component={'span'} variant="h6">{editMode ? "Edit" : "Add"} Corridor Category</Typography>
-              <Tooltip title="The probabilities in each list will be normalized if they don't sum up to 100%" classes={{ tooltip: classes.customWidth }}>
+              <Tooltip
+                  arrow
+                  classes={{ tooltip: classes.customWidth }}
+                  title={
+                  <>
+                      <Typography align="center" color="inherit"><u>Help</u></Typography>
+                      <p><Typography display="inline" color="inherit">%:</Typography> The probabilities in each list will be normalized if they don't sum up to 100%</p>
+                      <p><Typography variant="body2" display="inline" color="inherit">Default:</Typography> If a Corridor has "Use Default" checked for any option,
+                          it will use the values in the Default Corridor.</p>
+                      <p>The Default Corridor cannot have "Use Default" checked for any option.</p>
+                  </>
+                  }
+              >
                   <HelpOutlineIcon className={classes.helpIcon} color="primary"></HelpOutlineIcon>
               </Tooltip>
             </Grid>

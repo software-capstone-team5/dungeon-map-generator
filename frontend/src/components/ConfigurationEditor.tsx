@@ -22,8 +22,6 @@ import NameUpdate from './NameUpdate';
 import RegionLevelConfiguration from './RegionLevelConfiguration';
 
 
-
-
 const styles = (theme: Theme) => ({
     root: {
         backgroundColor: 'rgba(0, 0, 0, .03)',
@@ -259,7 +257,19 @@ function ConfigurationEditor(props: Props) {
                         id="panel2a-header"
                     >
                         <Typography>Region Level Options</Typography>
-                        <Tooltip title="The probabilities in each list will be normalized if they don't sum up to 100%" classes={{ tooltip: classes.customWidth }}>
+                        <Tooltip
+                            arrow
+                            classes={{ tooltip: classes.customWidth }}
+                            title={
+                            <>
+                                <Typography align="center" color="inherit"><u>Help</u></Typography>
+                                <p><Typography display="inline" color="inherit">%:</Typography> The probabilities in each list will be normalized if they don't sum up to 100%</p>
+                                <p><Typography variant="body2" display="inline" color="inherit">Default:</Typography> If a Room/Corridor has "Use Default" checked for any option,
+                                    it will use the values in the Default Room/Corridor.</p>
+                                <p>The Default Room/Corridor cannot have "Use Default" checked for any option.</p>
+                            </>
+                            }
+                        >
                             <HelpOutlineIcon className={classes.helpIcon} color="primary"></HelpOutlineIcon>
                         </Tooltip>
                     </AccordionSummary>
