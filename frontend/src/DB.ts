@@ -7,6 +7,9 @@ import { plainToClass } from "class-transformer";
 import { Authenticator } from './Authenticator';
 import { RoomCategory } from "./models/RoomCategory";
 import { CorridorCategory } from "./models/CorridorCategory";
+import { Monster } from "./models/Monster";
+import { Item } from "./models/Item";
+import { Trap } from "./models/Trap";
 
 export class DB {
 
@@ -140,6 +143,137 @@ export class DB {
                 corridorCats.push(plainToClass(RoomCategory, element))
             });
             return { valid: true, "response": corridorCats };
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
+    // REQ-10: Add.Monster - The systems shall allow a logged in user to fill out and submit a form to add a new monster to the database.
+    static async saveMonster(monster: Monster) {
+        try {
+            var token = await Authenticator.getIDToken();
+            if (token === undefined) {
+                return { "valid": false, "response": "Not logged in" };
+            }
+            const requestOptions = {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(monster)
+            };
+            var response = await fetch(`${BACKEND_URL}/user/${token}/monster`, requestOptions);
+            var data = await response.json();
+            return data
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
+    static async saveItem(item: Item) {
+        try {
+            var token = await Authenticator.getIDToken();
+            if (token === undefined) {
+                return { "valid": false, "response": "Not logged in" };
+            }
+            const requestOptions = {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(item)
+            };
+            var response = await fetch(`${BACKEND_URL}/user/${token}/item`, requestOptions);
+            var data = await response.json();
+            return data
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
+    static async saveTrap(trap: Trap) {
+        try {
+            var token = await Authenticator.getIDToken();
+            if (token === undefined) {
+                return { "valid": false, "response": "Not logged in" };
+            }
+            const requestOptions = {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(trap)
+            };
+            var response = await fetch(`${BACKEND_URL}/user/${token}/trap`, requestOptions);
+            var data = await response.json();
+            return data
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
+    // REQ-10: Add.Monster - The systems shall allow a logged in user to fill out and submit a form to add a new monster to the database.
+    static async getAllMonsters() {
+        try {
+            var token = await Authenticator.getIDToken();
+            if (token === undefined) {
+                return { valid: false, "response": "Not Logged In" };
+            }
+            const requestOptions = {
+                method: 'GET'
+            };
+            var response = await fetch(`${BACKEND_URL}/user/${token}/monster`, requestOptions);
+            var data = await response.json();
+            if (!data.valid) {
+                return data;
+            }
+            var monsters: Monster[] = [];
+            data.response.forEach((element: Object) => {
+                monsters.push(plainToClass(Monster, element))
+            });
+            return { valid: true, "response": monsters };
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
+    static async getAllItems() {
+        try {
+            var token = await Authenticator.getIDToken();
+            if (token === undefined) {
+                return { valid: false, "response": "Not Logged In" };
+            }
+            const requestOptions = {
+                method: 'GET'
+            };
+            var response = await fetch(`${BACKEND_URL}/user/${token}/item`, requestOptions);
+            var data = await response.json();
+            if (!data.valid) {
+                return data;
+            }
+            var items: Item[] = [];
+            data.response.forEach((element: Object) => {
+                items.push(plainToClass(Item, element))
+            });
+            return { valid: true, "response": items };
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
+    static async getAllTraps() {
+        try {
+            var token = await Authenticator.getIDToken();
+            if (token === undefined) {
+                return { valid: false, "response": "Not Logged In" };
+            }
+            const requestOptions = {
+                method: 'GET'
+            };
+            var response = await fetch(`${BACKEND_URL}/user/${token}/trap`, requestOptions);
+            var data = await response.json();
+            if (!data.valid) {
+                return data;
+            }
+            var traps: Trap[] = [];
+            data.response.forEach((element: Object) => {
+                traps.push(plainToClass(Trap, element))
+            });
+            return { valid: true, "response": traps };
         } catch (error) {
             console.log(error);
         }

@@ -45,23 +45,23 @@ def saveReferences(data, collection_ref):
 def saveCategory(categoryData, collection_ref, users_collection, user_id):
     categoryData, dbCategory = getDBID(categoryData, collection_ref)
     #Also update db for Monster, items, traps TODO
-    # # Save monster references in Monsters collection in DB
-    # monsters = categoryData['monsters']
-    # monster_collection = users_collection.document(user_id).collection("Monsters")
-    # # Update category to hold DB references
-    # categoryData['monsters']['objects'] = saveReferences(monsters, monster_collection)
+    # Save monster references in Monsters collection in DB
+    monsters = categoryData['monsters']
+    monster_collection = users_collection.document(user_id).collection("Monsters")
+    # Update category to hold DB references
+    categoryData['monsters']['objects'] = saveReferences(monsters, monster_collection)
 
-    # # Save item references in Items collection in DB
-    # items = categoryData['items']
-    # item_collection = users_collection.document(user_id).collection("Items")
-    # # Update configuration to hold DB references
-    # categoryData['items']['objects'] = saveReferences(items, item_collection)
+    # Save item references in Items collection in DB
+    items = categoryData['items']
+    item_collection = users_collection.document(user_id).collection("Items")
+    # Update configuration to hold DB references
+    categoryData['items']['objects'] = saveReferences(items, item_collection)
 
-    # # Save trap references in Traps collection in DB
-    # traps = categoryData['traps']
-    # trap_collection = users_collection.document(user_id).collection("Traps")
-    # # Update configuration to hold DB references
-    # categoryData['traps']['objects'] = saveReferences(traps, trap_collection)
+    # Save trap references in Traps collection in DB
+    traps = categoryData['traps']
+    trap_collection = users_collection.document(user_id).collection("Traps")
+    # Update configuration to hold DB references
+    categoryData['traps']['objects'] = saveReferences(traps, trap_collection)
 
     dbCategory.set(categoryData) # TODO remove episilon including child nodes that have them
     return dbCategory
