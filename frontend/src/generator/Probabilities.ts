@@ -1,12 +1,12 @@
 export class Probabilities<T> {
 	private epsilon = 0.0005; // TODO: Chose value for this
-	objects: (T | null)[] = [];
+	objects: (T)[] = [];
 	probSum: number[] = [];
 
 	constructor(chances: Map<T, number> | null, normalize = true){
 		if (chances != null){
 			var last = 0;
-			chances.forEach((prob: number, key: T | null) => {
+			chances.forEach((prob: number, key: T) => {
 				this.objects.push(key);
 				last += prob;
 				this.probSum.push(last);
@@ -18,12 +18,12 @@ export class Probabilities<T> {
 		}
 	}
 
-	static buildUniform<T>(objects: (T | null)[]): Probabilities<T>{
+	static buildUniform<T>(objects: (T)[]): Probabilities<T>{
 		var probabilities: Probabilities<T> = new Probabilities<T>(null);
 		
 		var prob = 1/objects.length;
 		var last = 0;
-		objects.forEach((key: (T | null)) => {
+		objects.forEach((key: (T)) => {
 			probabilities.objects.push(key);
 			last += prob;
 			probabilities.probSum.push(last);
@@ -32,15 +32,20 @@ export class Probabilities<T> {
 		return probabilities;
 	}
 
-	toMap(): Map<T | null, number>{
-        var map = new Map<T | null, number>();
+	toMap(): Map<T, number>{
+        var map = new Map<T, number>();
+		if (!this.objects || this.objects.length === 0 || (this.objects.length === 1 && this.objects[0] === null)){
+			return map;
+		}
 
         this.probSum.forEach((sum: number, index: number) => {
             var prob = sum;
             if (index > 0) {
                 prob -= this.probSum[index - 1];
             }
-            map.set(this.objects[index], parseFloat(prob.toFixed(4)));
+			if (this.objects[index]){
+				map.set(this.objects[index] as T, parseFloat(prob.toFixed(4)));
+			}
         })
 
         return map;
@@ -70,7 +75,7 @@ export class Probabilities<T> {
 	}
 
 	randPickOne(): T | null{
-		if (!this.objects || this.objects.length == 0){
+		if (!this.objects || this.objects.length === 0){
 			return null;
 		}
 
@@ -84,7 +89,7 @@ export class Probabilities<T> {
 	}
 
 	randPickMany(amountModifier: number, allowDuplicates: boolean = true): T[]{
-		if (!this.objects || this.objects.length == 0){
+		if (!this.objects || this.objects.length === 0){
 			return [];
 		}
 
@@ -98,14 +103,14 @@ export class Probabilities<T> {
 				}
 			}
 		}
-		if (picks.length === 1 && picks[0] == null){
+		if (picks.length === 1 && picks[0] === null){
 			picks = [];
 		}
 		return picks;
 	}
 
 	randPickNum(num: number, allowDuplicates: boolean = true, countNull: boolean = true): T[]{
-		if (!this.objects || this.objects.length == 0){
+		if (!this.objects || this.objects.length === 0){
 			return [];
 		}
 		
