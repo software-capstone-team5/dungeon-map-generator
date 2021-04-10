@@ -168,6 +168,27 @@ export class DB {
         }
     }
 
+    // REQ-10: Add.Monster - The systems shall allow a logged in user to fill out and submit a form to add a new monster to the database.
+    static async saveMonsters(monsters: Monster[]) {
+        try {
+            var token = await Authenticator.getIDToken();
+            if (token === undefined) {
+                return { "valid": false, "response": "Not logged in" };
+            }
+            const requestOptions = {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(monsters)
+            };
+            var response = await fetch(`${BACKEND_URL}/user/${token}/monsters`, requestOptions);
+            var data = await response.json();
+            console.log(data)
+            return data
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
     static async saveItem(item: Item) {
         try {
             var token = await Authenticator.getIDToken();
