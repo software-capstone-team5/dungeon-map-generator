@@ -65,7 +65,9 @@ function EnumProbabilityText<EnumType extends number | string>(props: Props<Enum
             direction="row"
             alignItems="center"
         >
-            <FormLabel className={classes.label}>{props.label}</FormLabel>
+            <FormControl className={classes.label} disabled={props.disabled|| isDefaultChecked}>
+                <FormLabel>{props.label}</FormLabel>
+            </FormControl>
             {Object.values(props.enum).map((x: EnumType, i: number) =>
                     <FormControl key={x} disabled={props.disabled || isDefaultChecked} fullWidth className={classes.margin} variant="outlined">
                         <InputLabel htmlFor={"enum-prob-input-" + i}>{x}</InputLabel>
@@ -87,7 +89,7 @@ function EnumProbabilityText<EnumType extends number | string>(props: Props<Enum
                     checked={isDefaultChecked}
                     onChange={handleCheckboxChange}
                     name="useDefault"
-                    color="primary"
+                    color="default"
                 />
                 }
                 label="Use Default"

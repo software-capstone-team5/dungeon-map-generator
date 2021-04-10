@@ -12,6 +12,7 @@ import DialogContent from '@material-ui/core/DialogContent';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import Tooltip from '@material-ui/core/Tooltip';
 import Grid from '@material-ui/core/Grid';
+import FormControl from '@material-ui/core/FormControl';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Checkbox from '@material-ui/core/Checkbox';
 
@@ -284,7 +285,8 @@ export default function RoomCategoryEditor(props: Props) {
 
   return (
     <div>
-      <Dialog open={props.open} onClose={handleClose} aria-labelledby="form-dialog-title">
+      <Dialog scroll="paper" maxWidth="md" open={props.open} onClose={handleClose} aria-labelledby="form-dialog-title">
+        <div style={{maxWidth: 650}}>
         <DialogTitle
           className={classes.root}
           disableTypography
@@ -335,7 +337,9 @@ export default function RoomCategoryEditor(props: Props) {
             />
             {/* Tile assets */}
             <div className={classes.listLabel}>
-              <FormLabel>Monsters</FormLabel>
+              <FormControl disabled={viewMode || !Boolean(roomCategory.monsters)}>
+                <FormLabel>Monsters</FormLabel>
+              </FormControl>
               <IconButton disabled={viewMode || !Boolean(roomCategory.monsters)} onClick={handleAddMonsterClick} aria-label="add" color="primary">
                 <AddBoxIcon />
               </IconButton>
@@ -346,7 +350,7 @@ export default function RoomCategoryEditor(props: Props) {
                     checked={!Boolean(roomCategory.monsters)}
                     onChange={handleMonsterDefaultChange}
                     name="useDefault"
-                    color="primary"
+                    color="default"
                 />
                 }
                 label="Use Default"
@@ -369,7 +373,9 @@ export default function RoomCategoryEditor(props: Props) {
               onProbUpdate={(newList: Probabilities<MonsterState> | null) => handleChange(nameOf<RoomCategory>("states"), newList)}
             />
             <div className={classes.listLabel}>
-              <FormLabel>Items</FormLabel>
+              <FormControl disabled={viewMode || !Boolean(roomCategory.items)}>
+                <FormLabel>Items</FormLabel>
+              </FormControl>
               <IconButton disabled={viewMode || !Boolean(roomCategory.items)} onClick={handleAddItemClick} aria-label="add" color="primary">
                 <AddBoxIcon />
               </IconButton>
@@ -380,7 +386,7 @@ export default function RoomCategoryEditor(props: Props) {
                     checked={!Boolean(roomCategory.items)}
                     onChange={handleItemDefaultChange}
                     name="useDefault"
-                    color="primary"
+                    color="default"
                 />
                 }
                 label="Use Default"
@@ -396,7 +402,9 @@ export default function RoomCategoryEditor(props: Props) {
               onProbUpdate={(newList) => handleChange(nameOf<RoomCategory>("items"), newList)}
             />
             <div className={classes.listLabel}>
-              <FormLabel>Traps</FormLabel>
+              <FormControl disabled={viewMode || !Boolean(roomCategory.traps)}>
+                <FormLabel>Traps</FormLabel>
+              </FormControl>
               <IconButton disabled={viewMode || !Boolean(roomCategory.traps)} onClick={handleAddTrapClick} aria-label="add" color="primary">
                 <AddBoxIcon />
               </IconButton>
@@ -407,7 +415,7 @@ export default function RoomCategoryEditor(props: Props) {
                     checked={!Boolean(roomCategory.traps)}
                     onChange={handleTrapDefaultChange}
                     name="useDefault"
-                    color="primary"
+                    color="default"
                 />
                 }
                 label="Use Default"
@@ -442,6 +450,7 @@ export default function RoomCategoryEditor(props: Props) {
           }
 
         </DialogActions>
+        </div>
       </Dialog>
       <SelectMonster
         open={selectMonsterDialogOpen}

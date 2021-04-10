@@ -12,6 +12,7 @@ import DialogContent from '@material-ui/core/DialogContent';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import Tooltip from '@material-ui/core/Tooltip';
 import Grid from '@material-ui/core/Grid';
+import FormControl from '@material-ui/core/FormControl';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Checkbox from '@material-ui/core/Checkbox';
 
@@ -279,7 +280,8 @@ export default function CorridorCategoryEditor(props: Props) {
 
   return (
     <div>
-      <Dialog open={props.open} onClose={handleClose} aria-labelledby="form-dialog-title">
+      <Dialog scroll="paper" maxWidth="md" open={props.open} onClose={handleClose} aria-labelledby="form-dialog-title">
+      <div style={{maxWidth: 650}}>
         <DialogTitle
           className={classes.root}
           disableTypography
@@ -323,7 +325,9 @@ export default function CorridorCategoryEditor(props: Props) {
             />
             {/* Tile assets */}
             <div className={classes.listLabel}>
-              <FormLabel>Monsters</FormLabel>
+              <FormControl disabled={viewMode || !Boolean(corridorCategory.monsters)}>
+                <FormLabel>Monsters</FormLabel>
+              </FormControl>
               <IconButton disabled={viewMode || !Boolean(corridorCategory.monsters)} onClick={handleAddMonsterClick} aria-label="add" color="primary">
                 <AddBoxIcon />
               </IconButton>
@@ -334,7 +338,7 @@ export default function CorridorCategoryEditor(props: Props) {
                     checked={!Boolean(corridorCategory.monsters)}
                     onChange={handleMonsterDefaultChange}
                     name="useDefault"
-                    color="primary"
+                    color="default"
                 />
                 }
                 label="Use Default"
@@ -357,7 +361,9 @@ export default function CorridorCategoryEditor(props: Props) {
               onProbUpdate={(newList: Probabilities<MonsterState> | null) => handleChange(nameOf<CorridorCategory>("states"), newList)}
             />
             <div className={classes.listLabel}>
-              <FormLabel>Items</FormLabel>
+              <FormControl disabled={viewMode || !Boolean(corridorCategory.items)}>
+                <FormLabel>Items</FormLabel>
+              </FormControl>
               <IconButton disabled={viewMode || !Boolean(corridorCategory.items)} onClick={handleAddItemClick} aria-label="add" color="primary">
                 <AddBoxIcon />
               </IconButton>
@@ -368,7 +374,7 @@ export default function CorridorCategoryEditor(props: Props) {
                     checked={!Boolean(corridorCategory.items)}
                     onChange={handleItemDefaultChange}
                     name="useDefault"
-                    color="primary"
+                    color="default"
                 />
                 }
                 label="Use Default"
@@ -384,7 +390,9 @@ export default function CorridorCategoryEditor(props: Props) {
               onProbUpdate={(newList) => handleChange(nameOf<CorridorCategory>("items"), newList)}
             />
             <div className={classes.listLabel}>
-              <FormLabel>Traps</FormLabel>
+              <FormControl disabled={viewMode || !Boolean(corridorCategory.traps)}>
+                <FormLabel>Traps</FormLabel>
+              </FormControl>
               <IconButton disabled={viewMode || !Boolean(corridorCategory.traps)} onClick={handleAddTrapClick} aria-label="add" color="primary">
                 <AddBoxIcon />
               </IconButton>
@@ -395,7 +403,7 @@ export default function CorridorCategoryEditor(props: Props) {
                     checked={!Boolean(corridorCategory.traps)}
                     onChange={handleTrapDefaultChange}
                     name="useDefault"
-                    color="primary"
+                    color="default"
                 />
                 }
                 label="Use Default"
@@ -430,6 +438,7 @@ export default function CorridorCategoryEditor(props: Props) {
           }
 
         </DialogActions>
+        </div>
       </Dialog>
       <SelectMonster
         open={selectMonsterDialogOpen}
