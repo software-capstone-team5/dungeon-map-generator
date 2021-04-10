@@ -66,9 +66,12 @@ export default function ImportMonsters(props: Props) {
     })
   }
 
-  const handleSave = () => {
+  const handleSave = async () => {
     // TODO: send 'monsters' to the backend
-    DB.saveMonsters(monsters)
+    var result = await DB.saveMonsters(monsters);
+    if (!result.valid) {
+      window.alert(result.response);
+    }
     props.onCancelClick();
   }
 
