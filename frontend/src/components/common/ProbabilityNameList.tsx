@@ -6,6 +6,7 @@ import ListItemText from '@material-ui/core/ListItemText';
 import { makeStyles } from '@material-ui/core/styles';
 import TextField from '@material-ui/core/TextField';
 import DeleteIcon from '@material-ui/icons/Delete';
+import { useRef } from 'react';
 import { Probabilities } from '../../generator/Probabilities';
 
 
@@ -48,13 +49,20 @@ ProbabilityNameList.defaultProps = {
 function ProbabilityNameList<T extends hasName> (props: Props<T>) {
 
     const classes = useStyles();
+    const invalid = useRef<number | null>(null);
     var pureProbs = props.list ? props.list.toMap() : new Map<T, number>();
 
-    const handleProbabilityChange = (item: T, newValue: number) => {
-      if (newValue < 0 || newValue > 100 || Number.isNaN(newValue)) {
+    const handleProbabilityChange = (item: T, index: number, newValue: number) => {
+      if (newValue < 0 || newValue > 100) {
         return;
       }
-      newValue = newValue/100;
+      if (Number.isNaN(newValue)) {
+        newValue = 0;
+        invalid.current = index;
+      } else {
+        newValue = newValue/100;
+        invalid.current = null;
+      }
       pureProbs.set(item, parseFloat(newValue.toFixed(4)));
       var newList = new Probabilities<T>(pureProbs, false);
 
@@ -67,6 +75,15 @@ function ProbabilityNameList<T extends hasName> (props: Props<T>) {
       }
     }
 
+    const handleBlur = (i: number) => {
+      if (i === invalid.current && props.list) {
+        pureProbs.set(props.list.objects[i], 0);
+        var newList = new Probabilities<T>(pureProbs, false);
+        invalid.current = null;
+        props.onProbUpdate!(newList);
+      }
+  }
+
     const listItems = props.list ? props.list.objects.map((item: T, i: number) =>
         <ListItem disabled={props.disabled} button={(!props.disabled) as true} onClick={(e)=>handleClick(item)} key={i}>
           <ListItemText
@@ -75,11 +92,12 @@ function ProbabilityNameList<T extends hasName> (props: Props<T>) {
           {props.showProbs &&
             <TextField
               type="number"
+              onBlur={()=>handleBlur(i)}
               disabled={props.disabled}
-              value={+(pureProbs.get(item)!*100).toFixed(2)}
+              value={invalid.current === i ? "" : +(pureProbs.get(item)!*100).toFixed(2)}
               onClick={(event) => event.stopPropagation()}
               onFocus={(event) => event.stopPropagation()}
-              onChange={(e)=>handleProbabilityChange(item, parseFloat(e.target.value))}
+              onChange={(e)=>handleProbabilityChange(item, i, parseFloat(e.target.value))}
               label="%"
               variant="outlined"
               InputProps={{ inputProps: { min: "0", max: "100", step: "1" } }}

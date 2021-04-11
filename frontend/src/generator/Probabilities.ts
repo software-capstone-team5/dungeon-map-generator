@@ -63,9 +63,15 @@ export class Probabilities<T> {
 
 	remove(index: number) {
 		if (index >= 0 && index < this.objects.length) {
+			var valueToSubtract = this.probSum[index];
+			if (index > 0) {
+				valueToSubtract -= this.probSum[index - 1];
+			}
 			this.objects.splice(index, 1);
 			this.probSum.splice(index, 1);
-			this.normalize();
+			for (var i = index; i < this.objects.length; i++) {
+				this.probSum[i] -= valueToSubtract;
+			}
 		}
 	}
 
