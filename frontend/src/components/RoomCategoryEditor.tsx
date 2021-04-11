@@ -461,12 +461,14 @@ export default function RoomCategoryEditor(props: Props) {
           </DialogActions>
         </div>
       </Dialog>
-      <SelectMonster
-        open={selectMonsterDialogOpen}
-        exclude={roomCategory.monsters ? roomCategory.monsters.objects : []}
-        onSelect={(m) => handleSelect(nameOf<RoomCategory>("monsters"), m)}
-        onCancelClick={() => setSelectMonsterDialogOpen(false)}
-      />
+      {selectMonsterDialogOpen &&
+        <SelectMonster
+          open={selectMonsterDialogOpen}
+          exclude={roomCategory.monsters ? roomCategory.monsters.objects : []}
+          onSelect={(m) => handleSelect(nameOf<RoomCategory>("monsters"), m)}
+          onCancelClick={() => setSelectMonsterDialogOpen(false)}
+        />
+      }
       {monsterEditorOpen &&
         <MonsterEditor
           viewOnly
@@ -476,12 +478,14 @@ export default function RoomCategoryEditor(props: Props) {
           onCancelClick={() => setMonsterEditorOpen(false)}
         />
       }
-      <SelectItem
-        open={selectItemDialogOpen}
-        exclude={roomCategory.items ? roomCategory.items.objects : []}
-        onSelect={(i) => handleSelect(nameOf<RoomCategory>("items"), i)}
-        onCancelClick={() => setSelectItemDialogOpen(false)}
-      />
+      {selectItemDialogOpen && 
+        <SelectItem
+          open={selectItemDialogOpen}
+          exclude={roomCategory.items ? roomCategory.items.objects : []}
+          onSelect={(i) => handleSelect(nameOf<RoomCategory>("items"), i)}
+          onCancelClick={() => setSelectItemDialogOpen(false)}
+        />
+      }
       {itemEditorOpen &&
         <ItemEditor
           viewOnly
@@ -491,12 +495,14 @@ export default function RoomCategoryEditor(props: Props) {
           onCancelClick={() => setItemEditorOpen(false)}
         />
       }
-      <SelectTrap
-        open={selectTrapDialogOpen}
-        exclude={roomCategory.traps ? roomCategory.traps.objects : []}
-        onSelect={(i) => handleSelect(nameOf<RoomCategory>("traps"), i)}
-        onCancelClick={() => setSelectTrapDialogOpen(false)}
-      />
+      {selectTrapDialogOpen &&
+        <SelectTrap
+          open={selectTrapDialogOpen}
+          exclude={roomCategory.traps ? roomCategory.traps.objects : []}
+          onSelect={(i) => handleSelect(nameOf<RoomCategory>("traps"), i)}
+          onCancelClick={() => setSelectTrapDialogOpen(false)}
+        />
+      }
       {trapEditorOpen &&
         <TrapEditor
           viewOnly

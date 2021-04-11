@@ -449,12 +449,14 @@ export default function CorridorCategoryEditor(props: Props) {
           </DialogActions>
         </div>
       </Dialog>
-      <SelectMonster
-        open={selectMonsterDialogOpen}
-        exclude={corridorCategory.monsters ? corridorCategory.monsters.objects : []}
-        onSelect={(m) => handleSelect(nameOf<CorridorCategory>("monsters"), m)}
-        onCancelClick={() => setSelectMonsterDialogOpen(false)}
-      />
+      {selectMonsterDialogOpen &&
+        <SelectMonster
+          open={selectMonsterDialogOpen}
+          exclude={corridorCategory.monsters ? corridorCategory.monsters.objects : []}
+          onSelect={(m) => handleSelect(nameOf<CorridorCategory>("monsters"), m)}
+          onCancelClick={() => setSelectMonsterDialogOpen(false)}
+        />
+      }
       {monsterEditorOpen &&
         <MonsterEditor
           viewOnly
@@ -464,12 +466,14 @@ export default function CorridorCategoryEditor(props: Props) {
           onCancelClick={() => setMonsterEditorOpen(false)}
         />
       }
-      <SelectItem
-        open={selectItemDialogOpen}
-        exclude={corridorCategory.items ? corridorCategory.items.objects : []}
-        onSelect={(i) => handleSelect(nameOf<CorridorCategory>("items"), i)}
-        onCancelClick={() => setSelectItemDialogOpen(false)}
-      />
+      {selectItemDialogOpen && 
+        <SelectItem
+          open={selectItemDialogOpen}
+          exclude={corridorCategory.items ? corridorCategory.items.objects : []}
+          onSelect={(i) => handleSelect(nameOf<CorridorCategory>("items"), i)}
+          onCancelClick={() => setSelectItemDialogOpen(false)}
+        />
+      }
       {itemEditorOpen &&
         <ItemEditor
           viewOnly
@@ -479,12 +483,14 @@ export default function CorridorCategoryEditor(props: Props) {
           onCancelClick={() => setItemEditorOpen(false)}
         />
       }
-      <SelectTrap
-        open={selectTrapDialogOpen}
-        exclude={corridorCategory.traps ? corridorCategory.traps.objects : []}
-        onSelect={(i) => handleSelect(nameOf<CorridorCategory>("traps"), i)}
-        onCancelClick={() => setSelectTrapDialogOpen(false)}
-      />
+      {selectTrapDialogOpen &&
+        <SelectTrap
+          open={selectTrapDialogOpen}
+          exclude={corridorCategory.traps ? corridorCategory.traps.objects : []}
+          onSelect={(i) => handleSelect(nameOf<CorridorCategory>("traps"), i)}
+          onCancelClick={() => setSelectTrapDialogOpen(false)}
+        />
+      }
       {trapEditorOpen &&
         <TrapEditor
           viewOnly
