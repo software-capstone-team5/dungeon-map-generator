@@ -12,6 +12,13 @@ def getDBID(data, collection_ref):
         data['id'] = document.id
     return data, document
 
+def getConfigReferences(references):
+    result = []
+    for reference in references:
+        category = reference.get().to_dict()
+        result.append(getCategoryReferences(category))
+    return result
+
 def getCategoryReferences(dbData):
     # Get Monster, Trap, Item ref TODO once merged
     monsterRefs = dbData['monsters']['objects']
