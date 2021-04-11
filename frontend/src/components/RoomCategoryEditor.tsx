@@ -84,7 +84,7 @@ RoomCategoryEditor.defaultProps = {
 export default function RoomCategoryEditor(props: Props) {
   const editMode: boolean = props.roomCategory !== undefined
   const classes = useStyles();
-  
+
   const [roomCategory, setRoomCategory] = useState(() => {
     if (props.roomCategory !== undefined) {
       return cloneDeep(props.roomCategory);
@@ -111,7 +111,7 @@ export default function RoomCategoryEditor(props: Props) {
   const [selectTrapDialogOpen, setSelectTrapDialogOpen] = useState<boolean>(false);
 
   const handleChange = (name: keyof RoomCategory, value: valueOf<RoomCategory>) => {
-    if (name === nameOf<RoomCategory>("name")){
+    if (name === nameOf<RoomCategory>("name")) {
       if (value) {
         setErrors({
           ...errors,
@@ -119,7 +119,7 @@ export default function RoomCategoryEditor(props: Props) {
         })
       }
     }
-    setRoomCategory(Object.assign(Object.create(roomCategory), roomCategory, { [name]: value }) );
+    setRoomCategory(Object.assign(Object.create(roomCategory), roomCategory, { [name]: value }));
   }
 
   const handleDeleteClick = (name: keyof RoomCategory, index: number) => {
@@ -258,7 +258,9 @@ export default function RoomCategoryEditor(props: Props) {
         var id = result.response;
         roomCategory.id = id;
       } else {
-        window.alert(result.response);
+        if (result) {
+          window.alert(result.response);
+        }
       }
     }
 
@@ -281,37 +283,37 @@ export default function RoomCategoryEditor(props: Props) {
   return (
     <div>
       <Dialog scroll="paper" maxWidth="md" open={props.open} onClose={handleClose} aria-labelledby="form-dialog-title">
-        <div style={{maxWidth: 650}}>
-        <DialogTitle
-          className={classes.root}
-          disableTypography
-          id="form-dialog-title">
+        <div style={{ maxWidth: 650 }}>
+          <DialogTitle
+            className={classes.root}
+            disableTypography
+            id="form-dialog-title">
             <Grid container alignItems="center">
               <Typography component={'span'} variant="h6">{editMode ? "Edit" : "Add"} Room Category</Typography>
               <Tooltip
-                  arrow
-                  classes={{ tooltip: classes.customWidth }}
-                  title={
+                arrow
+                classes={{ tooltip: classes.customWidth }}
+                title={
                   <>
-                      <Typography align="center" color="inherit"><u>Help</u></Typography>
-                      <p><Typography display="inline" color="inherit">%:</Typography> The probabilities in each list will be normalized if they don't sum up to 100%</p>
-                      <p><Typography variant="body2" display="inline" color="inherit">Default:</Typography> If a Room has "Use Default" checked for any option,
+                    <Typography align="center" color="inherit"><u>Help</u></Typography>
+                    <p><Typography display="inline" color="inherit">%:</Typography> The probabilities in each list will be normalized if they don't sum up to 100%</p>
+                    <p><Typography variant="body2" display="inline" color="inherit">Default:</Typography> If a Room has "Use Default" checked for any option,
                           it will use the values in the Default Room.</p>
-                      <p>The Default Room cannot have "Use Default" checked for any option.</p>
+                    <p>The Default Room cannot have "Use Default" checked for any option.</p>
                   </>
-                  }
+                }
               >
-                  <HelpOutlineIcon className={classes.helpIcon} color="primary"></HelpOutlineIcon>
+                <HelpOutlineIcon className={classes.helpIcon} color="primary"></HelpOutlineIcon>
               </Tooltip>
             </Grid>
-          {viewMode && editMode &&
-            <IconButton aria-label="edit" className={classes.editButton} onClick={handleEditClick}>
-              <EditIcon />
-            </IconButton>
-          }
-        </DialogTitle>
-        <DialogContent>
-          <TextField
+            {viewMode && editMode &&
+              <IconButton aria-label="edit" className={classes.editButton} onClick={handleEditClick}>
+                <EditIcon />
+              </IconButton>
+            }
+          </DialogTitle>
+          <DialogContent>
+            <TextField
               required
               error={errors.name}
               onBlur={handleNameBlur}
@@ -353,12 +355,12 @@ export default function RoomCategoryEditor(props: Props) {
               <FormControlLabel
                 disabled={viewMode}
                 control={
-                <Checkbox
+                  <Checkbox
                     checked={!Boolean(roomCategory.monsters)}
                     onChange={handleMonsterDefaultChange}
                     name="useDefault"
                     color="default"
-                />
+                  />
                 }
                 label="Use Default"
               />
@@ -389,12 +391,12 @@ export default function RoomCategoryEditor(props: Props) {
               <FormControlLabel
                 disabled={viewMode}
                 control={
-                <Checkbox
+                  <Checkbox
                     checked={!Boolean(roomCategory.items)}
                     onChange={handleItemDefaultChange}
                     name="useDefault"
                     color="default"
-                />
+                  />
                 }
                 label="Use Default"
               />
@@ -418,12 +420,12 @@ export default function RoomCategoryEditor(props: Props) {
               <FormControlLabel
                 disabled={viewMode}
                 control={
-                <Checkbox
+                  <Checkbox
                     checked={!Boolean(roomCategory.traps)}
                     onChange={handleTrapDefaultChange}
                     name="useDefault"
                     color="default"
-                />
+                  />
                 }
                 label="Use Default"
               />
@@ -444,24 +446,24 @@ export default function RoomCategoryEditor(props: Props) {
               probs={roomCategory.entranceTypes}
               onProbUpdate={(newList: Probabilities<EntranceType> | null) => handleChange(nameOf<RoomCategory>("entranceTypes"), newList)}
             />
-        </DialogContent>
+          </DialogContent>
 
-        <DialogActions>
-          <Button onClick={props.onCancelClick} color="primary">
-            Cancel
+          <DialogActions>
+            <Button onClick={props.onCancelClick} color="primary">
+              Cancel
           </Button>
-          {!viewMode &&
-            <Button onClick={handleSaveClick} variant="contained" color="primary">
-              Save
+            {!viewMode &&
+              <Button onClick={handleSaveClick} variant="contained" color="primary">
+                Save
             </Button>
-          }
+            }
 
-        </DialogActions>
+          </DialogActions>
         </div>
       </Dialog>
       <SelectMonster
         open={selectMonsterDialogOpen}
-        exclude={roomCategory.monsters ? roomCategory.monsters.objects: []}
+        exclude={roomCategory.monsters ? roomCategory.monsters.objects : []}
         onSelect={(m) => handleSelect(nameOf<RoomCategory>("monsters"), m)}
         onCancelClick={() => setSelectMonsterDialogOpen(false)}
       />

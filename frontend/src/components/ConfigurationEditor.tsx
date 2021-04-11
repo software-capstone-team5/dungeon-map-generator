@@ -59,13 +59,13 @@ function Alert(props: AlertProps) {
     return <MuiAlert elevation={6} variant="filled" {...props} />;
 }
 
-const useStyles = makeStyles((theme) =>  ({
+const useStyles = makeStyles((theme) => ({
     helpIcon: {
-      "padding-left": theme.spacing(1),
-      "padding-right": theme.spacing(1)
+        "padding-left": theme.spacing(1),
+        "padding-right": theme.spacing(1)
     },
     customWidth: {
-      maxWidth: 200,
+        maxWidth: 200,
     },
     button: {
         padding: theme.spacing(2),
@@ -116,12 +116,12 @@ function ConfigurationEditor(props: Props) {
     }, [props.configuration])
 
     const handleChange = (name: keyof Configuration, value: valueOf<Configuration>) => {
-        setConfiguration(Object.assign(Object.create(configuration), configuration, {[name]: value}))
+        setConfiguration(Object.assign(Object.create(configuration), configuration, { [name]: value }))
     }
 
     // REQ-18: Save.MapConfiguration - The system allows logged -in users to save the entire map configuration(both Map Level and Region Level) as a Preset.
     const handleSave = async (name: string) => {
-        var configToSave = Object.assign({}, configuration, {name: name});
+        var configToSave = Object.assign({}, configuration, { name: name });
         configToSave.roomCategories.normalize();
         configToSave.corridorCategories.normalize();
 
@@ -138,7 +138,9 @@ function ConfigurationEditor(props: Props) {
                     active: true
                 });
             } else {
-                window.alert(result.response)
+                if (result) {
+                    window.alert(result.response)
+                }
             }
             setIsSaving(false);
         }
@@ -190,9 +192,9 @@ function ConfigurationEditor(props: Props) {
 
     const handleAlertClose = (event?: React.SyntheticEvent, reason?: string) => {
         if (reason === 'clickaway') {
-          return;
+            return;
         }
-        setAlert({...alert, active: false});
+        setAlert({ ...alert, active: false });
     };
 
     const handleNameConfirm = (name: string) => {
@@ -218,28 +220,28 @@ function ConfigurationEditor(props: Props) {
             <Paper>
                 {configuration.name &&
                     <Accordion expanded={true}>
-                    <AccordionSummary
-                        aria-controls="panel1a-content"
-                        id="panel1a-header"
-                    >
-                        <Typography>Name</Typography>
-                    </AccordionSummary>
-                    <AccordionDetails>
-                        <TextField
-                            disabled
-                            variant="outlined"
-                            margin="dense"
-                            fullWidth
-                            InputLabelProps={{
-                                shrink: true,
-                            }}
-                            value={configuration.name}
-                            onChange={(e: React.ChangeEvent<HTMLInputElement>)=>handleChange(nameOf<Configuration>("name"), e.target.value)}
-                        />
-                    </AccordionDetails>
+                        <AccordionSummary
+                            aria-controls="panel1a-content"
+                            id="panel1a-header"
+                        >
+                            <Typography>Name</Typography>
+                        </AccordionSummary>
+                        <AccordionDetails>
+                            <TextField
+                                disabled
+                                variant="outlined"
+                                margin="dense"
+                                fullWidth
+                                InputLabelProps={{
+                                    shrink: true,
+                                }}
+                                value={configuration.name}
+                                onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleChange(nameOf<Configuration>("name"), e.target.value)}
+                            />
+                        </AccordionDetails>
                     </Accordion>
                 }
-                
+
                 <Accordion expanded={true}>
                     <AccordionSummary
                         aria-controls="panel1a-content"
@@ -248,7 +250,7 @@ function ConfigurationEditor(props: Props) {
                         <Typography>Map Level Options</Typography>
                     </AccordionSummary>
                     <AccordionDetails>
-                        <MapLevelConfiguration configuration={configuration} onChange={handleChange}/>
+                        <MapLevelConfiguration configuration={configuration} onChange={handleChange} />
                     </AccordionDetails>
                 </Accordion>
                 <Accordion expanded={true}>
@@ -261,32 +263,32 @@ function ConfigurationEditor(props: Props) {
                             arrow
                             classes={{ tooltip: classes.customWidth }}
                             title={
-                            <>
-                                <Typography align="center" color="inherit"><u>Help</u></Typography>
-                                <p><Typography display="inline" color="inherit">%:</Typography> The probabilities in each list will be normalized if they don't sum up to 100%</p>
-                                <p><Typography variant="body2" display="inline" color="inherit">Default:</Typography> If a Room/Corridor has "Use Default" checked for any option,
+                                <>
+                                    <Typography align="center" color="inherit"><u>Help</u></Typography>
+                                    <p><Typography display="inline" color="inherit">%:</Typography> The probabilities in each list will be normalized if they don't sum up to 100%</p>
+                                    <p><Typography variant="body2" display="inline" color="inherit">Default:</Typography> If a Room/Corridor has "Use Default" checked for any option,
                                     it will use the values in the Default Room/Corridor.</p>
-                                <p>The Default Room/Corridor cannot have "Use Default" checked for any option.</p>
-                            </>
+                                    <p>The Default Room/Corridor cannot have "Use Default" checked for any option.</p>
+                                </>
                             }
                         >
                             <HelpOutlineIcon className={classes.helpIcon} color="primary"></HelpOutlineIcon>
                         </Tooltip>
                     </AccordionSummary>
                     <AccordionDetails>
-                        <RegionLevelConfiguration configuration={configuration} onChange={handleChange}/>
+                        <RegionLevelConfiguration configuration={configuration} onChange={handleChange} />
                     </AccordionDetails>
                 </Accordion>
             </Paper>
             <Grid container direction="row" justify="center">
                 <div className={classes.button}>
-                <Button disabled={isSaving} onClick={handleGenerate} variant="contained" color="secondary">Generate</Button>
+                    <Button disabled={isSaving} onClick={handleGenerate} variant="contained" color="secondary">Generate</Button>
                 </div>
                 <div className={classes.button}>
-                <Button onClick={handleSaveClick} variant="contained" color="primary" disabled={!Authenticator.isLoggedIn() || disabled}>Save</Button>
+                    <Button onClick={handleSaveClick} variant="contained" color="primary" disabled={!Authenticator.isLoggedIn() || disabled}>Save</Button>
                 </div>
             </Grid>
-            
+
         </div>
     );
 }
