@@ -75,6 +75,7 @@ const useStyles = makeStyles((theme) => ({
 type Props = {
     configuration?: Configuration;
     onGenerateClick: (c: Configuration) => void;
+    onSaveSuccess: (c: Configuration) => void;
 }
 
 
@@ -130,7 +131,7 @@ function ConfigurationEditor(props: Props) {
             if (result && result.valid) {
                 var id = result.response;
                 configToSave.id = id;
-                setConfiguration(configToSave);
+                props.onSaveSuccess(configToSave)
                 setAlert({
                     message: "Configuration saved!",
                     severity: "success",
