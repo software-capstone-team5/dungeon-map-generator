@@ -69,11 +69,7 @@ export default function TrapEditor(props: Props) {
         })
       }
     }
-<<<<<<< HEAD
-    setTrap(Object.assign(Object.create(trap), trap, { [name]: value }));
-=======
-    setTrap(Object.assign(Object.create(Object.getPrototypeOf(trap)), trap, { [name]: value }) );
->>>>>>> origin/master
+    setTrap(Object.assign(Object.create(Object.getPrototypeOf(trap)), trap, { [name]: value }));
   }
 
   const handleEditClick = () => {
