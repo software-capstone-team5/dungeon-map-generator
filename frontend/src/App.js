@@ -1,4 +1,6 @@
 import { AppBar, Button, Grid, Toolbar, Typography } from '@material-ui/core';
+import Backdrop from '@material-ui/core/Backdrop';
+import CircularProgress from '@material-ui/core/CircularProgress';
 import IconButton from '@material-ui/core/IconButton';
 import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
@@ -13,6 +15,7 @@ import DungeonDisplay from './components/DungeonDisplay';
 import ImportMonsters from './components/ImportMonsters';
 import SelectConfiguration from "./components/SelectConfiguration";
 import { TileType } from './constants/TileType';
+import DB from './DB';
 import { DungeonGenerator } from './generator/DungeonGenerator';
 import { Probabilities } from './generator/Probabilities';
 import { TileSet } from './models/TileSet';
@@ -33,7 +36,11 @@ const useStyles = makeStyles((theme) => ({
     flex: "2",
     overflow: "auto",
     padding: theme.spacing(3),
-  }
+  },
+  backdrop: {
+    zIndex: theme.zIndex.drawer + 1,
+    color: '#fff',
+  },
 }));
 
 function App() {
@@ -42,6 +49,7 @@ function App() {
   const [selectConfigDialogOpen, setSelectConfigDialogOpen] = useState(false);
   const [configToEdit, setConfigToEdit] = useState();
   const [dungeonMap, setDungeonMap] = useState();
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     Authenticator.onAuthListener((result) => {
@@ -89,9 +97,18 @@ function App() {
     setConfigToEdit();
   }
 
-  const handleConfigSelect = (config) => {
-    setConfigToEdit(config);
+  const handleConfigSelect = (configID) => {
+    if (!configID) {
+      return;
+    }
+    setIsLoading(true);
     setSelectConfigDialogOpen(false);
+    DB.getConfigByID(configID).then(result => {
+      setIsLoading(false)
+      if (result && result.valid) {
+        setConfigToEdit(result.response);
+      }
+    }).catch(() => setIsLoading(false))
   }
 
   const [menuAnchorEl, setMenuAnchorEl] = useState(null);
@@ -147,7 +164,10 @@ function App() {
       {importMonstersOpen &&
         <ImportMonsters open={importMonstersOpen} onCancelClick={()=>setImportMonstersOpen(false)}></ImportMonsters>
       }
-      {loggedIn !== null && // TODO: do something more elegant, like a loading bar
+      <Backdrop className={classes.backdrop} open={loggedIn === null || isLoading}>
+        <CircularProgress color="inherit" />
+      </Backdrop>
+      {loggedIn !== null &&
           <Grid container direction="column" className={classes.topContainer}>
             <div>
               <AppBar position="static">
