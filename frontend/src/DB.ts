@@ -109,6 +109,38 @@ export class DB {
         }
     }
 
+    static async getConfigByID(id: string) {
+        try {
+            var token = await Authenticator.getIDToken();
+            if (token === undefined) {
+                return { valid: false, "response": "Not Logged In" };
+            }
+            const requestOptions = {
+                method: 'GET'
+            };
+            var response = await fetch(`${BACKEND_URL}/user/${token}/config/${id}`, requestOptions);
+            var data = await response.json();
+            if (!data.valid) {
+                return data;
+            }
+
+            var config = plainToClass(Configuration, data.response);
+            if (config.roomCategories) {
+                for (var i = 0; i < config.roomCategories.objects.length; i++) {
+                    config.roomCategories.objects[i] = plainToClass(RoomCategory, config.roomCategories.objects[i])
+                }
+            }
+            if (config.corridorCategories) {
+                for (var i = 0; i < config.corridorCategories.objects.length; i++) {
+                    config.corridorCategories.objects[i] = plainToClass(CorridorCategory, config.corridorCategories.objects[i])
+                }
+            }
+            return { valid: true, "response": config };
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
     // REQ-28: Save.RoomCategory - The system should allow the user to save a Room Category that they have created in the database.
     static async getAllRoomCat() {
         try {

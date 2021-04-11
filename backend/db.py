@@ -139,19 +139,22 @@ def getConfigs(idToken):
             result = []
             for config in configs.stream():
                 configDict = config.to_dict()
-                corridorRefs = configDict['corridorCategories']['objects']
-                configDict['corridorCategories']['objects'] = getConfigReferences(corridorRefs)
+                configPartial = {"id": configDict["id"], "name": configDict["name"]}
+                result.append(configPartial)
+            return jsonify({"valid": True, "response": result}), 200
+        else:
+            return jsonify({"valid": False, "response": "No ID provided"}), 400
+    except Exception as e:
+        return f"An Error Occured: {e}"
 
-                roomRefs = configDict['roomCategories']['objects']
-                configDict['roomCategories']['objects'] = getConfigReferences(roomRefs)
+@app.route("/user/<idToken>/config/<configID>", methods=['GET'])
+def getConfigByID(idToken, configID):
+    try:
+        user_id = verifyToken(idToken)
+        if user_id:
+            config = users_collection.document(user_id).collection("Configurations").document(configID).get()
+            result = getConfigReferences(config)
 
-                defaultCorridorRef = configDict['defaultCorridorCategory']
-                configDict['defaultCorridorCategory'] = getConfigReferences([defaultCorridorRef])[0]
-
-                defaultRoomRef = configDict['defaultRoomCategory']
-                configDict['defaultRoomCategory'] = getConfigReferences([defaultRoomRef])[0]
-
-                result.append(configDict)
             return jsonify({"valid": True, "response": result}), 200
         else:
             return jsonify({"valid": False, "response": "No ID provided"}), 400
