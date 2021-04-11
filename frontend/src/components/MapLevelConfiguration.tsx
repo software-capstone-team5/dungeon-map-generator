@@ -1,24 +1,32 @@
 import React from 'react';
-import { Size } from "../constants/Size";
 import { CorridorComplexity } from "../constants/CorridorComplexity";
 import { CorridorLength } from "../constants/CorridorLength";
-import DifficultySlider from './DifficultySlider';
+import { Size } from "../constants/Size";
+import { Configuration } from '../models/Configuration';
+import { nameOf, valueOf } from '../utils/util';
 import EnumRadio from './common/EnumRadio';
-import {Configuration} from '../models/Configuration';
-import {nameOf, valueOf} from '../utils/util';
+import DifficultySlider from './DifficultySlider';
 
 type Props = {
+    isSaving: boolean;
     configuration: Configuration;
     onChange: (name: keyof Configuration, value: valueOf<Configuration>)=>void;
 };
 
 const MapLevelConfiguration = React.memo(
     (props: Props) => {
+
+        var disabled = props.configuration.premade || props.isSaving
         return (
             <div>
-                <DifficultySlider onChange={(value: number) => props.onChange(nameOf<Configuration>("difficulty"), value)} value={props.configuration.difficulty}/>
+                <DifficultySlider
+                    disabled={disabled}
+                    onChange={(value: number) => props.onChange(nameOf<Configuration>("difficulty"), value)}
+                    value={props.configuration.difficulty}
+                />
                 <div>
                     <EnumRadio<Size>
+                        disabled={disabled}
                         enum={Size}
                         label="Map Size"
                         value={props.configuration.mapSize}
@@ -26,6 +34,7 @@ const MapLevelConfiguration = React.memo(
                 </div>
                 <div>
                     <EnumRadio<CorridorComplexity>
+                        disabled={disabled}
                         enum={CorridorComplexity}
                         label="Corridor Complexity"
                         value={props.configuration.corridorComplexity}
@@ -33,6 +42,7 @@ const MapLevelConfiguration = React.memo(
                 </div>
                 <div>
                     <EnumRadio<CorridorLength>
+                        disabled={disabled}
                         enum={CorridorLength}
                         label="Corridor Length"
                         value={props.configuration.corridorLength}

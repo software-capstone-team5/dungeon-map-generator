@@ -1,12 +1,11 @@
-import { makeStyles } from '@material-ui/core/styles';
-import DeleteIcon from '@material-ui/icons/Delete';
+import IconButton from '@material-ui/core/IconButton';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import ListItemText from '@material-ui/core/ListItemText';
-import IconButton from '@material-ui/core/IconButton';
+import { makeStyles } from '@material-ui/core/styles';
 import TextField from '@material-ui/core/TextField';
-
+import DeleteIcon from '@material-ui/icons/Delete';
 import { Probabilities } from '../../generator/Probabilities';
 
 
@@ -69,7 +68,7 @@ function ProbabilityNameList<T extends hasName> (props: Props<T>) {
     }
 
     const listItems = props.list ? props.list.objects.map((item: T, i: number) =>
-        <ListItem button={(!props.disabled) as true} onClick={(e)=>handleClick(item)} key={i}>
+        <ListItem disabled={props.disabled} button={(!props.disabled) as true} onClick={(e)=>handleClick(item)} key={i}>
           <ListItemText
             primary={item.name}
           />

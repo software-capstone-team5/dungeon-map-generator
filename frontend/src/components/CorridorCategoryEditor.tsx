@@ -81,7 +81,7 @@ CorridorCategoryEditor.defaultProps = {
 }
 
 export default function CorridorCategoryEditor(props: Props) {
-  const editMode: boolean = props.corridorCategory !== undefined
+  const editMode: boolean = props.corridorCategory !== undefined && !props.corridorCategory.premade;
   const classes = useStyles();
 
   const [corridorCategory, setCorridorCategory] = useState(() => {
@@ -118,18 +118,18 @@ export default function CorridorCategoryEditor(props: Props) {
         })
       }
     }
-    setCorridorCategory(Object.assign(Object.create(corridorCategory), corridorCategory, { [name]: value }));
+    setCorridorCategory(Object.assign(Object.create(Object.getPrototypeOf(corridorCategory)), corridorCategory, { [name]: value }));
   }
 
   const handleDeleteClick = (name: keyof CorridorCategory, index: number) => {
-    var updatedList = Object.create(corridorCategory[name] as Probabilities<any>);
+    var updatedList = Object.create(Object.getPrototypeOf(corridorCategory[name]) as Probabilities<any>);
     updatedList = Object.assign(updatedList, corridorCategory[name]);
     updatedList.remove(index);
     handleChange(name, updatedList);
   }
 
   const handleSelect = (name: keyof CorridorCategory, item: any) => {
-    var updatedList = Object.create(corridorCategory[name] as Probabilities<any>);
+    var updatedList = Object.create(Object.getPrototypeOf(corridorCategory[name]) as Probabilities<any>);
     updatedList = Object.assign(updatedList, corridorCategory[name]);
     updatedList.add(item);
     handleChange(name, updatedList);
@@ -160,7 +160,7 @@ export default function CorridorCategoryEditor(props: Props) {
   }
 
   const handleMonsterSave = (newMonster: Monster) => {
-    var updatedList = Object.create(corridorCategory.monsters as Probabilities<Monster>);
+    var updatedList = Object.create(Object.getPrototypeOf(corridorCategory.monsters) as Probabilities<Monster>);
     updatedList = Object.assign(updatedList, corridorCategory.monsters);
     updatedList.updateObject(monsterToEdit!, newMonster);
     handleChange(nameOf<CorridorCategory>("monsters"), updatedList);
@@ -186,7 +186,7 @@ export default function CorridorCategoryEditor(props: Props) {
   }
 
   const handleItemSave = (newItem: Item) => {
-    var updatedList = Object.create(corridorCategory.items as Probabilities<Item>);
+    var updatedList = Object.create(Object.getPrototypeOf(corridorCategory.items) as Probabilities<Item>);
     updatedList = Object.assign(updatedList, corridorCategory.items);
     updatedList.updateObject(itemToEdit!, newItem);
     handleChange(nameOf<CorridorCategory>("items"), updatedList);
@@ -212,7 +212,7 @@ export default function CorridorCategoryEditor(props: Props) {
   }
 
   const handleTrapSave = (newTrap: Trap) => {
-    var updatedList = Object.create(corridorCategory.traps as Probabilities<Trap>);
+    var updatedList = Object.create(Object.getPrototypeOf(corridorCategory.traps) as Probabilities<Trap>);
     updatedList = Object.assign(updatedList, corridorCategory.traps);
     updatedList.updateObject(trapToEdit!, newTrap);
     handleChange(nameOf<CorridorCategory>("traps"), updatedList);
@@ -284,7 +284,7 @@ export default function CorridorCategoryEditor(props: Props) {
             disableTypography
             id="form-dialog-title">
             <Grid container alignItems="center">
-              <Typography component={'span'} variant="h6">{editMode ? "Edit" : "Add"} Corridor Category</Typography>
+              <Typography component={'span'} variant="h6">{editMode ? "Edit" : viewMode ? "View" : "Add"} Corridor Category</Typography>
               <Tooltip
                 arrow
                 classes={{ tooltip: classes.customWidth }}

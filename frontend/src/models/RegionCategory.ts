@@ -23,6 +23,7 @@ export class RegionCategory {
 	entranceTypes: Probabilities<EntranceType> | null;
 	@Type(() => Probabilities)
 	traps: Probabilities<Trap> | null;
+	isCorridor = false;
 
 	constructor() {
 		this.states = Probabilities.buildUniform(Object.values(MonsterState));

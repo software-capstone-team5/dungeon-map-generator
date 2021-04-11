@@ -82,7 +82,7 @@ RoomCategoryEditor.defaultProps = {
 }
 
 export default function RoomCategoryEditor(props: Props) {
-  const editMode: boolean = props.roomCategory !== undefined
+  const editMode: boolean = props.roomCategory !== undefined && !props.roomCategory.premade
   const classes = useStyles();
 
   const [roomCategory, setRoomCategory] = useState(() => {
@@ -119,18 +119,18 @@ export default function RoomCategoryEditor(props: Props) {
         })
       }
     }
-    setRoomCategory(Object.assign(Object.create(roomCategory), roomCategory, { [name]: value }));
+    setRoomCategory(Object.assign(Object.create(Object.getPrototypeOf(roomCategory)), roomCategory, { [name]: value }));
   }
 
   const handleDeleteClick = (name: keyof RoomCategory, index: number) => {
-    var updatedList = Object.create(roomCategory[name] as Probabilities<any>);
+    var updatedList = Object.create(Object.getPrototypeOf(roomCategory[name]) as Probabilities<any>);
     updatedList = Object.assign(updatedList, roomCategory[name]);
     updatedList.remove(index);
     handleChange(name, updatedList);
   }
 
   const handleSelect = (name: keyof RoomCategory, item: any) => {
-    var updatedList = Object.create(roomCategory[name] as Probabilities<any>);
+    var updatedList = Object.create(Object.getPrototypeOf(roomCategory[name]) as Probabilities<any>);
     updatedList = Object.assign(updatedList, roomCategory[name]);
     updatedList.add(item);
     handleChange(name, updatedList);
@@ -161,7 +161,7 @@ export default function RoomCategoryEditor(props: Props) {
   }
 
   const handleMonsterSave = (newMonster: Monster) => {
-    var updatedList = Object.create(roomCategory.monsters as Probabilities<Monster>);
+    var updatedList = Object.create(Object.getPrototypeOf(roomCategory.monsters) as Probabilities<Monster>);
     updatedList = Object.assign(updatedList, roomCategory.monsters);
     updatedList.updateObject(monsterToEdit!, newMonster);
     handleChange(nameOf<RoomCategory>("monsters"), updatedList);
@@ -187,7 +187,7 @@ export default function RoomCategoryEditor(props: Props) {
   }
 
   const handleItemSave = (newItem: Item) => {
-    var updatedList = Object.create(roomCategory.items as Probabilities<Item>);
+    var updatedList = Object.create(Object.getPrototypeOf(roomCategory.items) as Probabilities<Item>);
     updatedList = Object.assign(updatedList, roomCategory.items);
     updatedList.updateObject(itemToEdit!, newItem);
     handleChange(nameOf<RoomCategory>("items"), updatedList);
@@ -213,7 +213,7 @@ export default function RoomCategoryEditor(props: Props) {
   }
 
   const handleTrapSave = (newTrap: Trap) => {
-    var updatedList = Object.create(roomCategory.traps as Probabilities<Trap>);
+    var updatedList = Object.create(Object.getPrototypeOf(roomCategory.traps) as Probabilities<Trap>);
     updatedList = Object.assign(updatedList, roomCategory.traps);
     updatedList.updateObject(trapToEdit!, newTrap);
     handleChange(nameOf<RoomCategory>("traps"), updatedList);
@@ -289,7 +289,7 @@ export default function RoomCategoryEditor(props: Props) {
             disableTypography
             id="form-dialog-title">
             <Grid container alignItems="center">
-              <Typography component={'span'} variant="h6">{editMode ? "Edit" : "Add"} Room Category</Typography>
+              <Typography component={'span'} variant="h6">{editMode ? "Edit" : viewMode ? "View" : "Add"} Room Category</Typography>
               <Tooltip
                 arrow
                 classes={{ tooltip: classes.customWidth }}
