@@ -1,15 +1,16 @@
-import { useEffect, useState } from 'react';
 import Button from '@material-ui/core/Button';
+import CircularProgress from '@material-ui/core/CircularProgress';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogTitle from '@material-ui/core/DialogTitle';
-import NameList from './common/NameList';
-import MonsterEditor from './MonsterEditor';
+import differenceWith from 'lodash/differenceWith';
+import { useEffect, useState } from 'react';
+import DB from '../DB';
 import { Monster } from '../models/Monster';
 import { compareByID } from '../utils/util';
-import differenceWith from 'lodash/differenceWith';
-import DB from '../DB';
+import NameList from './common/NameList';
+import MonsterEditor from './MonsterEditor';
 
 type Props = {
   open: boolean;
@@ -21,14 +22,18 @@ type Props = {
 export default function SelectMonster(props: Props) {
   const [monsters, setMonsters] = useState<Monster[]>([]);
   const [monsterEditorOpen, setMonsterEditorOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     let mounted = true;
-    // TODO: add a loading thing
+    setIsLoading(true);
     DB.getAllMonsters().then(result => {
-      if (result && result.valid && mounted) {
-        var list = differenceWith(result.response, props.exclude, compareByID) as Monster[]
-        setMonsters(list)
+      if (mounted) {
+        setIsLoading(false);
+        if (result && result.valid) {
+          var list = differenceWith(result.response, props.exclude, compareByID) as Monster[]
+          setMonsters(list)
+        }
       }
     })
     return () => { mounted = false };
@@ -47,6 +52,11 @@ export default function SelectMonster(props: Props) {
       >
         <DialogTitle id="form-dialog-title">Select Monster</DialogTitle>
         <DialogContent>
+          {isLoading && 
+            <div style={{textAlign: "center"}}>
+              <CircularProgress/>
+            </div>
+          }
           <NameList<Monster> list={monsters} onClick={(m: Monster) => props.onSelect(m)}></NameList>
           <Button onClick={() => setMonsterEditorOpen(true)} variant="outlined" style={{ width: "100%" }} color="primary">
             Add New
