@@ -3,8 +3,11 @@ from authentication import verifyToken
 from flask import request, jsonify
 from googleapiclient.discovery import build
 from google.oauth2.credentials import Credentials
+from flask_cors import CORS, cross_origin
 
 import json
+
+cors = CORS(app, resources={r'/*': {'origins': '*'}})
 
 scopes = ['https://www.googleapis.com/auth/drive.readonly.metadata', 'https://www.googleapis.com/auth/drive.file']
 

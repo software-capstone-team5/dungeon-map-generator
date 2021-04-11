@@ -1,9 +1,15 @@
 from backend import app
 from flask import request, jsonify
 from firebase_admin import credentials, firestore, auth, initialize_app  # Initialize Flask App
+from flask_cors import CORS, cross_origin
 
 cred = credentials.Certificate('./certs/key.json') # change later to either environment var or something else
 default_app = initialize_app(cred)
+
+cors = CORS(app, resources={r'/*': {'origins': '*'}})
+
+db = firestore.client()
+users_collection = db.collection('Users')
 
 def verifyToken(idToken):
     try:
