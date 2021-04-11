@@ -20,7 +20,9 @@ export class Configuration {
 	roomCategories: Probabilities<RoomCategory> = new Probabilities<RoomCategory>(null);
 	@Type(() => Probabilities)
 	corridorCategories: Probabilities<CorridorCategory> = new Probabilities<CorridorCategory>(null);
+	@Type(() => RoomCategory)
 	defaultRoomCategory: RoomCategory;
+	@Type(() => CorridorCategory)
 	defaultCorridorCategory: CorridorCategory;
 
 	getMapSizeNum(): number {
