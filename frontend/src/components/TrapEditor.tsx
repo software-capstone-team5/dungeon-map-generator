@@ -45,7 +45,7 @@ TrapEditor.defaultProps = {
 }
 
 export default function TrapEditor(props: Props) {
-  const editMode: boolean = props.trap !== undefined
+  const editMode: boolean = props.trap !== undefined && !props.trap.premade;
   const classes = useStyles();
 
   const [viewMode, setViewMode] = useState(props.viewOnly);
@@ -110,7 +110,7 @@ export default function TrapEditor(props: Props) {
           className={classes.root}
           disableTypography
           id="form-dialog-title">
-          <Typography component={'span'} variant="h6">{editMode ? "Edit" : "Add"} Trap</Typography>
+          <Typography component={'span'} variant="h6">{editMode ? "Edit" : viewMode ? "View" : "Add"} Trap</Typography>
           {viewMode && editMode &&
             <IconButton aria-label="edit" className={classes.editButton} onClick={handleEditClick}>
               <EditIcon />

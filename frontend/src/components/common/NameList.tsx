@@ -42,8 +42,14 @@ function NameList<T extends hasName> (props: Props<T>) {
 
     const classes = useStyles();
 
+    const handleClick = (item: T) => {
+      if (props.onClick && !props.disabled) {
+        props.onClick(item)
+      }
+    }
+
     const listItems = props.list.map((item: T, i: number) =>
-      <ListItem button={(!props.disabled) as true} onClick={(e)=>props.onClick!(item)} key={i}>
+      <ListItem disabled={props.disabled} button={(!props.disabled) as true} onClick={(e)=>handleClick(item)} key={i}>
         <ListItemText
           primary={item.name}
         />

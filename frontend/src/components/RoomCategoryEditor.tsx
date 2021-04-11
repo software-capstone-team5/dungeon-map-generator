@@ -82,7 +82,7 @@ RoomCategoryEditor.defaultProps = {
 }
 
 export default function RoomCategoryEditor(props: Props) {
-  const editMode: boolean = props.roomCategory !== undefined
+  const editMode: boolean = props.roomCategory !== undefined && !props.roomCategory.premade
   const classes = useStyles();
   
   const [roomCategory, setRoomCategory] = useState(() => {
@@ -287,7 +287,7 @@ export default function RoomCategoryEditor(props: Props) {
           disableTypography
           id="form-dialog-title">
             <Grid container alignItems="center">
-              <Typography component={'span'} variant="h6">{editMode ? "Edit" : "Add"} Room Category</Typography>
+              <Typography component={'span'} variant="h6">{editMode ? "Edit" : viewMode ? "View" : "Add"} Room Category</Typography>
               <Tooltip
                   arrow
                   classes={{ tooltip: classes.customWidth }}

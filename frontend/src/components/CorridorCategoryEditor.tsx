@@ -81,7 +81,7 @@ CorridorCategoryEditor.defaultProps = {
 }
 
 export default function CorridorCategoryEditor(props: Props) {
-  const editMode: boolean = props.corridorCategory !== undefined
+  const editMode: boolean = props.corridorCategory !== undefined && !props.corridorCategory.premade;
   const classes = useStyles();
 
   const [corridorCategory, setCorridorCategory] = useState(() => {
@@ -282,7 +282,7 @@ export default function CorridorCategoryEditor(props: Props) {
           disableTypography
           id="form-dialog-title">
           <Grid container alignItems="center">
-              <Typography component={'span'} variant="h6">{editMode ? "Edit" : "Add"} Corridor Category</Typography>
+              <Typography component={'span'} variant="h6">{editMode ? "Edit" : viewMode ? "View" : "Add"} Corridor Category</Typography>
               <Tooltip
                   arrow
                   classes={{ tooltip: classes.customWidth }}
