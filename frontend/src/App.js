@@ -90,7 +90,6 @@ function App() {
   }
 
   const handleConfigSelect = (config) => {
-    // Pass it to the editor?
     setConfigToEdit(config);
     setSelectConfigDialogOpen(false);
   }
@@ -128,6 +127,10 @@ function App() {
 
       setDungeonMap(DungeonGenerator.generateDungeon(config));
     }
+  }
+
+  const handleConfigSaveSuccess = (config) => {
+    setConfigToEdit(config);
   }
 
   return (
@@ -184,7 +187,11 @@ function App() {
                   </IconButton>
                   <Button onClick={handleNewConfigClick} color="primary" variant="outlined">New</Button>
                 </div>
-                <ConfigurationEditor configuration={configToEdit} onGenerateClick={handleGenerateClick}/>
+                <ConfigurationEditor
+                  configuration={configToEdit}
+                  onSaveSuccess={handleConfigSaveSuccess}
+                  onGenerateClick={handleGenerateClick}
+                />
                 {selectConfigDialogOpen &&
                   <SelectConfiguration
                       open={selectConfigDialogOpen}
