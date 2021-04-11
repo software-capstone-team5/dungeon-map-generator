@@ -47,7 +47,7 @@ ItemEditor.defaultProps = {
 }
 
 export default function ItemEditor(props: Props) {
-  const editMode: boolean = props.item !== undefined
+  const editMode: boolean = props.item !== undefined && !props.item.premade;
   const classes = useStyles();
 
   const [viewMode, setViewMode] = useState(props.viewOnly);
@@ -75,7 +75,7 @@ export default function ItemEditor(props: Props) {
         return
       }
     }
-    setItem(Object.assign(Object.create(item), item, { [name]: value }) );
+    setItem(Object.assign(Object.create(Object.getPrototypeOf(item)), item, { [name]: value }) );
   }
 
   const handleEditClick = () => {
@@ -116,7 +116,7 @@ export default function ItemEditor(props: Props) {
           className={classes.root}
           disableTypography
           id="form-dialog-title">
-          <Typography component={'span'} variant="h6">{editMode ? "Edit" : "Add"} Item</Typography>
+          <Typography component={'span'} variant="h6">{editMode ? "Edit" : viewMode ? "View" : "Add"} Item</Typography>
           {viewMode && editMode &&
             <IconButton aria-label="edit" className={classes.editButton} onClick={handleEditClick}>
               <EditIcon />

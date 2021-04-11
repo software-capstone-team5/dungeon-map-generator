@@ -1,14 +1,14 @@
-import { default as firebaseKey } from "./certs/firebase_key.json"
+import { plainToClass } from "class-transformer";
 import firebase from "firebase/app";
 import "firebase/firestore";
-import { Configuration } from './models/Configuration';
-import { BACKEND_URL } from './constants/Backend';
-import { plainToClass } from "class-transformer";
 import { Authenticator } from './Authenticator';
-import { RoomCategory } from "./models/RoomCategory";
+import { default as firebaseKey } from "./certs/firebase_key.json";
+import { BACKEND_URL } from './constants/Backend';
+import { Configuration } from './models/Configuration';
 import { CorridorCategory } from "./models/CorridorCategory";
-import { Monster } from "./models/Monster";
 import { Item } from "./models/Item";
+import { Monster } from "./models/Monster";
+import { RoomCategory } from "./models/RoomCategory";
 import { Trap } from "./models/Trap";
 
 export class DB {
@@ -138,9 +138,9 @@ export class DB {
             if (!data.valid) {
                 return data;
             }
-            var corridorCats: RoomCategory[] = [];
+            var corridorCats: CorridorCategory[] = [];
             data.response.forEach((element: Object) => {
-                corridorCats.push(plainToClass(RoomCategory, element))
+                corridorCats.push(plainToClass(CorridorCategory, element))
             });
             return { valid: true, "response": corridorCats };
         } catch (error) {
