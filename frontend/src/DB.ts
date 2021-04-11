@@ -90,7 +90,18 @@ export class DB {
             }
             var configs: Configuration[] = [];
             data.response.forEach((element: Object) => {
-                configs.push(plainToClass(Configuration, element))
+                var config = plainToClass(Configuration, element);
+                if (config.roomCategories) {
+                    for (var i = 0; i < config.roomCategories.objects.length; i++) {
+                        config.roomCategories.objects[i] = plainToClass(RoomCategory, config.roomCategories.objects[i])
+                    }
+                }
+                if (config.corridorCategories) {
+                    for (var i = 0; i < config.corridorCategories.objects.length; i++) {
+                        config.corridorCategories.objects[i] = plainToClass(CorridorCategory, config.corridorCategories.objects[i])
+                    }
+                }
+                configs.push(config)
             });
             return { valid: true, "response": configs };
         } catch (error) {
