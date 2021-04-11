@@ -299,6 +299,31 @@ export class DB {
             console.log(error);
         }
     }
+
+    static async getAllTileSets() {
+        try {
+            var tokens = await Authenticator.getAllTokens();
+            if (!tokens || !tokens.accessToken || !tokens.refreshToken || !tokens.idToken) {
+                return { valid: false, "response": "Not Logged In" };
+            }
+            const requestOptions = {
+                method: 'GET'
+            };
+            var response = await fetch(`${BACKEND_URL}/user/${tokens.idToken}/tileset?access_token=${tokens.accessToken}&refresh_token=${tokens.refreshToken}`, requestOptions);
+            var data = await response.text();
+            // var data = await response.json();
+            // if (!data.valid) {
+            //     return data;
+            // }
+            // var tileSets: TileSet[] = [];
+            // data.response.forEach((element: Object) => {
+            //     tileSets.push(plainToClass(TileSet, element))
+            // });
+            return { valid: true, "response": data };
+        } catch (error) {
+            console.log(error);
+        }
+    }
 }
 
 if (firebase.apps.length === 0) {

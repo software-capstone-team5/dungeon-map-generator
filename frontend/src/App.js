@@ -13,6 +13,7 @@ import DungeonDisplay from './components/DungeonDisplay';
 import ImportMonsters from './components/ImportMonsters';
 import SelectConfiguration from "./components/SelectConfiguration";
 import { TileType } from './constants/TileType';
+import DB from './DB';
 import { DungeonGenerator } from './generator/DungeonGenerator';
 import { Probabilities } from './generator/Probabilities';
 import { TileSet } from './models/TileSet';
@@ -44,6 +45,7 @@ function App() {
   const [dungeonMap, setDungeonMap] = useState();
 
   useEffect(() => {
+    Authenticator.init();
     Authenticator.onAuthListener((result) => {
       setLoggedIn(result);
     })
@@ -111,7 +113,7 @@ function App() {
     handleClose();
   }
 
-  const handleGenerateClick = (config) => {
+  const handleGenerateClick = async (config) => {
     if (config){
       // TODO: Remove this after config includes tile sets
       var defaultSet = new TileSet("default", 48, new Map());
