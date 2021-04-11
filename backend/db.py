@@ -140,16 +140,16 @@ def getConfigs(idToken):
             for config in configs.stream():
                 configDict = config.to_dict()
                 corridorRefs = configDict['corridorCategories']['objects']
-                configDict['corridorCategories']['objects'] = getReferences(corridorRefs)
+                configDict['corridorCategories']['objects'] = getConfigReferences(corridorRefs)
 
                 roomRefs = configDict['roomCategories']['objects']
-                configDict['roomCategories']['objects'] = getReferences(roomRefs)
+                configDict['roomCategories']['objects'] = getConfigReferences(roomRefs)
 
                 defaultCorridorRef = configDict['defaultCorridorCategory']
-                configDict['defaultCorridorCategory'] = getReferences([defaultCorridorRef])[0]
+                configDict['defaultCorridorCategory'] = getConfigReferences([defaultCorridorRef])[0]
 
                 defaultRoomRef = configDict['defaultRoomCategory']
-                configDict['defaultRoomCategory'] = getReferences([defaultRoomRef])[0]
+                configDict['defaultRoomCategory'] = getConfigReferences([defaultRoomRef])[0]
 
                 result.append(configDict)
             return jsonify({"valid": True, "response": result}), 200
