@@ -81,6 +81,14 @@ def saveConfig(idToken):
             # Update configuration to hold DB references
             requestData['roomCategories']['objects'] = saveReferences(roomCategories, roomCat_collection)
 
+             # Save default corridor category references
+            defaultCorridorCat = requestData['defaultCorridorCategory']
+            requestData['defaultCorridorCategory'] = saveCategory(defaultCorridorCat, corridorCat_collection, users_collection, user_id)
+
+            # Save default room category references
+            defaultRoomCat = requestData['defaultRoomCategory']
+            requestData['defaultRoomCategory'] = saveCategory(defaultRoomCat, roomCat_collection, users_collection, user_id)
+
             config.set(requestData) # TODO remove episilon including child nodes that have them
             return jsonify({"valid": True, "response": config.id}), 200
         else:
@@ -136,6 +144,13 @@ def getConfigs(idToken):
 
                 roomRefs = configDict['roomCategories']['objects']
                 configDict['roomCategories']['objects'] = getReferences(roomRefs)
+
+                defaultCorridorRef = configDict['defaultCorridorCategory']
+                configDict['defaultCorridorCategory'] = getReferences([defaultCorridorRef])[0]
+
+                defaultRoomRef = configDict['defaultRoomCategory']
+                configDict['defaultRoomCategory'] = getReferences([defaultRoomRef])[0]
+
                 result.append(configDict)
             return jsonify({"valid": True, "response": result}), 200
         else:

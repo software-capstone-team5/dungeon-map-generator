@@ -68,7 +68,7 @@ export default function MonsterEditor(props: Props) {
         })
       }
     }
-    setMonster(Object.assign(Object.create(Object.getPrototypeOf(monster)), monster, { [name]: value }) );
+    setMonster(Object.assign(Object.create(Object.getPrototypeOf(monster)), monster, { [name]: value }));
   }
 
   const handleEditClick = () => {
@@ -86,7 +86,9 @@ export default function MonsterEditor(props: Props) {
         var id = result.response;
         monster.id = id;
       } else {
-        window.alert(result.response);
+        if (result) {
+          window.alert(result.response);
+        }
       }
     }
 

@@ -75,7 +75,7 @@ export default function ItemEditor(props: Props) {
         return
       }
     }
-    setItem(Object.assign(Object.create(Object.getPrototypeOf(item)), item, { [name]: value }) );
+    setItem(Object.assign(Object.create(Object.getPrototypeOf(item)), item, { [name]: value }));
   }
 
   const handleEditClick = () => {
@@ -93,7 +93,9 @@ export default function ItemEditor(props: Props) {
         var id = result.response;
         item.id = id;
       } else {
-        window.alert(result.response);
+        if (result) {
+          window.alert(result.response);
+        }
       }
     }
 

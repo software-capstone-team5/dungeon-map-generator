@@ -110,7 +110,7 @@ export default function CorridorCategoryEditor(props: Props) {
   const [selectTrapDialogOpen, setSelectTrapDialogOpen] = useState<boolean>(false);
 
   const handleChange = (name: keyof CorridorCategory, value: valueOf<CorridorCategory>) => {
-    if (name === nameOf<CorridorCategory>("name")){
+    if (name === nameOf<CorridorCategory>("name")) {
       if (value) {
         setErrors({
           ...errors,
@@ -118,7 +118,7 @@ export default function CorridorCategoryEditor(props: Props) {
         })
       }
     }
-    setCorridorCategory(Object.assign(Object.create(Object.getPrototypeOf(corridorCategory)), corridorCategory, { [name]: value }) );
+    setCorridorCategory(Object.assign(Object.create(Object.getPrototypeOf(corridorCategory)), corridorCategory, { [name]: value }));
   }
 
   const handleDeleteClick = (name: keyof CorridorCategory, index: number) => {
@@ -254,7 +254,9 @@ export default function CorridorCategoryEditor(props: Props) {
         var id = result.response;
         corridorCategory.id = id;
       } else {
-        window.alert(result.response);
+        if (result) {
+          window.alert(result.response);
+        }
       }
     }
     props.onSave!(corridorCategory);
@@ -276,37 +278,37 @@ export default function CorridorCategoryEditor(props: Props) {
   return (
     <div>
       <Dialog scroll="paper" maxWidth="md" open={props.open} onClose={handleClose} aria-labelledby="form-dialog-title">
-      <div style={{maxWidth: 650}}>
-        <DialogTitle
-          className={classes.root}
-          disableTypography
-          id="form-dialog-title">
-          <Grid container alignItems="center">
+        <div style={{ maxWidth: 650 }}>
+          <DialogTitle
+            className={classes.root}
+            disableTypography
+            id="form-dialog-title">
+            <Grid container alignItems="center">
               <Typography component={'span'} variant="h6">{editMode ? "Edit" : viewMode ? "View" : "Add"} Corridor Category</Typography>
               <Tooltip
-                  arrow
-                  classes={{ tooltip: classes.customWidth }}
-                  title={
+                arrow
+                classes={{ tooltip: classes.customWidth }}
+                title={
                   <>
-                      <Typography align="center" color="inherit"><u>Help</u></Typography>
-                      <p><Typography display="inline" color="inherit">%:</Typography> The probabilities in each list will be normalized if they don't sum up to 100%</p>
-                      <p><Typography variant="body2" display="inline" color="inherit">Default:</Typography> If a Corridor has "Use Default" checked for any option,
+                    <Typography align="center" color="inherit"><u>Help</u></Typography>
+                    <p><Typography display="inline" color="inherit">%:</Typography> The probabilities in each list will be normalized if they don't sum up to 100%</p>
+                    <p><Typography variant="body2" display="inline" color="inherit">Default:</Typography> If a Corridor has "Use Default" checked for any option,
                           it will use the values in the Default Corridor.</p>
-                      <p>The Default Corridor cannot have "Use Default" checked for any option.</p>
+                    <p>The Default Corridor cannot have "Use Default" checked for any option.</p>
                   </>
-                  }
+                }
               >
-                  <HelpOutlineIcon className={classes.helpIcon} color="primary"></HelpOutlineIcon>
+                <HelpOutlineIcon className={classes.helpIcon} color="primary"></HelpOutlineIcon>
               </Tooltip>
             </Grid>
-          {viewMode && editMode &&
-            <IconButton aria-label="edit" className={classes.editButton} onClick={handleEditClick}>
-              <EditIcon />
-            </IconButton>
-          }
-        </DialogTitle>
-        <DialogContent>
-          <TextField
+            {viewMode && editMode &&
+              <IconButton aria-label="edit" className={classes.editButton} onClick={handleEditClick}>
+                <EditIcon />
+              </IconButton>
+            }
+          </DialogTitle>
+          <DialogContent>
+            <TextField
               required
               error={errors.name}
               onBlur={handleNameBlur}
@@ -341,12 +343,12 @@ export default function CorridorCategoryEditor(props: Props) {
               <FormControlLabel
                 disabled={viewMode}
                 control={
-                <Checkbox
+                  <Checkbox
                     checked={!Boolean(corridorCategory.monsters)}
                     onChange={handleMonsterDefaultChange}
                     name="useDefault"
                     color="default"
-                />
+                  />
                 }
                 label="Use Default"
               />
@@ -377,12 +379,12 @@ export default function CorridorCategoryEditor(props: Props) {
               <FormControlLabel
                 disabled={viewMode}
                 control={
-                <Checkbox
+                  <Checkbox
                     checked={!Boolean(corridorCategory.items)}
                     onChange={handleItemDefaultChange}
                     name="useDefault"
                     color="default"
-                />
+                  />
                 }
                 label="Use Default"
               />
@@ -406,12 +408,12 @@ export default function CorridorCategoryEditor(props: Props) {
               <FormControlLabel
                 disabled={viewMode}
                 control={
-                <Checkbox
+                  <Checkbox
                     checked={!Boolean(corridorCategory.traps)}
                     onChange={handleTrapDefaultChange}
                     name="useDefault"
                     color="default"
-                />
+                  />
                 }
                 label="Use Default"
               />
@@ -432,19 +434,19 @@ export default function CorridorCategoryEditor(props: Props) {
               probs={corridorCategory.entranceTypes}
               onProbUpdate={(newList: Probabilities<EntranceType> | null) => handleChange(nameOf<CorridorCategory>("entranceTypes"), newList)}
             />
-        </DialogContent>
+          </DialogContent>
 
-        <DialogActions>
-          <Button onClick={props.onCancelClick} color="primary">
-            Cancel
+          <DialogActions>
+            <Button onClick={props.onCancelClick} color="primary">
+              Cancel
           </Button>
-          {!viewMode &&
-            <Button onClick={handleSaveClick} variant="contained" color="primary">
-              Save
+            {!viewMode &&
+              <Button onClick={handleSaveClick} variant="contained" color="primary">
+                Save
             </Button>
-          }
+            }
 
-        </DialogActions>
+          </DialogActions>
         </div>
       </Dialog>
       <SelectMonster

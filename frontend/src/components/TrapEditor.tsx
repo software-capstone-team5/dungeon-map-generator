@@ -69,7 +69,7 @@ export default function TrapEditor(props: Props) {
         })
       }
     }
-    setTrap(Object.assign(Object.create(Object.getPrototypeOf(trap)), trap, { [name]: value }) );
+    setTrap(Object.assign(Object.create(Object.getPrototypeOf(trap)), trap, { [name]: value }));
   }
 
   const handleEditClick = () => {
@@ -87,7 +87,9 @@ export default function TrapEditor(props: Props) {
         var id = result.response;
         trap.id = id;
       } else {
-        window.alert(result.response);
+        if (result) {
+          window.alert(result.response);
+        }
       }
     }
 
