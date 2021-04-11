@@ -22,10 +22,6 @@ class DungeonDisplay extends Component {
 	private containerStyle: CSS.Properties = {
 		display: 'grid'
 	}
-	
-	private canvasStyle: CSS.Properties = {
-		gridArea: '1/1'
-	}
 
 	private combinedStyle: CSS.Properties = {
 		gridArea: '1/1',
@@ -39,6 +35,13 @@ class DungeonDisplay extends Component {
 		this.mainRef = React.createRef();
 		this.hiddenRef = React.createRef();
 		this.combinedRef = React.createRef();
+	}
+	
+	private getCanvasStyle(zIndex: number): CSS.Properties {
+		return {
+			gridArea: '1/1',
+			zIndex: zIndex
+		}
 	}
 
 	componentDidMount() {
@@ -64,10 +67,10 @@ class DungeonDisplay extends Component {
 	
 	render() {
 		return <div style={this.containerStyle}>
-			<canvas style={this.canvasStyle} ref={this.backgroundRef} {...this.props.canvasProps}/>
-			<canvas style={this.canvasStyle} ref={this.mainRef} {...this.props.canvasProps}/>
-			<canvas style={this.canvasStyle} ref={this.hiddenRef} {...this.props.canvasProps}/>
 			<canvas style={this.combinedStyle} ref={this.combinedRef} {...this.props.canvasProps}/>
+			<canvas style={this.getCanvasStyle(1)} ref={this.backgroundRef} {...this.props.canvasProps}/>
+			<canvas style={this.getCanvasStyle(2)} ref={this.mainRef} {...this.props.canvasProps}/>
+			<canvas style={this.getCanvasStyle(3)} ref={this.hiddenRef} {...this.props.canvasProps}/>
 		</div>
 	}
 
@@ -104,34 +107,6 @@ class DungeonDisplay extends Component {
 		// TODO: Use background image;
 		contexts[0].fillStyle = '#E0D3AF';
 		contexts[0].fillRect(0, 0, canvasWidth, canvasHeight);
-
-		// dungeonMap.corridors.forEach((corridor) => {
-		// 	corridor.locations.forEach((location) => {
-				// var startx = dungeonMap.tileSize * (location.x + 1);
-				// var starty = canvasHeight - dungeonMap.tileSize * (location.y + 2);
-		// 		if (corridor){
-		// 			if (location.y == 0 || location.y == height){
-		// 				var i = 0;
-		// 			}
-		// 			contexts[1].drawImage(corridor.tileSet.get(TileType.floor), startx, starty);
-		// 		}
-		// 		// this.drawWalls(corridor, dungeonMap, location.x, location.y, width, height, contexts[1], startx, starty);
-		// 	})
-		// });
-
-		// dungeonMap.rooms.forEach((room) => {
-		// 	room.locations.forEach((location) => {
-				// var startx = dungeonMap.tileSize * (location.x + 1);
-				// var starty = canvasHeight - dungeonMap.tileSize * (location.y + 2);
-		// 		if (room){
-		// 			if (location.y == 0 || location.y == height){
-		// 				var i = 0;
-		// 			}
-		// 			contexts[1].drawImage(room.tileSet.get(TileType.floor), startx, starty);
-		// 		}
-		// 		// this.drawWalls(room, dungeonMap, location.x, location.y, width, height, contexts[1], startx, starty);
-		// 	})
-		// });
 
 		for (var x = - 1; x < width + 1; x++){
 			for (var y = -1; y < height + 1; y++){
