@@ -9,6 +9,7 @@ export class RoomCategory extends RegionCategory {
 	sizes: Probabilities<Size> | null;
 	@Type(() => Probabilities)
 	shapes: Probabilities<RoomShape> | null;
+	isCorridor = false;
 
 	constructor() {
 		super()

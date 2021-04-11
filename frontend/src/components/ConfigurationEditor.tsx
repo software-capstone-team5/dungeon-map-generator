@@ -75,6 +75,7 @@ const useStyles = makeStyles((theme) =>  ({
 
 type Props = {
     configuration?: Configuration;
+    onGenerateClick: (c: Configuration) => void;
 }
 
 
@@ -186,6 +187,7 @@ function ConfigurationEditor(props: Props) {
         // configuration.roomCategories.normalize();
         // configuration.corridorCategories.normalize();
         // TODO: Generate
+        props.onGenerateClick(configuration);
     }
 
     const handleAlertClose = (event?: React.SyntheticEvent, reason?: string) => {

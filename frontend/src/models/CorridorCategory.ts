@@ -6,6 +6,7 @@ import { RegionCategory } from "./RegionCategory";
 export class CorridorCategory extends RegionCategory {
 	@Type(() => Probabilities)
 	widths: Probabilities<CorridorWidth> | null;
+	isCorridor = true;
 
 	constructor() {
 		super();
