@@ -106,12 +106,14 @@ const RegionLevelConfiguration = memo(
 
         const handleRoomDefaultSave = (rc: RoomCategory) => {
             props.onChange(nameOf<Configuration>("defaultRoomCategory"), rc);
+            setRoomCategoryToEdit(undefined);
             setRoomEditorOpen(false);
             setEditingDefault(false);
         }
 
         const handleCorridorDefaultSave = (cc: CorridorCategory) => {
             props.onChange(nameOf<Configuration>("defaultCorridorCategory"), cc);
+            setCorridorCategoryToEdit(undefined);
             setCorridorEditorOpen(false);
             setEditingDefault(false);
         }
