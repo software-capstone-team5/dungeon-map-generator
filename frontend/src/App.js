@@ -1,4 +1,6 @@
 import { AppBar, Button, Grid, Toolbar, Typography } from '@material-ui/core';
+import Backdrop from '@material-ui/core/Backdrop';
+import CircularProgress from '@material-ui/core/CircularProgress';
 import IconButton from '@material-ui/core/IconButton';
 import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
@@ -12,6 +14,7 @@ import ConfigurationEditor from "./components/ConfigurationEditor";
 import DungeonDisplay from './components/DungeonDisplay';
 import ImportMonsters from './components/ImportMonsters';
 import SelectConfiguration from "./components/SelectConfiguration";
+import TileSetEditor from './components/TileSetEditor';
 import { TileType } from './constants/TileType';
 import DB from './DB';
 import { DungeonGenerator } from './generator/DungeonGenerator';
@@ -34,7 +37,11 @@ const useStyles = makeStyles((theme) => ({
     flex: "2",
     overflow: "auto",
     padding: theme.spacing(3),
-  }
+  },
+  backdrop: {
+    zIndex: theme.zIndex.drawer + 1,
+    color: '#fff',
+  },
 }));
 
 function App() {
@@ -43,6 +50,7 @@ function App() {
   const [selectConfigDialogOpen, setSelectConfigDialogOpen] = useState(false);
   const [configToEdit, setConfigToEdit] = useState();
   const [dungeonMap, setDungeonMap] = useState();
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     Authenticator.init();
@@ -91,14 +99,23 @@ function App() {
     setConfigToEdit();
   }
 
-  const handleConfigSelect = (config) => {
-    // Pass it to the editor?
-    setConfigToEdit(config);
+  const handleConfigSelect = (configID) => {
+    if (!configID) {
+      return;
+    }
+    setIsLoading(true);
     setSelectConfigDialogOpen(false);
+    DB.getConfigByID(configID).then(result => {
+      setIsLoading(false)
+      if (result && result.valid) {
+        setConfigToEdit(result.response);
+      }
+    }).catch(() => setIsLoading(false))
   }
 
   const [menuAnchorEl, setMenuAnchorEl] = useState(null);
   const [importMonstersOpen, setImportMonstersOpen] = useState(false);
+  const [uploadTileSetOpen, setUploadTileSetOpen] = useState(false);
 
   const handleMenuClick = (event) => {
     setMenuAnchorEl(event.currentTarget);
@@ -113,14 +130,21 @@ function App() {
     handleClose();
   }
 
-  const handleGenerateClick = async (config) => {
-    if (config){
+  const uploadTilesetClick = () => {
+    setUploadTileSetOpen(true);
+    handleClose();
+  }
+
+  const handleGenerateClick = (config) => {
+    if (config) {
       // TODO: Remove this after config includes tile sets
+
+      // Fetch images from google drive, 
       var defaultSet = new TileSet("default", 48, new Map());
-      for (var tileType of Object.values(TileType)){
-          var img = new Image();
-          img.src = process.env.PUBLIC_URL + "/TileSets/Default/" + tileType + ".png";
-          defaultSet.addTileToSet(tileType, img);
+      for (var tileType of Object.values(TileType)) {
+        var img = new Image();
+        img.src = process.env.PUBLIC_URL + "/TileSets/Default/" + tileType + ".png";
+        defaultSet.addTileToSet(tileType, img);
       }
       var tileSets = Probabilities.buildUniform([defaultSet]);
       config.defaultRoomCategory.tileSets = tileSets;
@@ -130,6 +154,10 @@ function App() {
 
       setDungeonMap(DungeonGenerator.generateDungeon(config));
     }
+  }
+
+  const handleConfigSaveSuccess = (config) => {
+    setConfigToEdit(config);
   }
 
   return (
@@ -142,64 +170,75 @@ function App() {
         onClose={handleClose}
       >
         <MenuItem onClick={importMonstersClick}>Import Monsters</MenuItem>
+        <MenuItem onClick={uploadTilesetClick}>Upload Tileset</MenuItem>
       </Menu>
       {importMonstersOpen &&
-        <ImportMonsters open={importMonstersOpen} onCancelClick={()=>setImportMonstersOpen(false)}></ImportMonsters>
+        <ImportMonsters open={importMonstersOpen} onCancelClick={() => setImportMonstersOpen(false)}></ImportMonsters>
       }
-      {loggedIn !== null && // TODO: do something more elegant, like a loading bar
-          <Grid container direction="column" className={classes.topContainer}>
-            <div>
-              <AppBar position="static">
-                <Toolbar>
-                  {loggedIn &&
-                    <IconButton edge="start" onClick={handleMenuClick} className={classes.menuButton} color="inherit" aria-label="menu">
-                      <MenuIcon />
-                    </IconButton>
-                  }
-                  <Typography variant="h6" className={classes.title}>
-                    Dungeon Map Generator
-                  </Typography>
-                  {loggedIn ?
-                    <Button onClick={handleLogoutClick} color="inherit">Logout</Button>
-                    :
-                    <div>
-                      <Button onClick={handleRegisterClick} color="inherit">Register</Button>
-                      <Button onClick={handleLoginClick} color="inherit">Login</Button>
-                    </div>
-                  }
-
-                </Toolbar>
-              </AppBar>
-            </div>
-            <Grid
-              container
-              direction="row"
-              justify="space-evenly"
-              alignItems="center"
-              className={classes.content}
-            >
-              <div>
-                <Typography variant="h5" gutterBottom>Configuration</Typography>
-                <div>
-                  <IconButton onClick={handleLoadConfigClick} color="primary">
-                    <ListIcon />
+      {uploadTileSetOpen &&
+        <TileSetEditor open={uploadTileSetOpen} onCancelClick={() => setUploadTileSetOpen(false)}></TileSetEditor>
+      }
+      <Backdrop className={classes.backdrop} open={loggedIn === null || isLoading}>
+        <CircularProgress color="inherit" />
+      </Backdrop>
+      {loggedIn !== null &&
+        <Grid container direction="column" className={classes.topContainer}>
+          <div>
+            <AppBar position="static">
+              <Toolbar>
+                {loggedIn &&
+                  <IconButton edge="start" onClick={handleMenuClick} className={classes.menuButton} color="inherit" aria-label="menu">
+                    <MenuIcon />
                   </IconButton>
-                  <Button onClick={handleNewConfigClick} color="primary" variant="outlined">New</Button>
-                </div>
-                <ConfigurationEditor configuration={configToEdit} onGenerateClick={handleGenerateClick}/>
-                {selectConfigDialogOpen &&
-                  <SelectConfiguration
-                      open={selectConfigDialogOpen}
-                      onSelect={handleConfigSelect}
-                      onCancelClick={() => setSelectConfigDialogOpen(false)}
-                  />
                 }
+                <Typography variant="h6" className={classes.title}>
+                  Dungeon Map Generator
+                  </Typography>
+                {loggedIn ?
+                  <Button onClick={handleLogoutClick} color="inherit">Logout</Button>
+                  :
+                  <div>
+                    <Button onClick={handleRegisterClick} color="inherit">Register</Button>
+                    <Button onClick={handleLoginClick} color="inherit">Login</Button>
+                  </div>
+                }
+
+              </Toolbar>
+            </AppBar>
+          </div>
+          <Grid
+            container
+            direction="row"
+            justify="space-evenly"
+            alignItems="center"
+            className={classes.content}
+          >
+            <div>
+              <Typography variant="h5" gutterBottom>Configuration</Typography>
+              <div>
+                <IconButton onClick={handleLoadConfigClick} color="primary">
+                  <ListIcon />
+                </IconButton>
+                <Button onClick={handleNewConfigClick} color="primary" variant="outlined">New</Button>
               </div>
-              
-              <DungeonDisplay map={dungeonMap} canvasProps={null}></DungeonDisplay>
-              <p></p>
-            </Grid>
+              <ConfigurationEditor
+                configuration={configToEdit}
+                onSaveSuccess={handleConfigSaveSuccess}
+                onGenerateClick={handleGenerateClick}
+              />
+              {selectConfigDialogOpen &&
+                <SelectConfiguration
+                  open={selectConfigDialogOpen}
+                  onSelect={handleConfigSelect}
+                  onCancelClick={() => setSelectConfigDialogOpen(false)}
+                />
+              }
+            </div>
+
+            <DungeonDisplay map={dungeonMap} canvasProps={null}></DungeonDisplay>
+            <p></p>
           </Grid>
+        </Grid>
       }
     </div>
   );

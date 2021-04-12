@@ -1,9 +1,16 @@
 from backend import app
 from flask import request, jsonify
 from firebase_admin import credentials, firestore, auth, initialize_app  # Initialize Flask App
+from flask_cors import CORS, cross_origin
+from drive import createFolder
 
 cred = credentials.Certificate('./certs/key.json') # change later to either environment var or something else
 default_app = initialize_app(cred)
+
+cors = CORS(app, resources={r'/*': {'origins': '*'}})
+
+db = firestore.client()
+users_collection = db.collection('Users')
 
 def verifyToken(idToken):
     try:
@@ -27,6 +34,7 @@ def register():
                 return jsonify({"valid": False, "response": "Account Already Exists"}), 400
             else:
                 users_collection.document(user_id).set({"temp": True})
+                createFolder(requestData['accessToken'], requestData['refreshToken'], "DMG Tilesets")
                 return jsonify({"valid": True, "response": "Account Created"}), 200
         else:
             return user_id

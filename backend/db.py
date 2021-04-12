@@ -34,6 +34,14 @@ def saveConfig(idToken):
             # Update configuration to hold DB references
             requestData['roomCategories']['objects'] = saveReferences(roomCategories, roomCat_collection)
 
+             # Save default corridor category references
+            defaultCorridorCat = requestData['defaultCorridorCategory']
+            requestData['defaultCorridorCategory'] = saveCategory(defaultCorridorCat, corridorCat_collection, users_collection, user_id)
+
+            # Save default room category references
+            defaultRoomCat = requestData['defaultRoomCategory']
+            requestData['defaultRoomCategory'] = saveCategory(defaultRoomCat, roomCat_collection, users_collection, user_id)
+
             config.set(requestData) # TODO remove episilon including child nodes that have them
             return jsonify({"valid": True, "response": config.id}), 200
         else:
@@ -84,12 +92,22 @@ def getConfigs(idToken):
             result = []
             for config in configs.stream():
                 configDict = config.to_dict()
-                corridorRefs = configDict['corridorCategories']['objects']
-                configDict['corridorCategories']['objects'] = getReferences(corridorRefs)
+                configPartial = {"id": configDict["id"], "name": configDict["name"]}
+                result.append(configPartial)
+            return jsonify({"valid": True, "response": result}), 200
+        else:
+            return jsonify({"valid": False, "response": "No ID provided"}), 400
+    except Exception as e:
+        return f"An Error Occured: {e}"
 
-                roomRefs = configDict['roomCategories']['objects']
-                configDict['roomCategories']['objects'] = getReferences(roomRefs)
-                result.append(configDict)
+@app.route("/user/<idToken>/config/<configID>", methods=['GET'])
+def getConfigByID(idToken, configID):
+    try:
+        user_id = verifyToken(idToken)
+        if user_id:
+            config = users_collection.document(user_id).collection("Configurations").document(configID).get()
+            result = getConfigReferences(config)
+
             return jsonify({"valid": True, "response": result}), 200
         else:
             return jsonify({"valid": False, "response": "No ID provided"}), 400

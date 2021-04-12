@@ -81,7 +81,7 @@ CorridorCategoryEditor.defaultProps = {
 }
 
 export default function CorridorCategoryEditor(props: Props) {
-  const editMode: boolean = props.corridorCategory !== undefined
+  const editMode: boolean = props.corridorCategory !== undefined && !props.corridorCategory.premade;
   const classes = useStyles();
 
   const [corridorCategory, setCorridorCategory] = useState(() => {
@@ -110,7 +110,7 @@ export default function CorridorCategoryEditor(props: Props) {
   const [selectTrapDialogOpen, setSelectTrapDialogOpen] = useState<boolean>(false);
 
   const handleChange = (name: keyof CorridorCategory, value: valueOf<CorridorCategory>) => {
-    if (name === nameOf<CorridorCategory>("name")){
+    if (name === nameOf<CorridorCategory>("name")) {
       if (value) {
         setErrors({
           ...errors,
@@ -118,18 +118,18 @@ export default function CorridorCategoryEditor(props: Props) {
         })
       }
     }
-    setCorridorCategory(Object.assign(Object.create(corridorCategory), corridorCategory, { [name]: value }) );
+    setCorridorCategory(Object.assign(Object.create(Object.getPrototypeOf(corridorCategory)), corridorCategory, { [name]: value }));
   }
 
   const handleDeleteClick = (name: keyof CorridorCategory, index: number) => {
-    var updatedList = Object.create(corridorCategory[name] as Probabilities<any>);
+    var updatedList = Object.create(Object.getPrototypeOf(corridorCategory[name]) as Probabilities<any>);
     updatedList = Object.assign(updatedList, corridorCategory[name]);
     updatedList.remove(index);
     handleChange(name, updatedList);
   }
 
   const handleSelect = (name: keyof CorridorCategory, item: any) => {
-    var updatedList = Object.create(corridorCategory[name] as Probabilities<any>);
+    var updatedList = Object.create(Object.getPrototypeOf(corridorCategory[name]) as Probabilities<any>);
     updatedList = Object.assign(updatedList, corridorCategory[name]);
     updatedList.add(item);
     handleChange(name, updatedList);
@@ -160,7 +160,7 @@ export default function CorridorCategoryEditor(props: Props) {
   }
 
   const handleMonsterSave = (newMonster: Monster) => {
-    var updatedList = Object.create(corridorCategory.monsters as Probabilities<Monster>);
+    var updatedList = Object.create(Object.getPrototypeOf(corridorCategory.monsters) as Probabilities<Monster>);
     updatedList = Object.assign(updatedList, corridorCategory.monsters);
     updatedList.updateObject(monsterToEdit!, newMonster);
     handleChange(nameOf<CorridorCategory>("monsters"), updatedList);
@@ -186,7 +186,7 @@ export default function CorridorCategoryEditor(props: Props) {
   }
 
   const handleItemSave = (newItem: Item) => {
-    var updatedList = Object.create(corridorCategory.items as Probabilities<Item>);
+    var updatedList = Object.create(Object.getPrototypeOf(corridorCategory.items) as Probabilities<Item>);
     updatedList = Object.assign(updatedList, corridorCategory.items);
     updatedList.updateObject(itemToEdit!, newItem);
     handleChange(nameOf<CorridorCategory>("items"), updatedList);
@@ -212,7 +212,7 @@ export default function CorridorCategoryEditor(props: Props) {
   }
 
   const handleTrapSave = (newTrap: Trap) => {
-    var updatedList = Object.create(corridorCategory.traps as Probabilities<Trap>);
+    var updatedList = Object.create(Object.getPrototypeOf(corridorCategory.traps) as Probabilities<Trap>);
     updatedList = Object.assign(updatedList, corridorCategory.traps);
     updatedList.updateObject(trapToEdit!, newTrap);
     handleChange(nameOf<CorridorCategory>("traps"), updatedList);
@@ -254,7 +254,9 @@ export default function CorridorCategoryEditor(props: Props) {
         var id = result.response;
         corridorCategory.id = id;
       } else {
-        window.alert(result.response);
+        if (result) {
+          window.alert(result.response);
+        }
       }
     }
     props.onSave!(corridorCategory);
@@ -276,37 +278,37 @@ export default function CorridorCategoryEditor(props: Props) {
   return (
     <div>
       <Dialog scroll="paper" maxWidth="md" open={props.open} onClose={handleClose} aria-labelledby="form-dialog-title">
-      <div style={{maxWidth: 650}}>
-        <DialogTitle
-          className={classes.root}
-          disableTypography
-          id="form-dialog-title">
-          <Grid container alignItems="center">
-              <Typography component={'span'} variant="h6">{editMode ? "Edit" : "Add"} Corridor Category</Typography>
+        <div style={{ maxWidth: 650 }}>
+          <DialogTitle
+            className={classes.root}
+            disableTypography
+            id="form-dialog-title">
+            <Grid container alignItems="center">
+              <Typography component={'span'} variant="h6">{editMode ? "Edit" : viewMode ? "View" : "Add"} Corridor Category</Typography>
               <Tooltip
-                  arrow
-                  classes={{ tooltip: classes.customWidth }}
-                  title={
+                arrow
+                classes={{ tooltip: classes.customWidth }}
+                title={
                   <>
-                      <Typography align="center" color="inherit"><u>Help</u></Typography>
-                      <p><Typography display="inline" color="inherit">%:</Typography> The probabilities in each list will be normalized if they don't sum up to 100%</p>
-                      <p><Typography variant="body2" display="inline" color="inherit">Default:</Typography> If a Corridor has "Use Default" checked for any option,
+                    <Typography align="center" color="inherit"><u>Help</u></Typography>
+                    <p><Typography display="inline" color="inherit">%:</Typography> The probabilities in each list will be normalized if they don't sum up to 100%</p>
+                    <p><Typography variant="body2" display="inline" color="inherit">Default:</Typography> If a Corridor has "Use Default" checked for any option,
                           it will use the values in the Default Corridor.</p>
-                      <p>The Default Corridor cannot have "Use Default" checked for any option.</p>
+                    <p>The Default Corridor cannot have "Use Default" checked for any option.</p>
                   </>
-                  }
+                }
               >
-                  <HelpOutlineIcon className={classes.helpIcon} color="primary"></HelpOutlineIcon>
+                <HelpOutlineIcon className={classes.helpIcon} color="primary"></HelpOutlineIcon>
               </Tooltip>
             </Grid>
-          {viewMode && editMode &&
-            <IconButton aria-label="edit" className={classes.editButton} onClick={handleEditClick}>
-              <EditIcon />
-            </IconButton>
-          }
-        </DialogTitle>
-        <DialogContent>
-          <TextField
+            {viewMode && editMode &&
+              <IconButton aria-label="edit" className={classes.editButton} onClick={handleEditClick}>
+                <EditIcon />
+              </IconButton>
+            }
+          </DialogTitle>
+          <DialogContent>
+            <TextField
               required
               error={errors.name}
               onBlur={handleNameBlur}
@@ -341,12 +343,12 @@ export default function CorridorCategoryEditor(props: Props) {
               <FormControlLabel
                 disabled={viewMode}
                 control={
-                <Checkbox
+                  <Checkbox
                     checked={!Boolean(corridorCategory.monsters)}
                     onChange={handleMonsterDefaultChange}
                     name="useDefault"
                     color="default"
-                />
+                  />
                 }
                 label="Use Default"
               />
@@ -377,12 +379,12 @@ export default function CorridorCategoryEditor(props: Props) {
               <FormControlLabel
                 disabled={viewMode}
                 control={
-                <Checkbox
+                  <Checkbox
                     checked={!Boolean(corridorCategory.items)}
                     onChange={handleItemDefaultChange}
                     name="useDefault"
                     color="default"
-                />
+                  />
                 }
                 label="Use Default"
               />
@@ -406,12 +408,12 @@ export default function CorridorCategoryEditor(props: Props) {
               <FormControlLabel
                 disabled={viewMode}
                 control={
-                <Checkbox
+                  <Checkbox
                     checked={!Boolean(corridorCategory.traps)}
                     onChange={handleTrapDefaultChange}
                     name="useDefault"
                     color="default"
-                />
+                  />
                 }
                 label="Use Default"
               />
@@ -432,27 +434,29 @@ export default function CorridorCategoryEditor(props: Props) {
               probs={corridorCategory.entranceTypes}
               onProbUpdate={(newList: Probabilities<EntranceType> | null) => handleChange(nameOf<CorridorCategory>("entranceTypes"), newList)}
             />
-        </DialogContent>
+          </DialogContent>
 
-        <DialogActions>
-          <Button onClick={props.onCancelClick} color="primary">
-            Cancel
+          <DialogActions>
+            <Button onClick={props.onCancelClick} color="primary">
+              Cancel
           </Button>
-          {!viewMode &&
-            <Button onClick={handleSaveClick} variant="contained" color="primary">
-              Save
+            {!viewMode &&
+              <Button onClick={handleSaveClick} variant="contained" color="primary">
+                Save
             </Button>
-          }
+            }
 
-        </DialogActions>
+          </DialogActions>
         </div>
       </Dialog>
-      <SelectMonster
-        open={selectMonsterDialogOpen}
-        exclude={corridorCategory.monsters ? corridorCategory.monsters.objects : []}
-        onSelect={(m) => handleSelect(nameOf<CorridorCategory>("monsters"), m)}
-        onCancelClick={() => setSelectMonsterDialogOpen(false)}
-      />
+      {selectMonsterDialogOpen &&
+        <SelectMonster
+          open={selectMonsterDialogOpen}
+          exclude={corridorCategory.monsters ? corridorCategory.monsters.objects : []}
+          onSelect={(m) => handleSelect(nameOf<CorridorCategory>("monsters"), m)}
+          onCancelClick={() => setSelectMonsterDialogOpen(false)}
+        />
+      }
       {monsterEditorOpen &&
         <MonsterEditor
           viewOnly
@@ -462,12 +466,14 @@ export default function CorridorCategoryEditor(props: Props) {
           onCancelClick={() => setMonsterEditorOpen(false)}
         />
       }
-      <SelectItem
-        open={selectItemDialogOpen}
-        exclude={corridorCategory.items ? corridorCategory.items.objects : []}
-        onSelect={(i) => handleSelect(nameOf<CorridorCategory>("items"), i)}
-        onCancelClick={() => setSelectItemDialogOpen(false)}
-      />
+      {selectItemDialogOpen && 
+        <SelectItem
+          open={selectItemDialogOpen}
+          exclude={corridorCategory.items ? corridorCategory.items.objects : []}
+          onSelect={(i) => handleSelect(nameOf<CorridorCategory>("items"), i)}
+          onCancelClick={() => setSelectItemDialogOpen(false)}
+        />
+      }
       {itemEditorOpen &&
         <ItemEditor
           viewOnly
@@ -477,12 +483,14 @@ export default function CorridorCategoryEditor(props: Props) {
           onCancelClick={() => setItemEditorOpen(false)}
         />
       }
-      <SelectTrap
-        open={selectTrapDialogOpen}
-        exclude={corridorCategory.traps ? corridorCategory.traps.objects : []}
-        onSelect={(i) => handleSelect(nameOf<CorridorCategory>("traps"), i)}
-        onCancelClick={() => setSelectTrapDialogOpen(false)}
-      />
+      {selectTrapDialogOpen &&
+        <SelectTrap
+          open={selectTrapDialogOpen}
+          exclude={corridorCategory.traps ? corridorCategory.traps.objects : []}
+          onSelect={(i) => handleSelect(nameOf<CorridorCategory>("traps"), i)}
+          onCancelClick={() => setSelectTrapDialogOpen(false)}
+        />
+      }
       {trapEditorOpen &&
         <TrapEditor
           viewOnly

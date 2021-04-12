@@ -1,14 +1,14 @@
-import { default as firebaseKey } from "./certs/firebase_key.json"
+import { plainToClass } from "class-transformer";
 import firebase from "firebase/app";
 import "firebase/firestore";
-import { Configuration } from './models/Configuration';
-import { BACKEND_URL } from './constants/Backend';
-import { plainToClass } from "class-transformer";
 import { Authenticator } from './Authenticator';
-import { RoomCategory } from "./models/RoomCategory";
+import { default as firebaseKey } from "./certs/firebase_key.json";
+import { BACKEND_URL } from './constants/Backend';
+import { Configuration } from './models/Configuration';
 import { CorridorCategory } from "./models/CorridorCategory";
-import { Monster } from "./models/Monster";
 import { Item } from "./models/Item";
+import { Monster } from "./models/Monster";
+import { RoomCategory } from "./models/RoomCategory";
 import { Trap } from "./models/Trap";
 
 export class DB {
@@ -90,9 +90,52 @@ export class DB {
             }
             var configs: Configuration[] = [];
             data.response.forEach((element: Object) => {
-                configs.push(plainToClass(Configuration, element))
+                var config = plainToClass(Configuration, element);
+                if (config.roomCategories) {
+                    for (var i = 0; i < config.roomCategories.objects.length; i++) {
+                        config.roomCategories.objects[i] = plainToClass(RoomCategory, config.roomCategories.objects[i])
+                    }
+                }
+                if (config.corridorCategories) {
+                    for (var i = 0; i < config.corridorCategories.objects.length; i++) {
+                        config.corridorCategories.objects[i] = plainToClass(CorridorCategory, config.corridorCategories.objects[i])
+                    }
+                }
+                configs.push(config)
             });
             return { valid: true, "response": configs };
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
+    static async getConfigByID(id: string) {
+        try {
+            var token = await Authenticator.getIDToken();
+            if (token === undefined) {
+                return { valid: false, "response": "Not Logged In" };
+            }
+            const requestOptions = {
+                method: 'GET'
+            };
+            var response = await fetch(`${BACKEND_URL}/user/${token}/config/${id}`, requestOptions);
+            var data = await response.json();
+            if (!data.valid) {
+                return data;
+            }
+
+            var config = plainToClass(Configuration, data.response);
+            if (config.roomCategories) {
+                for (var i = 0; i < config.roomCategories.objects.length; i++) {
+                    config.roomCategories.objects[i] = plainToClass(RoomCategory, config.roomCategories.objects[i])
+                }
+            }
+            if (config.corridorCategories) {
+                for (var i = 0; i < config.corridorCategories.objects.length; i++) {
+                    config.corridorCategories.objects[i] = plainToClass(CorridorCategory, config.corridorCategories.objects[i])
+                }
+            }
+            return { valid: true, "response": config };
         } catch (error) {
             console.log(error);
         }
@@ -138,9 +181,9 @@ export class DB {
             if (!data.valid) {
                 return data;
             }
-            var corridorCats: RoomCategory[] = [];
+            var corridorCats: CorridorCategory[] = [];
             data.response.forEach((element: Object) => {
-                corridorCats.push(plainToClass(RoomCategory, element))
+                corridorCats.push(plainToClass(CorridorCategory, element))
             });
             return { valid: true, "response": corridorCats };
         } catch (error) {

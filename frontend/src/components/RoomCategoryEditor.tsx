@@ -82,9 +82,9 @@ RoomCategoryEditor.defaultProps = {
 }
 
 export default function RoomCategoryEditor(props: Props) {
-  const editMode: boolean = props.roomCategory !== undefined
+  const editMode: boolean = props.roomCategory !== undefined && !props.roomCategory.premade
   const classes = useStyles();
-  
+
   const [roomCategory, setRoomCategory] = useState(() => {
     if (props.roomCategory !== undefined) {
       return cloneDeep(props.roomCategory);
@@ -110,8 +110,12 @@ export default function RoomCategoryEditor(props: Props) {
   const [trapEditorOpen, setTrapEditorOpen] = useState<boolean>(false);
   const [selectTrapDialogOpen, setSelectTrapDialogOpen] = useState<boolean>(false);
 
+  // const [tileSetToEdit, setTileSetToEdit] = useState<TileSet>()
+  // const [tileSetEditorOpen, setTileSetEditorOpen] = useState<boolean>(false);
+  // const [selectTileSetDialogOpen, setSelectTileSetDialogOpen] = useState<boolean>(false);
+
   const handleChange = (name: keyof RoomCategory, value: valueOf<RoomCategory>) => {
-    if (name === nameOf<RoomCategory>("name")){
+    if (name === nameOf<RoomCategory>("name")) {
       if (value) {
         setErrors({
           ...errors,
@@ -119,18 +123,18 @@ export default function RoomCategoryEditor(props: Props) {
         })
       }
     }
-    setRoomCategory(Object.assign(Object.create(roomCategory), roomCategory, { [name]: value }) );
+    setRoomCategory(Object.assign(Object.create(Object.getPrototypeOf(roomCategory)), roomCategory, { [name]: value }));
   }
 
   const handleDeleteClick = (name: keyof RoomCategory, index: number) => {
-    var updatedList = Object.create(roomCategory[name] as Probabilities<any>);
+    var updatedList = Object.create(Object.getPrototypeOf(roomCategory[name]) as Probabilities<any>);
     updatedList = Object.assign(updatedList, roomCategory[name]);
     updatedList.remove(index);
     handleChange(name, updatedList);
   }
 
   const handleSelect = (name: keyof RoomCategory, item: any) => {
-    var updatedList = Object.create(roomCategory[name] as Probabilities<any>);
+    var updatedList = Object.create(Object.getPrototypeOf(roomCategory[name]) as Probabilities<any>);
     updatedList = Object.assign(updatedList, roomCategory[name]);
     updatedList.add(item);
     handleChange(name, updatedList);
@@ -161,7 +165,7 @@ export default function RoomCategoryEditor(props: Props) {
   }
 
   const handleMonsterSave = (newMonster: Monster) => {
-    var updatedList = Object.create(roomCategory.monsters as Probabilities<Monster>);
+    var updatedList = Object.create(Object.getPrototypeOf(roomCategory.monsters) as Probabilities<Monster>);
     updatedList = Object.assign(updatedList, roomCategory.monsters);
     updatedList.updateObject(monsterToEdit!, newMonster);
     handleChange(nameOf<RoomCategory>("monsters"), updatedList);
@@ -187,7 +191,7 @@ export default function RoomCategoryEditor(props: Props) {
   }
 
   const handleItemSave = (newItem: Item) => {
-    var updatedList = Object.create(roomCategory.items as Probabilities<Item>);
+    var updatedList = Object.create(Object.getPrototypeOf(roomCategory.items) as Probabilities<Item>);
     updatedList = Object.assign(updatedList, roomCategory.items);
     updatedList.updateObject(itemToEdit!, newItem);
     handleChange(nameOf<RoomCategory>("items"), updatedList);
@@ -213,13 +217,30 @@ export default function RoomCategoryEditor(props: Props) {
   }
 
   const handleTrapSave = (newTrap: Trap) => {
-    var updatedList = Object.create(roomCategory.traps as Probabilities<Trap>);
+    var updatedList = Object.create(Object.getPrototypeOf(roomCategory.traps) as Probabilities<Trap>);
     updatedList = Object.assign(updatedList, roomCategory.traps);
     updatedList.updateObject(trapToEdit!, newTrap);
     handleChange(nameOf<RoomCategory>("traps"), updatedList);
     setTrapEditorOpen(false);
     setTrapToEdit(undefined);
   }
+
+  // const handleTileSetClick = (tileSet: TileSet) => {
+  //   setTileSetToEdit(tileSet);
+  //   setTileSetEditorOpen(true);
+  // }
+
+  // const handleAddTileSetClick = () => {
+  //   setSelectTileSetDialogOpen(true);
+  // }
+
+  // const handleTileSetSave = (newTileSet: TileSet) => {
+  //   var updatedList = roomCategory.tileSets;
+  //   updatedList.updateObject(tileSetToEdit!, newTileSet);
+  //   handleChange(nameOf<RoomCategory>("tileSets"), updatedList);
+  //   setTileSetEditorOpen(false);
+  //   setTileSetToEdit(undefined);
+  // }
 
   const handleEditClick = () => {
     setViewMode(false);
@@ -258,7 +279,9 @@ export default function RoomCategoryEditor(props: Props) {
         var id = result.response;
         roomCategory.id = id;
       } else {
-        window.alert(result.response);
+        if (result) {
+          window.alert(result.response);
+        }
       }
     }
 
@@ -281,37 +304,37 @@ export default function RoomCategoryEditor(props: Props) {
   return (
     <div>
       <Dialog scroll="paper" maxWidth="md" open={props.open} onClose={handleClose} aria-labelledby="form-dialog-title">
-        <div style={{maxWidth: 650}}>
-        <DialogTitle
-          className={classes.root}
-          disableTypography
-          id="form-dialog-title">
+        <div style={{ maxWidth: 650 }}>
+          <DialogTitle
+            className={classes.root}
+            disableTypography
+            id="form-dialog-title">
             <Grid container alignItems="center">
-              <Typography component={'span'} variant="h6">{editMode ? "Edit" : "Add"} Room Category</Typography>
+              <Typography component={'span'} variant="h6">{editMode ? "Edit" : viewMode ? "View" : "Add"} Room Category</Typography>
               <Tooltip
-                  arrow
-                  classes={{ tooltip: classes.customWidth }}
-                  title={
+                arrow
+                classes={{ tooltip: classes.customWidth }}
+                title={
                   <>
-                      <Typography align="center" color="inherit"><u>Help</u></Typography>
-                      <p><Typography display="inline" color="inherit">%:</Typography> The probabilities in each list will be normalized if they don't sum up to 100%</p>
-                      <p><Typography variant="body2" display="inline" color="inherit">Default:</Typography> If a Room has "Use Default" checked for any option,
+                    <Typography align="center" color="inherit"><u>Help</u></Typography>
+                    <p><Typography display="inline" color="inherit">%:</Typography> The probabilities in each list will be normalized if they don't sum up to 100%</p>
+                    <p><Typography variant="body2" display="inline" color="inherit">Default:</Typography> If a Room has "Use Default" checked for any option,
                           it will use the values in the Default Room.</p>
-                      <p>The Default Room cannot have "Use Default" checked for any option.</p>
+                    <p>The Default Room cannot have "Use Default" checked for any option.</p>
                   </>
-                  }
+                }
               >
-                  <HelpOutlineIcon className={classes.helpIcon} color="primary"></HelpOutlineIcon>
+                <HelpOutlineIcon className={classes.helpIcon} color="primary"></HelpOutlineIcon>
               </Tooltip>
             </Grid>
-          {viewMode && editMode &&
-            <IconButton aria-label="edit" className={classes.editButton} onClick={handleEditClick}>
-              <EditIcon />
-            </IconButton>
-          }
-        </DialogTitle>
-        <DialogContent>
-          <TextField
+            {viewMode && editMode &&
+              <IconButton aria-label="edit" className={classes.editButton} onClick={handleEditClick}>
+                <EditIcon />
+              </IconButton>
+            }
+          </DialogTitle>
+          <DialogContent>
+            <TextField
               required
               error={errors.name}
               onBlur={handleNameBlur}
@@ -342,7 +365,6 @@ export default function RoomCategoryEditor(props: Props) {
               probs={roomCategory.shapes}
               onProbUpdate={(newList: Probabilities<RoomShape> | null) => handleChange(nameOf<RoomCategory>("shapes"), newList)}
             />
-            {/* Tile assets */}
             <div className={classes.listLabel}>
               <FormControl disabled={viewMode || !Boolean(roomCategory.monsters)}>
                 <FormLabel>Monsters</FormLabel>
@@ -353,12 +375,12 @@ export default function RoomCategoryEditor(props: Props) {
               <FormControlLabel
                 disabled={viewMode}
                 control={
-                <Checkbox
+                  <Checkbox
                     checked={!Boolean(roomCategory.monsters)}
                     onChange={handleMonsterDefaultChange}
                     name="useDefault"
                     color="default"
-                />
+                  />
                 }
                 label="Use Default"
               />
@@ -389,12 +411,12 @@ export default function RoomCategoryEditor(props: Props) {
               <FormControlLabel
                 disabled={viewMode}
                 control={
-                <Checkbox
+                  <Checkbox
                     checked={!Boolean(roomCategory.items)}
                     onChange={handleItemDefaultChange}
                     name="useDefault"
                     color="default"
-                />
+                  />
                 }
                 label="Use Default"
               />
@@ -418,12 +440,12 @@ export default function RoomCategoryEditor(props: Props) {
               <FormControlLabel
                 disabled={viewMode}
                 control={
-                <Checkbox
+                  <Checkbox
                     checked={!Boolean(roomCategory.traps)}
                     onChange={handleTrapDefaultChange}
                     name="useDefault"
                     color="default"
-                />
+                  />
                 }
                 label="Use Default"
               />
@@ -444,27 +466,29 @@ export default function RoomCategoryEditor(props: Props) {
               probs={roomCategory.entranceTypes}
               onProbUpdate={(newList: Probabilities<EntranceType> | null) => handleChange(nameOf<RoomCategory>("entranceTypes"), newList)}
             />
-        </DialogContent>
+          </DialogContent>
 
-        <DialogActions>
-          <Button onClick={props.onCancelClick} color="primary">
-            Cancel
+          <DialogActions>
+            <Button onClick={props.onCancelClick} color="primary">
+              Cancel
           </Button>
-          {!viewMode &&
-            <Button onClick={handleSaveClick} variant="contained" color="primary">
-              Save
+            {!viewMode &&
+              <Button onClick={handleSaveClick} variant="contained" color="primary">
+                Save
             </Button>
-          }
+            }
 
-        </DialogActions>
+          </DialogActions>
         </div>
       </Dialog>
-      <SelectMonster
-        open={selectMonsterDialogOpen}
-        exclude={roomCategory.monsters ? roomCategory.monsters.objects: []}
-        onSelect={(m) => handleSelect(nameOf<RoomCategory>("monsters"), m)}
-        onCancelClick={() => setSelectMonsterDialogOpen(false)}
-      />
+      {selectMonsterDialogOpen &&
+        <SelectMonster
+          open={selectMonsterDialogOpen}
+          exclude={roomCategory.monsters ? roomCategory.monsters.objects : []}
+          onSelect={(m) => handleSelect(nameOf<RoomCategory>("monsters"), m)}
+          onCancelClick={() => setSelectMonsterDialogOpen(false)}
+        />
+      }
       {monsterEditorOpen &&
         <MonsterEditor
           viewOnly
@@ -474,12 +498,14 @@ export default function RoomCategoryEditor(props: Props) {
           onCancelClick={() => setMonsterEditorOpen(false)}
         />
       }
-      <SelectItem
-        open={selectItemDialogOpen}
-        exclude={roomCategory.items ? roomCategory.items.objects : []}
-        onSelect={(i) => handleSelect(nameOf<RoomCategory>("items"), i)}
-        onCancelClick={() => setSelectItemDialogOpen(false)}
-      />
+      {selectItemDialogOpen && 
+        <SelectItem
+          open={selectItemDialogOpen}
+          exclude={roomCategory.items ? roomCategory.items.objects : []}
+          onSelect={(i) => handleSelect(nameOf<RoomCategory>("items"), i)}
+          onCancelClick={() => setSelectItemDialogOpen(false)}
+        />
+      }
       {itemEditorOpen &&
         <ItemEditor
           viewOnly
@@ -489,12 +515,14 @@ export default function RoomCategoryEditor(props: Props) {
           onCancelClick={() => setItemEditorOpen(false)}
         />
       }
-      <SelectTrap
-        open={selectTrapDialogOpen}
-        exclude={roomCategory.traps ? roomCategory.traps.objects : []}
-        onSelect={(i) => handleSelect(nameOf<RoomCategory>("traps"), i)}
-        onCancelClick={() => setSelectTrapDialogOpen(false)}
-      />
+      {selectTrapDialogOpen &&
+        <SelectTrap
+          open={selectTrapDialogOpen}
+          exclude={roomCategory.traps ? roomCategory.traps.objects : []}
+          onSelect={(i) => handleSelect(nameOf<RoomCategory>("traps"), i)}
+          onCancelClick={() => setSelectTrapDialogOpen(false)}
+        />
+      }
       {trapEditorOpen &&
         <TrapEditor
           viewOnly
