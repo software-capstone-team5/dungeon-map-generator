@@ -13,6 +13,9 @@ import { CorridorInstance } from '../models/CorridorInstance';
 import { Direction } from '../constants/Direction';
 import { MonsterState } from '../constants/MonsterState';
 import { EntranceType } from '../constants/EntranceType';
+import { Monster } from '../models/Monster';
+import { Trap } from '../models/Trap';
+import { Item } from '../models/Item';
 
 export class DungeonGenerator {
 	// TODO: Chose actual values
@@ -161,6 +164,7 @@ export class DungeonGenerator {
 				lastPath.push(next);
 			}
 		}
+		this.generateEncounters(map, config);
 		return map;
 	}
 
@@ -268,9 +272,9 @@ export class DungeonGenerator {
 		}
 
 		var room: RoomInstance = new RoomInstance();
-		Object.assign(room, this.genearteRegion(category, defaultCategory));
 		room.start = start;
 		room.category = category;
+		room.tileSet = category.tileSets ? category.tileSets.randPickOne()! : defaultCategory.tileSets!.randPickOne()!;
 		room.size = category.sizes ? category.sizes!.randPickOne()! : defaultCategory.sizes!.randPickOne()!;
 		room.shape = category.shapes ? category.shapes!.randPickOne()! : defaultCategory.shapes!.randPickOne()!;
 		room.entrances = [new Entrance(category.entranceTypes ? category.entranceTypes!.randPickOne()! : defaultCategory.entranceTypes!.randPickOne()!, start, Direction.getOppositeDirection(direction))];
@@ -288,9 +292,9 @@ export class DungeonGenerator {
 		}
 		
 		var corridor: CorridorInstance = new CorridorInstance();
-		Object.assign(corridor, this.genearteRegion(category, defaultCategory));
 		corridor.category = category;
 		corridor.width = category.widths ? category.widths!.randPickOne()! : defaultCategory.widths!.randPickOne()!;
+		corridor.tileSet = category.tileSets ? category.tileSets.randPickOne()! : defaultCategory.tileSets!.randPickOne()!;
 		
 		var startingEntranceType = this.tryMatchEntrances(category, defaultCategory, startEntranceType);
 		var endingEntranceType = this.tryMatchEntrances(category, defaultCategory, endEntranceType);
@@ -304,6 +308,155 @@ export class DungeonGenerator {
 		return corridor;
 	}
 
+	private static generateEncounters(map: DungeonMap, config: Configuration){
+		var regionsWithMonstersOrTraps = new Map<number, RegionInstance>();
+		var regionsWithItems = new Map<number, RegionInstance>();
+		var doesDefaultRoomHaveMonsters = config.defaultRoomCategory.monsters && config.defaultRoomCategory.monsters.objects && config.defaultRoomCategory.monsters.objects.length > 0;
+		var doesDefaultRoomHaveTraps = config.defaultRoomCategory.traps && config.defaultRoomCategory.traps.objects && config.defaultRoomCategory.traps.objects.length > 0;
+		map.rooms.forEach((room, index) => {
+			if ((!room.category.monsters && doesDefaultRoomHaveMonsters) || (room.category.monsters && room.category.monsters.objects.length > 0))
+			{
+				regionsWithMonstersOrTraps.set(index, room);
+			}
+			if ((!room.category.items && doesDefaultRoomHaveTraps) || (room.category.items && room.category.items.objects.length > 0))
+			{
+				regionsWithMonstersOrTraps.set(index, room);
+			}
+		})
+		var doesDefaultCorridorHaveMonsters = config.defaultCorridorCategory.monsters && config.defaultCorridorCategory.monsters.objects && config.defaultCorridorCategory.monsters.objects.length > 0;
+		var doesDefaultCorridorHaveTraps = config.defaultCorridorCategory.traps && config.defaultCorridorCategory.traps.objects && config.defaultCorridorCategory.traps.objects.length > 0;
+		map.corridors.forEach((corridor, index) => {
+			if ((!corridor.category.monsters && doesDefaultCorridorHaveMonsters) || (corridor.category.monsters && corridor.category.monsters.objects.length > 0))
+			{
+				regionsWithItems.set(index, corridor);
+			}
+			if ((!corridor.category.items && doesDefaultCorridorHaveTraps) || (corridor.category.items && corridor.category.items.objects.length > 0))
+			{
+				regionsWithItems.set(index, corridor);
+			}
+		})
+
+		var difficulties = this.randSplitNumber(config.difficulty, regionsWithMonstersOrTraps.size) 
+		var diffIndex = 0;
+		regionsWithMonstersOrTraps.forEach((region, index) => {
+			if (region.isCorridor){
+				Object.assign(map.corridors[index], this.genearteRegionEncounter(region, config, difficulties[diffIndex]));
+			}
+			else{
+				Object.assign(map.rooms[index], this.genearteRegionEncounter(region, config, difficulties[diffIndex]));
+			}
+			diffIndex += 1;
+		})
+
+		var values = this.randSplitNumber(config.difficulty, regionsWithItems.size) 
+		var valIndex = 0;
+		regionsWithItems.forEach((region, index) => {
+			if (region.isCorridor){
+				Object.assign(map.corridors[index], this.generateRegionItems(region, config, values[valIndex]));
+			}
+			else{
+				Object.assign(map.rooms[index], this.generateRegionItems(region, config, values[valIndex]));
+			}
+			valIndex += 1;			
+		})
+	}
+
+	private static randSplitNumber(num: number, length: number) {
+		var parts: number[] = [];
+		let sumParts = 0;
+		for (let i = 0; i < length - 1; i++) {
+			const pn = Math.ceil(Math.random() * (num - sumParts))
+			parts.push(pn);
+			sumParts += pn
+		}
+		parts.push(num - sumParts);
+		return parts.sort(() => Math.random() - 0.5);
+	}
+
+	private static generateRegionItems(region: RegionInstance, config: Configuration, goalValue: number){
+		var category: RegionCategory;
+		var defaultCategory: RegionCategory
+		if (region.isCorridor){
+			category = (region as CorridorInstance).category;
+			defaultCategory = config.defaultCorridorCategory;
+		}
+		else{
+			category = (region as RoomInstance).category;
+			defaultCategory = config.defaultRoomCategory;
+		}
+
+		var sumVal = 0;
+		var itemProbs = category.items ? category.items : defaultCategory.items!;
+
+		var items: Item[] = [];
+
+		while (sumVal < goalValue){
+			var item = itemProbs.randPickOne();
+			if (item){
+				sumVal += item.value;
+				items.push(item)
+			}
+		}
+
+		return {
+			items: items,
+		} as RegionInstance;
+	}
+
+	private static genearteRegionEncounter(region: RegionInstance, config: Configuration, goalDifficulty: number): RegionInstance {
+		var category: RegionCategory;
+		var defaultCategory: RegionCategory
+		if (region.isCorridor){
+			category = (region as CorridorInstance).category;
+			defaultCategory = config.defaultCorridorCategory;
+		}
+		else{
+			category = (region as RoomInstance).category;
+			defaultCategory = config.defaultRoomCategory;
+		}
+
+		var state = category.states ? category.states.randPickOne()! : defaultCategory.states!.randPickOne() ?? MonsterState.relaxed;
+
+		var diffModifier = 1;
+		if (region.state === MonsterState.asleep){
+			diffModifier = 0.8;
+		}
+		else if (region.state === MonsterState.aware){
+			diffModifier = 1.2
+		}
+
+		var sumDiff = 0;
+		var monsterProbs = category.monsters ? category.monsters : defaultCategory.monsters!;
+		var trapProbs = category.traps ? category.traps : defaultCategory.traps!;
+
+		var monsters: Monster[] = [];
+		var traps: Trap[] = [];
+
+		while (sumDiff < goalDifficulty){
+			if (!trapProbs || !trapProbs.objects || trapProbs.objects.length === 0 || Math.random() < 0.5){
+				var monster = monsterProbs.randPickOne();
+				if (monster){
+					sumDiff += monster.challenge;
+					monsters.push(monster)
+				}
+			}
+			else{
+				var trap = trapProbs.randPickOne();
+				if (trap){
+					sumDiff += trap.difficulty;
+					traps.push(trap)
+				}
+			}
+		}
+
+		return {
+			state: state,
+			monsters: monsters,
+			traps: traps,
+			difficulty: sumDiff
+		} as RegionInstance;
+	}
+
 	private static tryMatchEntrances(category: CorridorCategory, defaultCategory: CorridorCategory, goalEntranceType: EntranceType | null){
 		var entranceType = null;
 		if (goalEntranceType && category.entranceTypes && category.entranceTypes.toMap().has(goalEntranceType)){
@@ -313,19 +466,6 @@ export class DungeonGenerator {
 			entranceType = category.entranceTypes ? category.entranceTypes!.randPickOne()! : defaultCategory.entranceTypes!.randPickOne()!;
 		}
 		return entranceType;
-	}
-
-	private static genearteRegion(category: RegionCategory, defaultCategory: RegionCategory): RegionInstance {
-		var region = new RegionInstance();
-
-		// TODO: Do this according to difficulty
-		region.tileSet = category.tileSets ? category.tileSets.randPickOne()! : defaultCategory.tileSets!.randPickOne()!;
-		region.monsters = category.monsters ? category.monsters.randPickMany(this.monsterChance) : defaultCategory.monsters!.randPickMany(this.monsterChance);
-		region.state = category.states ? category.states.randPickOne()! : defaultCategory.states!.randPickOne() ?? MonsterState.relaxed;
-		region.items = category.items ? category.items.randPickMany(this.itemChance) : defaultCategory.items!.randPickMany(this.itemChance);
-		region.traps = category.traps ? category.traps.randPickMany(this.trapChance) : defaultCategory.traps!.randPickMany(this.trapChance);
-		
-		return region;
 	}
 
 	private static getRoomLocations(shape: RoomShape, start: Coordinates, sizeModifier: number, direction: Direction): Coordinates[]{

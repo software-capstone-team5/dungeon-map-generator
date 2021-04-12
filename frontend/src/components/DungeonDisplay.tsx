@@ -6,6 +6,7 @@ import { Coordinates } from '../models/Coordinates';
 import { DungeonMap } from '../models/DungeonMap';
 import { RegionInstance } from '../models/RegionInstance';
 import CSS from 'csstype';
+import DungeonEditor from './DungeonEditor';
 
 type Props = {
     map: DungeonMap | null;
@@ -35,6 +36,9 @@ class DungeonDisplay extends Component {
 		this.mainRef = React.createRef();
 		this.hiddenRef = React.createRef();
 		this.combinedRef = React.createRef();
+
+		this.getSingleImage = this.getSingleImage.bind(this);
+		this.getMultipleImages = this.getMultipleImages.bind(this);
 	}
 	
 	private getCanvasStyle(zIndex: number): CSS.Properties {
@@ -66,15 +70,18 @@ class DungeonDisplay extends Component {
 	}
 	
 	render() {
-		return <div style={this.containerStyle}>
-			<canvas style={this.combinedStyle} ref={this.combinedRef} {...this.props.canvasProps}/>
-			<canvas style={this.getCanvasStyle(1)} ref={this.backgroundRef} {...this.props.canvasProps}/>
-			<canvas style={this.getCanvasStyle(2)} ref={this.mainRef} {...this.props.canvasProps}/>
-			<canvas style={this.getCanvasStyle(3)} ref={this.hiddenRef} {...this.props.canvasProps}/>
-		</div>
+		return <div>
+			<div style={this.containerStyle}>
+				<canvas style={this.combinedStyle} ref={this.combinedRef} {...this.props.canvasProps}/>
+				<canvas style={this.getCanvasStyle(1)} ref={this.backgroundRef} {...this.props.canvasProps}/>
+				<canvas style={this.getCanvasStyle(2)} ref={this.mainRef} {...this.props.canvasProps}/>
+				<canvas style={this.getCanvasStyle(3)} ref={this.hiddenRef} {...this.props.canvasProps}/>
+			</div>
+			<DungeonEditor map={this.props.map} getSingleImage={this.getSingleImage} getMultipleImages={this.getMultipleImages}></DungeonEditor>
+		</div> 
 	}
 
-	getSingleImage(){
+	getSingleImage(): Map<string, any>{
 		const canvases = this.getCanvases();
 
 		var combinedCanvas = this.combinedRef.current;
@@ -84,11 +91,22 @@ class DungeonDisplay extends Component {
 			context.drawImage(canvas, 0, 0);
 		})
 
-		return combinedCanvas.toDataURL("image/png");
+		// TODO: add encounter data
+		var namesToFiles = new Map<string, string>();
+		namesToFiles.set("DungeonMap.png", combinedCanvas.toDataURL("image/png"));
+		return namesToFiles;
 	}
 
-	getMultipleImages(): any[]{
-		return this.getCanvases().map((canvas) => canvas.toDataURL("image/png"));
+	getMultipleImages(): Map<string, any>{
+		var urls = this.getCanvases().map((canvas) => canvas.toDataURL("image/png"));
+		var namesToFiles = new Map<string, string>();
+		namesToFiles.set("DungeonMap_Background.png", urls[0]);
+		namesToFiles.set("DungeonMap_Main.png", urls[1]);
+		namesToFiles.set("DungeonMap_Hidden.png", urls[2]);
+		namesToFiles.set("DungeonMap.png", urls[3]);
+
+		// TODO: add encounter data
+		return namesToFiles;
 	}
 
 	drawDungeon(dungeonMap: DungeonMap) {
