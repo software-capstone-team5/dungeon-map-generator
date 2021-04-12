@@ -1,14 +1,16 @@
-import { useEffect, useState } from 'react';
 import Button from '@material-ui/core/Button';
+import CircularProgress from '@material-ui/core/CircularProgress';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogTitle from '@material-ui/core/DialogTitle';
+import differenceWith from 'lodash/differenceWith';
+import { useEffect, useState } from 'react';
+import DB from '../DB';
+import { Item } from '../models/Item';
+import { compareByID } from '../utils/util';
 import NameList from './common/NameList';
 import ItemEditor from './ItemEditor';
-import { Item } from '../models/Item';
-import { nameOf } from '../utils/util';
-import differenceBy from 'lodash/differenceBy';
 
 type Props = {
   open: boolean;
@@ -20,20 +22,22 @@ type Props = {
 export default function SelectItem(props: Props) {
   const [Items, setItems] = useState<Item[]>([]);
   const [ItemEditorOpen, setItemEditorOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
-  // useEffect(()=> {
-  //   // TODO: Make an API call to get the Item 
-  //   // TEST DATA
-  //   var m = new Item();
-  //   m.id = "11";
-  //   m.name = "Dragon";
-  //   var m2 = new Item();
-  //   m2.id = "10";
-  //   m2.name = "Owlbear";
-  //   var apiList = [m, m2]
-  //   apiList = differenceBy(apiList, props.exclude, nameOf<Item>("id"));
-  //   setItems(apiList);
-  // }, [Items, props.exclude]);
+  useEffect(() => {
+    let mounted = true;
+    setIsLoading(true);
+    DB.getAllItems().then(result => {
+      if (mounted) {
+        setIsLoading(false);
+        if (result && result.valid) {
+          var list = differenceWith(result.response, props.exclude, compareByID) as Item[]
+          setItems(list)
+        }
+      }
+    })
+    return () => { mounted = false };
+  }, []);
 
   const handleSave = (item: Item) => {
     setItemEditorOpen(false);
@@ -42,14 +46,19 @@ export default function SelectItem(props: Props) {
 
   return (
     <div>
-      <Dialog 
+      <Dialog
         open={props.open}
         aria-labelledby="form-dialog-title"
       >
         <DialogTitle id="form-dialog-title">Select Item</DialogTitle>
         <DialogContent>
+          {isLoading && 
+            <div style={{textAlign: "center"}}>
+              <CircularProgress/>
+            </div>
+          }
           <NameList<Item> list={Items} onClick={(item: Item) => props.onSelect(item)}></NameList>
-          <Button onClick={()=>setItemEditorOpen(true)} variant="outlined" style={{width: "100%"}} color="primary">
+          <Button onClick={() => setItemEditorOpen(true)} variant="outlined" style={{ width: "100%" }} color="primary">
             Add New
           </Button>
         </DialogContent>
@@ -60,11 +69,11 @@ export default function SelectItem(props: Props) {
         </DialogActions>
       </Dialog>
       {ItemEditorOpen &&
-          <ItemEditor
-              open={ItemEditorOpen}
-              onSave={handleSave}
-              onCancelClick={()=>setItemEditorOpen(false)}
-          />
+        <ItemEditor
+          open={ItemEditorOpen}
+          onSave={handleSave}
+          onCancelClick={() => setItemEditorOpen(false)}
+        />
       }
     </div>
   );

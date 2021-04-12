@@ -1,3 +1,4 @@
+import { Type } from 'class-transformer';
 import { EntranceType } from "../constants/EntranceType";
 import { MonsterState } from "../constants/MonsterState";
 import { Probabilities } from "../generator/Probabilities";
@@ -9,29 +10,32 @@ import { Trap } from "./Trap";
 export class RegionCategory {
 	id: string = "";
 	name: string = "";
-	tileSets: Probabilities<TileSet>;
-	monsters: Probabilities<Monster>;
-	states: Probabilities<MonsterState>;
-	items: Probabilities<Item>;
-	entranceTypes: Probabilities<EntranceType>;
-	traps: Probabilities<Trap>;
+	premade: boolean = false;
+	@Type(() => Probabilities)
+	tileSets: Probabilities<TileSet> | null;
+	@Type(() => Probabilities)
+	monsters: Probabilities<Monster> | null;
+	@Type(() => Probabilities)
+	states: Probabilities<MonsterState> | null;
+	@Type(() => Probabilities)
+	items: Probabilities<Item> | null;
+	@Type(() => Probabilities)
+	entranceTypes: Probabilities<EntranceType> | null;
+	@Type(() => Probabilities)
+	traps: Probabilities<Trap> | null;
+	isCorridor = false;
 
 	constructor() {
-		this.states = new Probabilities<MonsterState>(null);
-		var len = Object.values(MonsterState).length;
-		Object.values(MonsterState).forEach((x: MonsterState) => {
-			this.states.add(x, 1/len);
-		});
-
-		this.entranceTypes = new Probabilities<EntranceType>(null);
-		len = Object.values(EntranceType).length;
-		Object.values(EntranceType).forEach((x:EntranceType) => {
-			this.entranceTypes.add(x, 1/len);
-		});
-
+		this.states = Probabilities.buildUniform(Object.values(MonsterState));
+		this.entranceTypes = Probabilities.buildUniform(Object.values(EntranceType));
 		this.monsters = new Probabilities<Monster>(null);
 		this.items = new Probabilities<Item>(null);
 		this.traps = new Probabilities<Trap>(null);
 		this.tileSets = new Probabilities<TileSet>(null);
+	}
+
+	// TODO: Tilesets
+	canBeUsedAsDefault() : boolean {
+		return Boolean(this.monsters && this.states && this.items && this.entranceTypes && this.traps);
 	}
 }

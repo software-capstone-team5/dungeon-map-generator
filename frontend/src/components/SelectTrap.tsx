@@ -1,14 +1,16 @@
-import { useEffect, useState } from 'react';
 import Button from '@material-ui/core/Button';
+import CircularProgress from '@material-ui/core/CircularProgress';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogTitle from '@material-ui/core/DialogTitle';
+import differenceWith from 'lodash/differenceWith';
+import { useEffect, useState } from 'react';
+import DB from '../DB';
+import { Trap } from '../models/Trap';
+import { compareByID } from '../utils/util';
 import NameList from './common/NameList';
 import TrapEditor from './TrapEditor';
-import { Trap } from '../models/Trap';
-import { nameOf } from '../utils/util';
-import differenceBy from 'lodash/differenceBy';
 
 type Props = {
   open: boolean;
@@ -20,20 +22,23 @@ type Props = {
 export default function SelectTrap(props: Props) {
   const [traps, setTraps] = useState<Trap[]>([]);
   const [trapEditorOpen, setTrapEditorOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
-  // useEffect(()=> {
-  //   // TODO: Make an API call to get the trap 
-  //   // TEST DATA
-  //   var m = new Trap();
-  //   m.id = "11";
-  //   m.name = "Dragon";
-  //   var m2 = new Trap();
-  //   m2.id = "10";
-  //   m2.name = "Owlbear";
-  //   var apiList = [m, m2]
-  //   apiList = differenceBy(apiList, props.exclude, nameOf<Trap>("id"));
-  //   setTraps(apiList);
-  // }, [traps, props.exclude]);
+  useEffect(() => {
+    let mounted = true;
+    setIsLoading(true);
+    DB.getAllTraps().then(result => {
+      if (mounted) {
+        setIsLoading(false);
+        if (result && result.valid) {
+          var list = differenceWith(result.response, props.exclude, compareByID) as Trap[]
+          setTraps(list)
+        }
+      }
+    })
+    return () => { mounted = false };
+  }, []);
+
 
   const handleSave = (trap: Trap) => {
     setTrapEditorOpen(false);
@@ -42,14 +47,19 @@ export default function SelectTrap(props: Props) {
 
   return (
     <div>
-      <Dialog 
+      <Dialog
         open={props.open}
         aria-labelledby="form-dialog-title"
       >
         <DialogTitle id="form-dialog-title">Select Trap</DialogTitle>
         <DialogContent>
+          {isLoading && 
+            <div style={{textAlign: "center"}}>
+              <CircularProgress/>
+            </div>
+          }
           <NameList<Trap> list={traps} onClick={(trap: Trap) => props.onSelect(trap)}></NameList>
-          <Button onClick={()=>setTrapEditorOpen(true)} variant="outlined" style={{width: "100%"}} color="primary">
+          <Button onClick={() => setTrapEditorOpen(true)} variant="outlined" style={{ width: "100%" }} color="primary">
             Add New
           </Button>
         </DialogContent>
@@ -60,11 +70,11 @@ export default function SelectTrap(props: Props) {
         </DialogActions>
       </Dialog>
       {trapEditorOpen &&
-          <TrapEditor
-              open={trapEditorOpen}
-              onSave={handleSave}
-              onCancelClick={()=>setTrapEditorOpen(false)}
-          />
+        <TrapEditor
+          open={trapEditorOpen}
+          onSave={handleSave}
+          onCancelClick={() => setTrapEditorOpen(false)}
+        />
       }
     </div>
   );

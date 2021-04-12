@@ -1,38 +1,45 @@
-import { useState } from 'react';
-
-import { AppBar, Tab, Tabs, Box, Typography, IconButton, makeStyles, FormLabel} from '@material-ui/core';
+import { makeStyles } from '@material-ui/core';
 import Button from '@material-ui/core/Button';
-import TextField from '@material-ui/core/TextField';
+import Checkbox from '@material-ui/core/Checkbox';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogTitle from '@material-ui/core/DialogTitle';
-import EditIcon from '@material-ui/icons/Edit';
+import FormControl from '@material-ui/core/FormControl';
+import FormControlLabel from '@material-ui/core/FormControlLabel';
+import FormLabel from '@material-ui/core/FormLabel';
+import Grid from '@material-ui/core/Grid';
+import IconButton from '@material-ui/core/IconButton';
+import TextField from '@material-ui/core/TextField';
+import Tooltip from '@material-ui/core/Tooltip';
+import Typography from '@material-ui/core/Typography';
 import AddBoxIcon from '@material-ui/icons/AddBox';
-
+import EditIcon from '@material-ui/icons/Edit';
+import HelpOutlineIcon from '@material-ui/icons/HelpOutline';
+import cloneDeep from 'lodash/cloneDeep';
+import { useState } from 'react';
+import Authenticator from '../Authenticator';
+import { CorridorWidth } from '../constants/CorridorWidth';
+import { EntranceType } from '../constants/EntranceType';
+import { MonsterState } from '../constants/MonsterState';
+import DB from '../DB';
+import { Probabilities } from '../generator/Probabilities';
+import { CorridorCategory } from '../models/CorridorCategory';
+import { Item } from '../models/Item';
+import { Monster } from '../models/Monster';
+import { Trap } from '../models/Trap';
+import { nameOf, valueOf } from '../utils/util';
 import EnumProbabilityText from './common/EnumProbabilityText';
 import ProbabilityNameList from './common/ProbabilityNameList';
-import { CorridorCategory } from '../models/CorridorCategory';
-import { Monster } from '../models/Monster';
-import { Item } from '../models/Item';
-import { Trap } from '../models/Trap';
-import { Probabilities } from '../generator/Probabilities';
-import { MonsterState } from '../constants/MonsterState';
-import { EntranceType } from '../constants/EntranceType';
-import { CorridorWidth } from '../constants/CorridorWidth';
-
-import SelectTrap from './SelectTrap';
-import SelectMonster from './SelectMonster';
-import SelectItem from './SelectItem';
-import MonsterEditor from './MonsterEditor';
 import ItemEditor from './ItemEditor';
+import MonsterEditor from './MonsterEditor';
+import SelectItem from './SelectItem';
+import SelectMonster from './SelectMonster';
+import SelectTrap from './SelectTrap';
 import TrapEditor from './TrapEditor';
 
-import { nameOf, valueOf } from '../utils/util';
-import cloneDeep from 'lodash/cloneDeep';
 
-
-const useStyles = makeStyles((theme) =>  ({
+const useStyles = makeStyles((theme) => ({
   root: {
     margin: 0,
     padding: theme.spacing(2),
@@ -47,42 +54,26 @@ const useStyles = makeStyles((theme) =>  ({
     display: 'flex',
     alignItems: 'center',
     flexWrap: 'wrap',
-},
+  },
+  helpIcon: {
+    "padding-left": theme.spacing(1),
+    "padding-right": theme.spacing(1)
+  },
+  customWidth: {
+    maxWidth: 200,
+  }
 }));
-
-function a11yProps(index: number) {
-  return {
-    id: `simple-tab-${index}`,
-    'aria-controls': `simple-tabpanel-${index}`,
-  };
-}
-
-function TabPanel(props: any) {
-  const { children, value, index, ...other } = props;
-
-  return (
-    <div
-      role="tabpanel"
-      hidden={value !== index}
-      id={`simple-tabpanel-${index}`}
-      aria-labelledby={`simple-tab-${index}`}
-      {...other}
-    >
-      {value === index && (
-        <Box p={3}>
-          {children}
-        </Box>
-      )}
-    </div>
-  );
-}
 
 type Props = {
   open: boolean;
   viewOnly?: boolean;
   corridorCategory?: CorridorCategory;
-  onCancelClick: ()=>void;
+  onCancelClick: () => void;
   onSave?: (rc: CorridorCategory) => void;
+}
+
+type Errors = {
+  name: boolean;
 }
 
 CorridorCategoryEditor.defaultProps = {
@@ -90,19 +81,20 @@ CorridorCategoryEditor.defaultProps = {
 }
 
 export default function CorridorCategoryEditor(props: Props) {
-  const editMode: boolean = props.corridorCategory !== undefined
-  
-  var initialCorridorCategory: CorridorCategory;
-  if (props.corridorCategory !== undefined) {
-    initialCorridorCategory = cloneDeep(props.corridorCategory);
-  } else {
-    initialCorridorCategory = new CorridorCategory();
-  }
-
+  const editMode: boolean = props.corridorCategory !== undefined && !props.corridorCategory.premade;
   const classes = useStyles();
-  //TODO: Set to 0 so basic is default, do it when basic is complete
-  const [tab, setTab] = useState(1);
-  const [corridorCategory, setCorridorCategory] = useState(initialCorridorCategory);
+
+  const [corridorCategory, setCorridorCategory] = useState(() => {
+    if (props.corridorCategory !== undefined) {
+      return cloneDeep(props.corridorCategory);
+    } else {
+      return new CorridorCategory();
+    }
+  });
+
+  const [errors, setErrors] = useState<Errors>({
+    name: false
+  });
   const [viewMode, setViewMode] = useState(props.viewOnly);
 
   const [monsterToEdit, setMonsterToEdit] = useState<Monster>()
@@ -117,37 +109,29 @@ export default function CorridorCategoryEditor(props: Props) {
   const [trapEditorOpen, setTrapEditorOpen] = useState<boolean>(false);
   const [selectTrapDialogOpen, setSelectTrapDialogOpen] = useState<boolean>(false);
 
-  const handleTabChange = (event: React.ChangeEvent<{}>, newValue: number) => {
-    setTab(newValue);
-  };
-
   const handleChange = (name: keyof CorridorCategory, value: valueOf<CorridorCategory>) => {
-    setCorridorCategory(Object.assign({}, corridorCategory, { [name]: value }) );
-  }
-
-  const handleEnumProbUpdate = (name: keyof CorridorCategory, key: any, newValue: number) => {
-    var updatedList = (corridorCategory[name]) as Probabilities<any>;
-    updatedList.update(key, newValue);
-    handleChange(name, updatedList);
+    if (name === nameOf<CorridorCategory>("name")) {
+      if (value) {
+        setErrors({
+          ...errors,
+          name: false
+        })
+      }
+    }
+    setCorridorCategory(Object.assign(Object.create(Object.getPrototypeOf(corridorCategory)), corridorCategory, { [name]: value }));
   }
 
   const handleDeleteClick = (name: keyof CorridorCategory, index: number) => {
-    var updatedList = (corridorCategory[name]) as Probabilities<any>;
+    var updatedList = Object.create(Object.getPrototypeOf(corridorCategory[name]) as Probabilities<any>);
+    updatedList = Object.assign(updatedList, corridorCategory[name]);
     updatedList.remove(index);
     handleChange(name, updatedList);
   }
 
-  const handleListProbUpdate = (name: keyof CorridorCategory, index: number, newValue: number) => {
-    var updatedList = (corridorCategory[name]) as Probabilities<any>;
-    updatedList.probSum[index] = newValue;
-    // TODO: normalize?
-    handleChange(name, updatedList);
-  }
-
   const handleSelect = (name: keyof CorridorCategory, item: any) => {
-    var updatedList = (corridorCategory[name]) as Probabilities<any>;
-    updatedList.add(item, 0.5);
-    // TODO: Normalize?
+    var updatedList = Object.create(Object.getPrototypeOf(corridorCategory[name]) as Probabilities<any>);
+    updatedList = Object.assign(updatedList, corridorCategory[name]);
+    updatedList.add(item);
     handleChange(name, updatedList);
     closeSelectDialogs();
   }
@@ -156,6 +140,14 @@ export default function CorridorCategoryEditor(props: Props) {
     setSelectMonsterDialogOpen(false);
     setSelectItemDialogOpen(false);
     setSelectTrapDialogOpen(false);
+  }
+
+  const handleMonsterDefaultChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.checked) {
+      handleChange(nameOf<CorridorCategory>("monsters"), null);
+    } else {
+      handleChange(nameOf<CorridorCategory>("monsters"), new Probabilities<Monster>(null));
+    }
   }
 
   const handleMonsterClick = (m: Monster) => {
@@ -168,11 +160,20 @@ export default function CorridorCategoryEditor(props: Props) {
   }
 
   const handleMonsterSave = (newMonster: Monster) => {
-    var updatedList = corridorCategory.monsters;
+    var updatedList = Object.create(Object.getPrototypeOf(corridorCategory.monsters) as Probabilities<Monster>);
+    updatedList = Object.assign(updatedList, corridorCategory.monsters);
     updatedList.updateObject(monsterToEdit!, newMonster);
     handleChange(nameOf<CorridorCategory>("monsters"), updatedList);
     setMonsterEditorOpen(false);
     setMonsterToEdit(undefined);
+  }
+
+  const handleItemDefaultChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.checked) {
+      handleChange(nameOf<CorridorCategory>("items"), null);
+    } else {
+      handleChange(nameOf<CorridorCategory>("items"), new Probabilities<Item>(null));
+    }
   }
 
   const handleItemClick = (i: Item) => {
@@ -185,11 +186,20 @@ export default function CorridorCategoryEditor(props: Props) {
   }
 
   const handleItemSave = (newItem: Item) => {
-    var updatedList = corridorCategory.items;
+    var updatedList = Object.create(Object.getPrototypeOf(corridorCategory.items) as Probabilities<Item>);
+    updatedList = Object.assign(updatedList, corridorCategory.items);
     updatedList.updateObject(itemToEdit!, newItem);
     handleChange(nameOf<CorridorCategory>("items"), updatedList);
     setItemEditorOpen(false);
     setItemToEdit(undefined);
+  }
+
+  const handleTrapDefaultChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.checked) {
+      handleChange(nameOf<CorridorCategory>("traps"), null);
+    } else {
+      handleChange(nameOf<CorridorCategory>("traps"), new Probabilities<Trap>(null));
+    }
   }
 
   const handleTrapClick = (trap: Trap) => {
@@ -202,7 +212,8 @@ export default function CorridorCategoryEditor(props: Props) {
   }
 
   const handleTrapSave = (newTrap: Trap) => {
-    var updatedList = corridorCategory.traps;
+    var updatedList = Object.create(Object.getPrototypeOf(corridorCategory.traps) as Probabilities<Trap>);
+    updatedList = Object.assign(updatedList, corridorCategory.traps);
     updatedList.updateObject(trapToEdit!, newTrap);
     handleChange(nameOf<CorridorCategory>("traps"), updatedList);
     setTrapEditorOpen(false);
@@ -213,8 +224,41 @@ export default function CorridorCategoryEditor(props: Props) {
     setViewMode(false);
   }
 
-  const handleSaveClick = () => {
-    // TODO: Make call to backend
+  const handleSaveClick = async () => {
+    if (!corridorCategory.name) {
+      return;
+    }
+    // TODO: normalize tileset
+    if (corridorCategory.widths) {
+      corridorCategory.widths.normalize();
+    }
+    if (corridorCategory.states) {
+      corridorCategory.states.normalize();
+    }
+    if (corridorCategory.entranceTypes) {
+      corridorCategory.entranceTypes.normalize();
+    }
+    if (corridorCategory.items) {
+      corridorCategory.items.normalize();
+    }
+    if (corridorCategory.traps) {
+      corridorCategory.traps.normalize();
+    }
+    if (corridorCategory.monsters) {
+      corridorCategory.monsters.normalize();
+    }
+
+    if (Authenticator.isLoggedIn()) {
+      var result = await DB.saveCorridorCategory(corridorCategory);
+      if (result && result.valid) {
+        var id = result.response;
+        corridorCategory.id = id;
+      } else {
+        if (result) {
+          window.alert(result.response);
+        }
+      }
+    }
     props.onSave!(corridorCategory);
   }
 
@@ -222,31 +266,52 @@ export default function CorridorCategoryEditor(props: Props) {
     setCorridorCategory(new CorridorCategory());
   }
 
+  const handleNameBlur = () => {
+    if (!corridorCategory.name) {
+      setErrors({
+        ...errors,
+        name: true
+      })
+    }
+  }
+
   return (
     <div>
-      <Dialog open={props.open} onClose={handleClose} aria-labelledby="form-dialog-title">
-        <DialogTitle
-          className={classes.root}
-          disableTypography
-          id="form-dialog-title">
-          <Typography component={'span'} variant="h6">{editMode ? "Edit": "Add"} Corridor Category</Typography>
-          {viewMode && editMode &&
-            <IconButton aria-label="edit" className={classes.editButton} onClick={handleEditClick}>
-              <EditIcon />
-            </IconButton>
-          }
-        </DialogTitle>
-        <DialogContent>
-        <AppBar color="default" position="static">
-          <Tabs value={tab} onChange={handleTabChange} aria-label="simple tabs example" variant="fullWidth">
-            <Tab label="Basic" {...a11yProps(0)} />
-            <Tab label="Advanced" {...a11yProps(1)} />
-          </Tabs>
-        </AppBar>
-        <TabPanel value={tab} index={0}>
-        </TabPanel>
-        <TabPanel value={tab} index={1}>
-          <TextField
+      <Dialog scroll="paper" maxWidth="md" open={props.open} onClose={handleClose} aria-labelledby="form-dialog-title">
+        <div style={{ maxWidth: 650 }}>
+          <DialogTitle
+            className={classes.root}
+            disableTypography
+            id="form-dialog-title">
+            <Grid container alignItems="center">
+              <Typography component={'span'} variant="h6">{editMode ? "Edit" : viewMode ? "View" : "Add"} Corridor Category</Typography>
+              <Tooltip
+                arrow
+                classes={{ tooltip: classes.customWidth }}
+                title={
+                  <>
+                    <Typography align="center" color="inherit"><u>Help</u></Typography>
+                    <p><Typography display="inline" color="inherit">%:</Typography> The probabilities in each list will be normalized if they don't sum up to 100%</p>
+                    <p><Typography variant="body2" display="inline" color="inherit">Default:</Typography> If a Corridor has "Use Default" checked for any option,
+                          it will use the values in the Default Corridor.</p>
+                    <p>The Default Corridor cannot have "Use Default" checked for any option.</p>
+                  </>
+                }
+              >
+                <HelpOutlineIcon className={classes.helpIcon} color="primary"></HelpOutlineIcon>
+              </Tooltip>
+            </Grid>
+            {viewMode && editMode &&
+              <IconButton aria-label="edit" className={classes.editButton} onClick={handleEditClick}>
+                <EditIcon />
+              </IconButton>
+            }
+          </DialogTitle>
+          <DialogContent>
+            <TextField
+              required
+              error={errors.name}
+              onBlur={handleNameBlur}
               disabled={viewMode}
               variant="outlined"
               autoFocus
@@ -258,21 +323,35 @@ export default function CorridorCategoryEditor(props: Props) {
               }}
               fullWidth
               value={corridorCategory.name}
-              onChange={(e)=>handleChange(nameOf<CorridorCategory>("name"), e.target.value)}
+              onChange={(e) => handleChange(nameOf<CorridorCategory>("name"), e.target.value)}
             />
             <EnumProbabilityText<CorridorWidth>
               label="Corridor Width"
               enum={CorridorWidth}
               disabled={viewMode}
               probs={corridorCategory.widths}
-              onProbUpdate={(enumChanged: CorridorWidth, newValue: number) => handleEnumProbUpdate(nameOf<CorridorCategory>("widths"), enumChanged, newValue)}
+              onProbUpdate={(newList: Probabilities<CorridorWidth> | null) => handleChange(nameOf<CorridorCategory>("widths"), newList)}
             />
             {/* Tile assets */}
             <div className={classes.listLabel}>
+              <FormControl disabled={viewMode || !Boolean(corridorCategory.monsters)}>
                 <FormLabel>Monsters</FormLabel>
-                <IconButton disabled={viewMode} onClick={handleAddMonsterClick} aria-label="add" color="primary">
-                    <AddBoxIcon/>
-                </IconButton>
+              </FormControl>
+              <IconButton disabled={viewMode || !Boolean(corridorCategory.monsters)} onClick={handleAddMonsterClick} aria-label="add" color="primary">
+                <AddBoxIcon />
+              </IconButton>
+              <FormControlLabel
+                disabled={viewMode}
+                control={
+                  <Checkbox
+                    checked={!Boolean(corridorCategory.monsters)}
+                    onChange={handleMonsterDefaultChange}
+                    name="useDefault"
+                    color="default"
+                  />
+                }
+                label="Use Default"
+              />
             </div>
             <ProbabilityNameList
               showProbs
@@ -281,20 +360,34 @@ export default function CorridorCategoryEditor(props: Props) {
               list={corridorCategory.monsters}
               onClick={handleMonsterClick}
               onDeleteClick={(index) => handleDeleteClick(nameOf<CorridorCategory>("monsters"), index)}
-              onProbUpdate={(index, newValue) => handleListProbUpdate(nameOf<CorridorCategory>("monsters"), index, newValue)}
+              onProbUpdate={(newList) => handleChange(nameOf<CorridorCategory>("monsters"), newList)}
             />
             <EnumProbabilityText<MonsterState>
               label="Monster State"
               enum={MonsterState}
               disabled={viewMode}
               probs={corridorCategory.states}
-              onProbUpdate={(enumChanged: MonsterState, newValue: number) => handleEnumProbUpdate(nameOf<CorridorCategory>("states"), enumChanged, newValue)}
+              onProbUpdate={(newList: Probabilities<MonsterState> | null) => handleChange(nameOf<CorridorCategory>("states"), newList)}
             />
             <div className={classes.listLabel}>
+              <FormControl disabled={viewMode || !Boolean(corridorCategory.items)}>
                 <FormLabel>Items</FormLabel>
-                <IconButton disabled={viewMode} onClick={handleAddItemClick} aria-label="add" color="primary">
-                    <AddBoxIcon/>
-                </IconButton>
+              </FormControl>
+              <IconButton disabled={viewMode || !Boolean(corridorCategory.items)} onClick={handleAddItemClick} aria-label="add" color="primary">
+                <AddBoxIcon />
+              </IconButton>
+              <FormControlLabel
+                disabled={viewMode}
+                control={
+                  <Checkbox
+                    checked={!Boolean(corridorCategory.items)}
+                    onChange={handleItemDefaultChange}
+                    name="useDefault"
+                    color="default"
+                  />
+                }
+                label="Use Default"
+              />
             </div>
             <ProbabilityNameList
               showProbs
@@ -303,13 +396,27 @@ export default function CorridorCategoryEditor(props: Props) {
               list={corridorCategory.items}
               onClick={handleItemClick}
               onDeleteClick={(index) => handleDeleteClick(nameOf<CorridorCategory>("items"), index)}
-              onProbUpdate={(index, newValue) => handleListProbUpdate(nameOf<CorridorCategory>("items"), index, newValue)}
+              onProbUpdate={(newList) => handleChange(nameOf<CorridorCategory>("items"), newList)}
             />
             <div className={classes.listLabel}>
+              <FormControl disabled={viewMode || !Boolean(corridorCategory.traps)}>
                 <FormLabel>Traps</FormLabel>
-                <IconButton disabled={viewMode} onClick={handleAddTrapClick} aria-label="add" color="primary">
-                    <AddBoxIcon/>
-                </IconButton>
+              </FormControl>
+              <IconButton disabled={viewMode || !Boolean(corridorCategory.traps)} onClick={handleAddTrapClick} aria-label="add" color="primary">
+                <AddBoxIcon />
+              </IconButton>
+              <FormControlLabel
+                disabled={viewMode}
+                control={
+                  <Checkbox
+                    checked={!Boolean(corridorCategory.traps)}
+                    onChange={handleTrapDefaultChange}
+                    name="useDefault"
+                    color="default"
+                  />
+                }
+                label="Use Default"
+              />
             </div>
             <ProbabilityNameList
               showProbs
@@ -318,74 +425,80 @@ export default function CorridorCategoryEditor(props: Props) {
               list={corridorCategory.traps}
               onClick={handleTrapClick}
               onDeleteClick={(index) => handleDeleteClick(nameOf<CorridorCategory>("traps"), index)}
-              onProbUpdate={(index, newValue) => handleListProbUpdate(nameOf<CorridorCategory>("traps"), index, newValue)}
+              onProbUpdate={(newList) => handleChange(nameOf<CorridorCategory>("traps"), newList)}
             />
             <EnumProbabilityText<EntranceType>
               label="Entrance Type"
               enum={EntranceType}
               disabled={viewMode}
               probs={corridorCategory.entranceTypes}
-              onProbUpdate={(enumChanged: EntranceType, newValue: number) => handleEnumProbUpdate(nameOf<CorridorCategory>("entranceTypes"), enumChanged, newValue)}
+              onProbUpdate={(newList: Probabilities<EntranceType> | null) => handleChange(nameOf<CorridorCategory>("entranceTypes"), newList)}
             />
-        </TabPanel>
-        </DialogContent>
+          </DialogContent>
 
-        <DialogActions>
-          <Button onClick={props.onCancelClick} color="primary">
-            Cancel
+          <DialogActions>
+            <Button onClick={props.onCancelClick} color="primary">
+              Cancel
           </Button>
-          {!viewMode && 
-            <Button onClick={handleSaveClick} variant="contained" color="primary">
-            Save
+            {!viewMode &&
+              <Button onClick={handleSaveClick} variant="contained" color="primary">
+                Save
             </Button>
-          }
-          
-        </DialogActions>
+            }
+
+          </DialogActions>
+        </div>
       </Dialog>
-      <SelectMonster
-        open={selectMonsterDialogOpen}
-        exclude={corridorCategory.monsters.objects}
-        onSelect={(m) => handleSelect(nameOf<CorridorCategory>("monsters"), m)}
-        onCancelClick={() => setSelectMonsterDialogOpen(false)}
-      />
+      {selectMonsterDialogOpen &&
+        <SelectMonster
+          open={selectMonsterDialogOpen}
+          exclude={corridorCategory.monsters ? corridorCategory.monsters.objects : []}
+          onSelect={(m) => handleSelect(nameOf<CorridorCategory>("monsters"), m)}
+          onCancelClick={() => setSelectMonsterDialogOpen(false)}
+        />
+      }
       {monsterEditorOpen &&
-          <MonsterEditor
-              viewOnly
-              open={monsterEditorOpen}
-              monster={monsterToEdit}
-              onSave={(m: Monster) => handleMonsterSave(m)}
-              onCancelClick={()=>setMonsterEditorOpen(false)}
-          />
+        <MonsterEditor
+          viewOnly
+          open={monsterEditorOpen}
+          monster={monsterToEdit}
+          onSave={(m: Monster) => handleMonsterSave(m)}
+          onCancelClick={() => setMonsterEditorOpen(false)}
+        />
       }
-      <SelectItem
-        open={selectItemDialogOpen}
-        exclude={corridorCategory.items.objects}
-        onSelect={(i) => handleSelect(nameOf<CorridorCategory>("items"), i)}
-        onCancelClick={() => setSelectItemDialogOpen(false)}
-      />
+      {selectItemDialogOpen && 
+        <SelectItem
+          open={selectItemDialogOpen}
+          exclude={corridorCategory.items ? corridorCategory.items.objects : []}
+          onSelect={(i) => handleSelect(nameOf<CorridorCategory>("items"), i)}
+          onCancelClick={() => setSelectItemDialogOpen(false)}
+        />
+      }
       {itemEditorOpen &&
-          <ItemEditor
-              viewOnly
-              open={itemEditorOpen}
-              item={itemToEdit}
-              onSave={(i: Item) => handleItemSave(i)}
-              onCancelClick={()=>setItemEditorOpen(false)}
-          />
+        <ItemEditor
+          viewOnly
+          open={itemEditorOpen}
+          item={itemToEdit}
+          onSave={(i: Item) => handleItemSave(i)}
+          onCancelClick={() => setItemEditorOpen(false)}
+        />
       }
-      <SelectTrap
-        open={selectTrapDialogOpen}
-        exclude={corridorCategory.traps.objects}
-        onSelect={(i) => handleSelect(nameOf<CorridorCategory>("traps"), i)}
-        onCancelClick={() => setSelectTrapDialogOpen(false)}
-      />
+      {selectTrapDialogOpen &&
+        <SelectTrap
+          open={selectTrapDialogOpen}
+          exclude={corridorCategory.traps ? corridorCategory.traps.objects : []}
+          onSelect={(i) => handleSelect(nameOf<CorridorCategory>("traps"), i)}
+          onCancelClick={() => setSelectTrapDialogOpen(false)}
+        />
+      }
       {trapEditorOpen &&
-          <TrapEditor
-              viewOnly
-              open={trapEditorOpen}
-              trap={trapToEdit}
-              onSave={(i: Trap) => handleTrapSave(i)}
-              onCancelClick={()=>setTrapEditorOpen(false)}
-          />
+        <TrapEditor
+          viewOnly
+          open={trapEditorOpen}
+          trap={trapToEdit}
+          onSave={(i: Trap) => handleTrapSave(i)}
+          onCancelClick={() => setTrapEditorOpen(false)}
+        />
       }
     </div>
   );

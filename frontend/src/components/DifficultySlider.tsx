@@ -1,19 +1,28 @@
-import {Slider} from '@material-ui/core';
-import {Typography} from '@material-ui/core';
-import {Configuration} from '../models/Configuration';
+import FormLabel from '@material-ui/core/FormLabel';
+import Slider from '@material-ui/core/Slider';
+import { Configuration } from '../models/Configuration';
 
 type Props = {
+    disabled?: boolean;
     value: number;
     onChange: (value: number) => void;
+}
+
+DifficultySlider.defaultProps = {
+    disabled: false,
 }
 
 function DifficultySlider(props: Props) {
     return (
         <div>
-            <Typography id="input-slider" gutterBottom>
+            <FormLabel
+                disabled={props.disabled}
+                id="input-slider"
+            >
                 Difficulty Level
-            </Typography>
+            </FormLabel>
             <Slider
+                disabled={props.disabled}
                 aria-labelledby="input-slider"
                 value={props.value}
                 onChange={(e,v) => props.onChange(v as number)}

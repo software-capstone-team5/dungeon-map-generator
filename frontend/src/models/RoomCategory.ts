@@ -1,25 +1,24 @@
+import { Type } from 'class-transformer';
 import { RoomShape } from "../constants/RoomShape";
 import { Size } from "../constants/Size";
 import { Probabilities } from "../generator/Probabilities";
 import { RegionCategory } from "./RegionCategory";
 
 export class RoomCategory extends RegionCategory {
-	sizes: Probabilities<Size>;
-	shapes: Probabilities<RoomShape>;
+	@Type(() => Probabilities)
+	sizes: Probabilities<Size> | null;
+	@Type(() => Probabilities)
+	shapes: Probabilities<RoomShape> | null;
+	isCorridor = false;
 
 	constructor() {
 		super()
 
-		this.sizes = new Probabilities<Size>(null);
-		var len = Object.values(Size).length;
-		Object.values(Size).forEach((x: Size) => {
-			this.sizes.add(x, 1/len);
-		});
+		this.sizes = Probabilities.buildUniform(Object.values(Size));
+		this.shapes = Probabilities.buildUniform(Object.values(RoomShape));
+	}
 
-		this.shapes = new Probabilities<RoomShape>(null);
-		len = Object.values(RoomShape).length;
-		Object.values(RoomShape).forEach((x: RoomShape) => {
-			this.shapes.add(x, 1/len);
-		});
+	canBeUsedAsDefault() : boolean {
+		return Boolean(super.canBeUsedAsDefault() && this.sizes && this.shapes);
 	}
 }
