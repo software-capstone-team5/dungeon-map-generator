@@ -60,6 +60,7 @@ function App() {
   }, [])
 
   const handleLoginClick = async () => {
+    setIsLoading(true);
     var result = await Authenticator.loginUser();
     if (result) {
       if (result.valid) {
@@ -69,14 +70,17 @@ function App() {
         window.alert(result.response)
       }
     }
+    setIsLoading(false)
   }
 
   const handleLogoutClick = async () => {
+    setIsLoading(true);
     var success = await Authenticator.logoutUser();
     if (success) {
       setLoggedIn(false);
       window.location.reload();
     }
+    setIsLoading(false)
   }
 
   const handleRegisterClick = async () => {
@@ -99,13 +103,13 @@ function App() {
     setConfigToEdit();
   }
 
-  const handleConfigSelect = (configID) => {
+  const handleConfigSelect = (configID, premade) => {
     if (!configID) {
       return;
     }
     setIsLoading(true);
     setSelectConfigDialogOpen(false);
-    DB.getConfigByID(configID).then(result => {
+    DB.getConfigByID(configID, premade).then(result => {
       setIsLoading(false)
       if (result && result.valid) {
         setConfigToEdit(result.response);
@@ -137,10 +141,8 @@ function App() {
 
   const handleGenerateClick = (config) => {
     if (config) {
-      // TODO: Remove this after config includes tile sets
-
-      // Fetch images from google drive, 
-      var defaultSet = new TileSet("default", 48, new Map());
+      // TODO: remove this when tilesets work
+      var defaultSet = TileSet.getDefault();
       for (var tileType of Object.values(TileType)) {
         var img = new Image();
         img.src = process.env.PUBLIC_URL + "/TileSets/Default/" + tileType + ".png";
@@ -149,10 +151,9 @@ function App() {
       var tileSets = Probabilities.buildUniform([defaultSet]);
       config.defaultRoomCategory.tileSets = tileSets;
       config.defaultCorridorCategory.tileSets = tileSets;
-
-      // TODO: Error if no default room and corridor
-
-      setDungeonMap(DungeonGenerator.generateDungeon(config));
+      var dungeonMap = DungeonGenerator.generateDungeon(config);
+      // updateAndRetrieveTileSets(dungeonMap);
+      setDungeonMap(dungeonMap);
     }
   }
 
@@ -162,6 +163,50 @@ function App() {
 
   const findTileSets = () => {
     // TODO: Call the backend for this
+  }
+
+  const updateAndRetrieveTileSets = (dungeonMap) => {
+    var defaultSet = TileSet.getDefault();
+    for (var tileType of Object.values(TileType)) {
+      var img = new Image();
+      img.src = process.env.PUBLIC_URL + "/TileSets/Default/" + tileType + ".png";
+      defaultSet.addTileToSet(tileType, img);
+    }
+
+    // var tileSets = Probabilities.buildUniform([defaultSet]);
+    //   config.defaultRoomCategory.tileSets = tileSets;
+    //   config.defaultCorridorCategory.tileSets = tileSets;
+
+    // Tileset name to rooms/corridors that use it
+    var tileSetsToFetch = new Map();
+    var regions = dungeonMap.corridors.concat(dungeonMap.rooms);
+    regions.forEach(region => {
+      console.log(region)
+      if (region.tileSet.isDefault()) {
+        region.tileSet = defaultSet;
+        return;
+      }
+
+      if (tileSetsToFetch.has(region.tileSet.name)) {
+        tileSetsToFetch.get(region.tileSet.name).push(region)
+      } else {
+        tileSetsToFetch.set(region.tileSet.name, [region])
+      } 
+    });
+
+    // TODO: Use tileSetsToFetch to fetch the images
+
+    // TODO: Create the proper TileSet object
+
+    // TODO: store tileSetsToFetch and the images so that if the set doesn't change
+    // we can use the same images
+
+    tileSetsToFetch.forEach((tileSetName, regionList) => {
+      regionList.forEach((region) => {
+        // region.tileSet = 
+      })
+    })
+
   }
 
   return (

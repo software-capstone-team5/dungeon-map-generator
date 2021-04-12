@@ -14,7 +14,7 @@ import NameList from './common/NameList';
 type Props = {
   open: boolean;
   exclude: Configuration[];
-  onSelect: (id: string) => void;
+  onSelect: (id: string, premade: boolean) => void;
   onCancelClick: () => void;
 }
 
@@ -50,7 +50,7 @@ export default function SelectConfiguration(props: Props) {
               <CircularProgress/>
             </div>
           }
-          <NameList<Configuration> list={configurations} onClick={(c: Configuration) => props.onSelect(c.id)}></NameList>
+          <NameList<Configuration> list={configurations} onClick={(c: Configuration) => props.onSelect(c.id, c.premade)}></NameList>
         </DialogContent>
         <DialogActions>
           <Button onClick={props.onCancelClick} color="primary">
