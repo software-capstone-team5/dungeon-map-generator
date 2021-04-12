@@ -15,4 +15,5 @@ export class RegionInstance {
 	traps: Trap[] = [];
 	entrances: Entrance[] = [];
 	isCorridor = false;
+	difficulty: number = 0;
 }
