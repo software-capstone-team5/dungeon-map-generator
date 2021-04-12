@@ -1,4 +1,5 @@
 import Button from '@material-ui/core/Button';
+import CircularProgress from '@material-ui/core/CircularProgress';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
@@ -26,17 +27,21 @@ SelectRoomCategory.defaultProps = {
 export default function SelectRoomCategory(props: Props) {
   const [roomCategories, setRoomCategories] = useState<RoomCategory[]>([]);
   const [roomEditorOpen, setRoomEditorOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     let mounted = true;
-    // TODO: add a loading thing
-    DB.getAllRoomCat().then(result =>{
-      if (result && result.valid && mounted) {
-        var list = differenceWith(result.response, props.exclude, compareByID) as RoomCategory[]
-        if (props.onlyAllowDefaults) {
-          list = list.filter(rc => rc.canBeUsedAsDefault())
+    setIsLoading(true);
+    DB.getAllRoomCat().then(result => {
+      if (mounted) {
+        setIsLoading(false);
+        if (result && result.valid) {
+          var list = differenceWith(result.response, props.exclude, compareByID) as RoomCategory[]
+          if (props.onlyAllowDefaults) {
+            list = list.filter(rc => rc.canBeUsedAsDefault())
+          }
+          setRoomCategories(list)
         }
-        setRoomCategories(list)
       }
     })
     return () => {mounted = false};
@@ -55,6 +60,11 @@ export default function SelectRoomCategory(props: Props) {
       >
         <DialogTitle id="form-dialog-title">Select {props.onlyAllowDefaults ? "Default" : ""} Room Category</DialogTitle>
         <DialogContent>
+          {isLoading && 
+            <div style={{textAlign: "center"}}>
+              <CircularProgress/>
+            </div>
+          }
           <NameList<RoomCategory> list={roomCategories} onClick={(rc: RoomCategory) => props.onSelect(rc)}></NameList>
           <Button onClick={()=>setRoomEditorOpen(true)} variant="outlined" style={{width: "100%"}} color="primary">
             Add New

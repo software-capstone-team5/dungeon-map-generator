@@ -1,4 +1,5 @@
 import Button from '@material-ui/core/Button';
+import CircularProgress from '@material-ui/core/CircularProgress';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
@@ -26,17 +27,21 @@ SelectCorridorCategory.defaultProps = {
 export default function SelectCorridorCategory(props: Props) {
   const [corridorCategories, setCorridorCategories] = useState<CorridorCategory[]>([]);
   const [corridorEditorOpen, setCorridorEditorOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     let mounted = true;
-    // TODO: add a loading thing
-    DB.getAllCorridorCat().then(result =>{
-      if (result && result.valid && mounted) {
-        var list = differenceWith(result.response, props.exclude, compareByID) as CorridorCategory[]
-        if (props.onlyAllowDefaults) {
-          list = list.filter(rc => rc.canBeUsedAsDefault())
+    setIsLoading(true);
+    DB.getAllCorridorCat().then(result => {
+      if (mounted) {
+        setIsLoading(false)
+        if (result && result.valid) {
+          var list = differenceWith(result.response, props.exclude, compareByID) as CorridorCategory[]
+          if (props.onlyAllowDefaults) {
+            list = list.filter(rc => rc.canBeUsedAsDefault())
+          }
+          setCorridorCategories(list)
         }
-        setCorridorCategories(list)
       }
     })
     return () => {mounted = false};
@@ -55,6 +60,11 @@ export default function SelectCorridorCategory(props: Props) {
       >
         <DialogTitle id="form-dialog-title">Select {props.onlyAllowDefaults ? "Default" : ""} Corridor Category</DialogTitle>
         <DialogContent>
+          {isLoading && 
+            <div style={{textAlign: "center"}}>
+              <CircularProgress/>
+            </div>
+          }
           <NameList<CorridorCategory> list={corridorCategories} onClick={(rc: CorridorCategory) => props.onSelect(rc)}></NameList>
           <Button onClick={()=>setCorridorEditorOpen(true)} variant="outlined" style={{width: "100%"}} color="primary">
             Add New

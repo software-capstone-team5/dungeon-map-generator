@@ -14,7 +14,6 @@ import { Monster } from '../models/Monster';
 import { nameOf, valueOf } from '../utils/util';
 
 
-
 const useStyles = makeStyles((theme) => ({
   root: {
     margin: 0,
@@ -45,7 +44,7 @@ MonsterEditor.defaultProps = {
 }
 
 export default function MonsterEditor(props: Props) {
-  const editMode: boolean = props.monster !== undefined
+  const editMode: boolean = props.monster !== undefined && !props.monster.premade;
   const classes = useStyles();
 
   const [viewMode, setViewMode] = useState(props.viewOnly);
@@ -69,7 +68,7 @@ export default function MonsterEditor(props: Props) {
         })
       }
     }
-    setMonster(Object.assign(Object.create(monster), monster, { [name]: value }) );
+    setMonster(Object.assign(Object.create(Object.getPrototypeOf(monster)), monster, { [name]: value }));
   }
 
   const handleEditClick = () => {
@@ -87,7 +86,9 @@ export default function MonsterEditor(props: Props) {
         var id = result.response;
         monster.id = id;
       } else {
-        window.alert(result.response);
+        if (result) {
+          window.alert(result.response);
+        }
       }
     }
 
@@ -110,7 +111,7 @@ export default function MonsterEditor(props: Props) {
           className={classes.root}
           disableTypography
           id="form-dialog-title">
-          <Typography component={'span'} variant="h6">{editMode ? "Edit" : "Add"} Monster</Typography>
+          <Typography component={'span'} variant="h6">{editMode ? "Edit" : viewMode ? "View" : "Add"} Monster</Typography>
           {viewMode && editMode &&
             <IconButton aria-label="edit" className={classes.editButton} onClick={handleEditClick}>
               <EditIcon />

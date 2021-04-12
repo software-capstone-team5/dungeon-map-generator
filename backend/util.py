@@ -12,6 +12,29 @@ def getDBID(data, collection_ref):
         data['id'] = document.id
     return data, document
 
+def getConfigReferences(config):
+    configDict = config.to_dict()
+    corridorRefs = configDict['corridorCategories']['objects']
+    configDict['corridorCategories']['objects'] = getSubReferences(corridorRefs)
+
+    roomRefs = configDict['roomCategories']['objects']
+    configDict['roomCategories']['objects'] = getSubReferences(roomRefs)
+
+    defaultCorridorRef = configDict['defaultCorridorCategory']
+    configDict['defaultCorridorCategory'] = getSubReferences([defaultCorridorRef])[0]
+
+    defaultRoomRef = configDict['defaultRoomCategory']
+    configDict['defaultRoomCategory'] = getSubReferences([defaultRoomRef])[0]
+
+    return configDict
+
+def getSubReferences(references):
+    result = []
+    for reference in references:
+        category = reference.get().to_dict()
+        result.append(getCategoryReferences(category))
+    return result
+
 def getCategoryReferences(dbData):
     # Get Monster, Trap, Item ref TODO once merged
     monsterRefs = dbData['monsters']['objects']

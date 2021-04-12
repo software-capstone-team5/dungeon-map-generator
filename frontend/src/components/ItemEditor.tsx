@@ -16,7 +16,6 @@ import { Item } from '../models/Item';
 import { nameOf, valueOf } from '../utils/util';
 
 
-
 const useStyles = makeStyles((theme) => ({
   root: {
     margin: 0,
@@ -40,6 +39,7 @@ type Props = {
 
 type Errors = {
   name: boolean;
+  value: boolean;
 }
 
 ItemEditor.defaultProps = {
@@ -47,12 +47,13 @@ ItemEditor.defaultProps = {
 }
 
 export default function ItemEditor(props: Props) {
-  const editMode: boolean = props.item !== undefined
+  const editMode: boolean = props.item !== undefined && !props.item.premade;
   const classes = useStyles();
 
   const [viewMode, setViewMode] = useState(props.viewOnly);
   const [errors, setErrors] = useState<Errors>({
-    name: false
+    name: false,
+    value: false
   });
   const [item, setItem] = useState<Item>(() => {
     if (props.item !== undefined) {
@@ -71,11 +72,16 @@ export default function ItemEditor(props: Props) {
         })
       }
     } else if (name === nameOf<Item>("value")) {
-      if (Number.isNaN(value) || value < 0) {
+      if (value < 1) {
         return
+      } else if (!Number.isNaN(value)) {
+        setErrors({
+          ...errors,
+          value: false
+        })
       }
     }
-    setItem(Object.assign(Object.create(item), item, { [name]: value }) );
+    setItem(Object.assign(Object.create(Object.getPrototypeOf(item)), item, { [name]: value }));
   }
 
   const handleEditClick = () => {
@@ -83,7 +89,7 @@ export default function ItemEditor(props: Props) {
   }
 
   const handleSaveClick = async () => {
-    if (!item.name) {
+    if (!item.name || item.value < 1 || Number.isNaN(item.value)) {
       return;
     }
 
@@ -93,7 +99,9 @@ export default function ItemEditor(props: Props) {
         var id = result.response;
         item.id = id;
       } else {
-        window.alert(result.response);
+        if (result) {
+          window.alert(result.response);
+        }
       }
     }
 
@@ -109,6 +117,15 @@ export default function ItemEditor(props: Props) {
     }
   }
 
+  const handleValueBlur = () => {
+    if (Number.isNaN(item.value)) {
+      setErrors({
+        ...errors,
+        value: true,
+      })
+    }
+  }
+
   return (
     <div>
       <Dialog open={props.open} aria-labelledby="form-dialog-title">
@@ -116,7 +133,7 @@ export default function ItemEditor(props: Props) {
           className={classes.root}
           disableTypography
           id="form-dialog-title">
-          <Typography component={'span'} variant="h6">{editMode ? "Edit" : "Add"} Item</Typography>
+          <Typography component={'span'} variant="h6">{editMode ? "Edit" : viewMode ? "View" : "Add"} Item</Typography>
           {viewMode && editMode &&
             <IconButton aria-label="edit" className={classes.editButton} onClick={handleEditClick}>
               <EditIcon />
@@ -143,6 +160,8 @@ export default function ItemEditor(props: Props) {
           />
           <TextField
             required
+            error={errors.value}
+            onBlur={handleValueBlur}
             disabled={viewMode}
             type="number"
             variant="outlined"
@@ -152,7 +171,7 @@ export default function ItemEditor(props: Props) {
             InputLabelProps={{
               shrink: true,
             }}
-            value={item.value}
+            value={Number.isNaN(item.value) ? "" : item.value}
             onChange={(e) => handleChange(nameOf<Item>("value"), parseFloat(e.target.value))}
           />
           <TextField
