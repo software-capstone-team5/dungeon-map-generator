@@ -1,5 +1,5 @@
 from backend import app
-from authentication import verifyToken
+import authentication
 from flask import request, jsonify
 from googleapiclient.discovery import build
 from google.oauth2.credentials import Credentials
@@ -28,6 +28,17 @@ def buildService(access_token, refresh_token):
 	)
 	service = build('drive', 'v3', credentials=cred)
 	return service
+
+def createFolder(access_token, refresh_token, folder_name):
+	service = buildService(access_token, refresh_token)
+	file_metadata = {
+		'name': folder_name,
+		'mimeType': 'application/vnd.google-apps.folder'
+	}
+	file = service.files().create(body=file_metadata,
+										fields='id').execute()
+	return file
+
 
 @app.route("/user/<idToken>/tileset", methods=['GET'])
 def getTileSet(idToken):

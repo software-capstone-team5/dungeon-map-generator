@@ -13,7 +13,7 @@ export class AuthKeys {
 export class Authenticator {
     static provider = new firebase.auth.GoogleAuthProvider();
 
-    static init(){
+    static init() {
         this.provider.addScope('https://www.googleapis.com/auth/drive.readonly.metadata');
         this.provider.addScope('https://www.googleapis.com/auth/drive.file');
     }
@@ -66,15 +66,15 @@ export class Authenticator {
     }
 
     static onAuthListener(func: (result: boolean) => void) {
-        firebase.auth().onAuthStateChanged(function(user) {
+        firebase.auth().onAuthStateChanged(function (user) {
             if (user) {
                 var lastRefreshTime: string | null = localStorage.getItem('lastRefreshTime')
-                if (!lastRefreshTime){
+                if (!lastRefreshTime) {
                     func(false);
                 }
                 else {
                     var oneHour = 60 * 60 * 1000; /* ms */
-                    if((Date.now() - Date.parse(lastRefreshTime)) > oneHour){
+                    if ((Date.now() - Date.parse(lastRefreshTime)) > oneHour) {
                         // TODO: Refresh with token instead of logging in again
                         func(false);
                     }
@@ -102,12 +102,21 @@ export class Authenticator {
     // REQ-1: Request.Registration - The system will allow the user to register a DMG account through a linked Google Account.
     static async registerUser() {
         try {
-            await firebase.auth().signInWithPopup(this.provider);
+            var result = await firebase.auth().signInWithPopup(this.provider) as any;
+            var accessToken = result.credential.accessToken;
+            var refreshToken = result.user.refreshToken;
+            localStorage.setItem('accessToken', accessToken);
+            localStorage.setItem('refreshToken', refreshToken);
+            localStorage.setItem('lastRefreshTime', Date.now().toLocaleString());
             var token = await firebase.auth().currentUser?.getIdToken()
             const requestOptions = {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ idToken: token })
+                body: JSON.stringify({
+                    idToken: token,
+                    accessToken: accessToken,
+                    refreshToken: refreshToken
+                })
             };
 
             var response = await fetch(`${BACKEND_URL}/register`, requestOptions);
