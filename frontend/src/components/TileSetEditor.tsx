@@ -1,14 +1,16 @@
-import { makeStyles, Typography } from '@material-ui/core';
+import { InputLabel, makeStyles, MenuItem, Select, Typography } from '@material-ui/core';
 import Button from '@material-ui/core/Button';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogTitle from '@material-ui/core/DialogTitle';
+import GridList from '@material-ui/core/GridList';
+import GridListTile from '@material-ui/core/GridListTile';
 import TextField from '@material-ui/core/TextField';
-import { useState } from 'react';
+import { useState } from "react";
+import ImageUploading, { ImageListType, ImageType } from "react-images-uploading";
+import { TileType } from "../constants/TileType";
 import { TileSet } from '../models/TileSet';
-import { nameOf, valueOf } from '../utils/util';
-import TileUploader from './TileUploader';
 
 
 const useStyles = makeStyles((theme) =>  ({
@@ -16,36 +18,123 @@ const useStyles = makeStyles((theme) =>  ({
     margin: 0,
     padding: theme.spacing(2),
   },
-  editButton: {
-    position: 'absolute',
-    right: theme.spacing(1),
-    top: theme.spacing(1),
-    color: theme.palette.grey[500],
+  aboveGridList: {
+    display: 'flex',
+    flexWrap: 'wrap',
+    justifyContent: 'space-around',
+    overflow: 'hidden',
+    backgroundColor: theme.palette.background.paper,
+  },
+  gridList: {
+    width: 500,
+    height: 450,
+  },
+  icon: {
+    color: 'rgba(255, 255, 255, 0.54)',
   },
 }));
 
 type Props = {
   open: boolean;
   onCancelClick: ()=>void;
-  onSave?: (rc: TileSet) => void;
 }
 
 TileSetEditor.defaultProps = {
   viewOnly: false
 }
 
+type Errors = {
+  name: boolean;
+}
+
 export default function TileSetEditor(props: Props) {
   
   const classes = useStyles();
   const [tileSet, setTileSet] = useState(new TileSet("", 48, new Map()));
+  const [images, setImages] = useState<ImageListType>([]);
+  const [tileTypes, setTileTypes] = useState<(TileType|"")[]>([]);
+  const [errors, setErrors] = useState<Errors>({
+    name: false
+  })
 
-  const handleChange = (name: keyof TileSet, value: valueOf<TileSet>) => {
-    setTileSet(Object.assign({}, tileSet, { [name]: value }) );
+  const maxNumber = Object.keys(TileType).length;
+
+  const handleNameChange = (value: string) => {
+    if (value) {
+      setErrors({
+        ...errors,
+        name: false
+      })
+    }
+    setTileSet(Object.assign(Object.create(Object.getPrototypeOf( tileSet)), tileSet, { "name": value }) );
+  }
+
+  const handleNameBlur = () => {
+    if (!tileSet.name) {
+      setErrors({
+        ...errors,
+        name: true
+      })
+    }
   }
 
   const handleSaveClick = () => {
-    // TODO: Make call to backend
-    props.onSave!(tileSet);
+    console.log(images);
+    if (!tileSet.name) {
+      return;
+    } else if (tileSet.name.toLowerCase() === "Default".toLowerCase()) {
+      return;
+    } else if (images.length !== maxNumber) {
+      return;
+    } else if (tileTypes.includes("")) {
+      return;
+    }
+
+    var imagesCopy = [...images];
+    imagesCopy.forEach((image: ImageType, index: number) => {
+      // image.file!.name = ""
+    });
+    
+    // TODO: Make call to backend, 'images' contains the images
+    // Save a TileSet document in the TileSets collection with name/id ONLY set field
+    // Backend should error out if name already exists
+
+    props.onCancelClick();
+  }
+
+  const onChange = (
+    imageList: ImageListType,
+    addUpdateIndex: number[] | undefined
+  ) => {
+    // data for submit
+    var amountToAdd = imageList.length - tileTypes.length;
+    var typeCopy = [...tileTypes];
+    for (var i=0; i < amountToAdd; i++) {
+      typeCopy.push("");
+    }
+    if (amountToAdd > 0) {
+      setTileTypes(typeCopy)
+    }
+    setImages(imageList);
+  };
+
+  const handleImageRemove = (func: (index: number) => void, index: number) => {
+    // Free up tile type
+    var typeCopy = [...tileTypes];
+    typeCopy.splice(index, 1);
+    setTileTypes(typeCopy);
+    func(index);
+  }
+
+  const handleImageRemoveAll = (func: () => void) => {
+    setTileTypes([]);
+    func();
+  }
+
+  const handleTypeChange = (index: number, type: TileType | "") => {
+    var typeCopy = [...tileTypes];
+    typeCopy[index] = type;
+    setTileTypes(typeCopy);
   }
 
   return (
@@ -59,6 +148,9 @@ export default function TileSetEditor(props: Props) {
         </DialogTitle>
         <DialogContent>
           <TextField
+              required
+              error={errors.name}
+              onBlur={handleNameBlur}
               variant="outlined"
               autoFocus
               margin="dense"
@@ -69,9 +161,74 @@ export default function TileSetEditor(props: Props) {
               }}
               fullWidth
               value={tileSet.name}
-              onChange={(e)=>handleChange(nameOf<TileSet>("name"), e.target.value)}
+              onChange={(e)=>handleNameChange(e.target.value)}
           />
-          <TileUploader/>
+          <div>
+            <ImageUploading
+              multiple
+              value={images}
+              onChange={onChange}
+              maxNumber={maxNumber}
+            >
+              {({
+                imageList,
+                onImageUpload,
+                onImageRemoveAll,
+                onImageUpdate,
+                onImageRemove,
+                isDragging,
+                dragProps
+              }) => (
+                // write your building UI
+                <div className="upload__image-wrapper">
+                  <Button
+                    style={isDragging ? { color: "red" } : undefined}
+                    onClick={onImageUpload}
+                    color="primary"
+                    variant="outlined"
+                    {...dragProps}
+                  >
+                    Click to upload
+                  </Button>
+                  &nbsp;
+                  <Button
+                    color="secondary"
+                    variant="outlined"
+                    onClick={() => handleImageRemoveAll(onImageRemoveAll)}
+                  >
+                    Remove all images
+                  </Button>
+                  <div className={classes.aboveGridList}>
+                    <GridList cols={4} className={classes.gridList}>
+                    {imageList.map((image, index) => (
+                      <GridListTile key={index}>
+                      <div key={index}>
+                        <img src={image.dataURL} alt="" width="50" height="50" />
+                        <InputLabel id="demo-simple-select-label">Tile Type</InputLabel>
+                        <Select
+                          labelId="demo-simple-select-label"
+                          id="demo-simple-select"
+                          value={tileTypes[index]}
+                          onChange={(e, c)=>handleTypeChange(index, e.target.value as TileType)}
+                        > 
+                          <MenuItem value=""></MenuItem>
+                          {Object.values(TileType).map((type, i) => 
+                            <MenuItem key={index.toString() + "_" + i.toString()} disabled={tileTypes.includes(type)} value={type}>{type}</MenuItem>
+                          )}
+                        </Select>
+                        <div className="image-item__btn-wrapper">
+                          <button onClick={() => onImageUpdate(index)}>Update</button>
+                          <button onClick={() => handleImageRemove(onImageRemove, index)}>Remove</button>
+                        </div>
+                      </div>
+                      </GridListTile>
+                    ))}
+                    </GridList>
+                  </div>
+                </div>
+              )}
+            </ImageUploading>
+          </div>
         </DialogContent>
 
         <DialogActions>

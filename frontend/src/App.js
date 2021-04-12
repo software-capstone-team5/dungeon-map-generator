@@ -160,6 +160,10 @@ function App() {
     setConfigToEdit(config);
   }
 
+  const findTileSets = () => {
+    // TODO: Call the backend for this
+  }
+
   return (
     <div className="App">
       <Menu
@@ -170,7 +174,8 @@ function App() {
         onClose={handleClose}
       >
         <MenuItem onClick={importMonstersClick}>Import Monsters</MenuItem>
-        <MenuItem onClick={uploadTilesetClick}>Upload Tileset</MenuItem>
+        <MenuItem onClick={uploadTilesetClick}>Upload TileSet</MenuItem>
+        <MenuItem onClick={findTileSets}>Find TileSets in Drive</MenuItem>
       </Menu>
       {importMonstersOpen &&
         <ImportMonsters open={importMonstersOpen} onCancelClick={() => setImportMonstersOpen(false)}></ImportMonsters>
