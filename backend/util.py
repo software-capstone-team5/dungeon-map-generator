@@ -1,3 +1,33 @@
+from flask import jsonify
+from firebase_admin import credentials, firestore, auth, initialize_app
+
+cred = credentials.Certificate('./certs/key.json') # change later to either environment var or something else
+default_app = initialize_app(cred)
+
+db = firestore.client()
+users_collection = db.collection('Users')
+
+def saveTileSetDB(user_id, tileset_name):
+    tileset_collection = users_collection.document(user_id).collection("Tileset")
+    docs = tileset_collection.where('name', '==', tileset_name).get()
+
+    if len(docs) > 0:
+        return { "valid": False, "response": "Tileset name already exists"}
+    else:
+        doc = users_collection.document(user_id).collection("Tileset").document()
+        doc_id = doc.id
+        doc.set({'id': doc_id, 'name': tileset_name})
+        return {"valid": True, "response": doc_id}
+
+def verifyToken(idToken):
+    try:
+        decoded_token = auth.verify_id_token(idToken, check_revoked=True)
+        return decoded_token['uid']
+    except auth.RevokedIdTokenError:
+        return jsonify({"valid": False, "response": "Revoked ID"}), 400
+    except auth.InvalidIdTokenError:
+        return jsonify({"valid": False, "response": "Invalid ID"}), 400
+
 def getDBID(data, collection_ref):
     db_id = data['id']
     # ID is not empty

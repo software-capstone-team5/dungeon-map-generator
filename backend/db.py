@@ -7,8 +7,6 @@ from google.oauth2 import id_token
 from google.auth.transport import requests
 from util import *
 
-db = firestore.client()
-users_collection = db.collection('Users')
 
 cors = CORS(app, resources={r'/*': {'origins': '*'}})
 
@@ -264,3 +262,4 @@ def getTraps(idToken):
             return jsonify({"valid": False, "response": "No ID provided"}), 400
     except Exception as e:
         return f"An Error Occured: {e}"
+    
