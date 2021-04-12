@@ -5,8 +5,10 @@ import { TileType } from '../constants/TileType';
 import { Coordinates } from '../models/Coordinates';
 import { DungeonMap } from '../models/DungeonMap';
 import { RegionInstance } from '../models/RegionInstance';
+import { makeStyles } from '@material-ui/core/styles';
 import CSS from 'csstype';
 import DungeonEditor from './DungeonEditor';
+import { Grid } from '@material-ui/core';
 
 type Props = {
     map: DungeonMap | null;
@@ -14,6 +16,7 @@ type Props = {
 }
 
 class DungeonDisplay extends Component {
+		
 	private backgroundRef: React.RefObject<any>;
 	private mainRef: React.RefObject<any>;
 	private hiddenRef: React.RefObject<any>;
@@ -29,6 +32,10 @@ class DungeonDisplay extends Component {
 		visibility: 'hidden'
 	}
 
+	private spacedStyle: CSS.Properties = {
+		margin: "15px"
+	}
+
 	constructor(props: Props) {
 		super(props)
 		this.props = props
@@ -39,6 +46,7 @@ class DungeonDisplay extends Component {
 
 		this.getSingleImage = this.getSingleImage.bind(this);
 		this.getMultipleImages = this.getMultipleImages.bind(this);
+		this.drawDungeon = this.drawDungeon.bind(this);
 	}
 	
 	private getCanvasStyle(zIndex: number): CSS.Properties {
@@ -67,18 +75,6 @@ class DungeonDisplay extends Component {
 		else if (this.props.map) { 
 			this.drawDungeon(this.props.map);
 		}
-	}
-	
-	render() {
-		return <div>
-			<div style={this.containerStyle}>
-				<canvas style={this.combinedStyle} ref={this.combinedRef} {...this.props.canvasProps}/>
-				<canvas style={this.getCanvasStyle(1)} ref={this.backgroundRef} {...this.props.canvasProps}/>
-				<canvas style={this.getCanvasStyle(2)} ref={this.mainRef} {...this.props.canvasProps}/>
-				<canvas style={this.getCanvasStyle(3)} ref={this.hiddenRef} {...this.props.canvasProps}/>
-			</div>
-			<DungeonEditor map={this.props.map} getSingleImage={this.getSingleImage} getMultipleImages={this.getMultipleImages}></DungeonEditor>
-		</div> 
 	}
 
 	getSingleImage(): Map<string, any>{
@@ -246,6 +242,25 @@ class DungeonDisplay extends Component {
 		}
 
 		return [backgroundCanvas, mainCanvas, hiddenCanvas, combinedCanvas];
+	}
+	
+	render() {
+		return <div>
+			<Grid 
+				container 
+				direction="row"
+				alignItems="center">
+					<div style={{...this.containerStyle, ...this.spacedStyle}}>
+						<canvas style={this.combinedStyle} ref={this.combinedRef} {...this.props.canvasProps}/>
+						<canvas style={this.getCanvasStyle(1)} ref={this.backgroundRef} {...this.props.canvasProps}/>
+						<canvas style={this.getCanvasStyle(2)} ref={this.mainRef} {...this.props.canvasProps}/>
+						<canvas style={this.getCanvasStyle(3)} ref={this.hiddenRef} {...this.props.canvasProps}/>
+					</div>
+					<div style={this.spacedStyle}>
+						<DungeonEditor map={this.props.map} getSingleImage={this.getSingleImage} getMultipleImages={this.getMultipleImages} onChange={this.drawDungeon}></DungeonEditor>
+					</div>
+			</Grid>
+		</div>
 	}
 }
 

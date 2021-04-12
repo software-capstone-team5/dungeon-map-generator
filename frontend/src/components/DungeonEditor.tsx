@@ -9,9 +9,11 @@ import MuiAlert, { AlertProps, Color } from '@material-ui/lab/Alert';
 import cloneDeep from 'lodash/cloneDeep';
 import React, { useEffect, useState } from 'react';
 import { DungeonMap } from '../models/DungeonMap';
-import { valueOf } from '../utils/util';
 import DownloadDungeon from './DownloadDungeon';
-
+import DifficultySlider from './DifficultySlider';
+import Typography from '@material-ui/core/Typography';
+import AccordionDetails from '@material-ui/core/AccordionDetails';
+import { DungeonGenerator } from '../generator/DungeonGenerator';
 
 const styles = (theme: Theme) => ({
     root: {
@@ -26,6 +28,7 @@ const styles = (theme: Theme) => ({
     content: {
         '&$expanded': {
             margin: '12px 0',
+			flexGrow: 0
         },
     },
     expanded: {},
@@ -51,25 +54,26 @@ function Alert(props: AlertProps) {
 }
 
 const useStyles = makeStyles((theme) => ({
-    helpIcon: {
-        "padding-left": theme.spacing(1),
-        "padding-right": theme.spacing(1)
-    },
-    customWidth: {
-        maxWidth: 200,
-    },
     button: {
         padding: theme.spacing(2),
     }
 }));
 
+const customWidth = {
+	maxWidth: 200,
+}
+
 type Props = {
     map: DungeonMap | null;
+	onChange: (map: DungeonMap) => void;
 	getSingleImage: () => Map<string, any>;
 	getMultipleImages: () => Map<string, any>;
 }
 
 function DungeonEditor(props: Props) {
+	const [changes, setChanges] = useState(() => {
+		return {} as any;
+	});
     const classes = useStyles();
 
     const [alert, setAlert] = useState({
@@ -102,11 +106,7 @@ function DungeonEditor(props: Props) {
         }
     }, [props.map])
 
-    const handleChange = (name: keyof DungeonMap, value: valueOf<DungeonMap>) => {
-        setMap(Object.assign(Object.create(Object.getPrototypeOf(map)), map, { [name]: value }))
-    }
-
-	const handleDownload = async (valid: boolean, result: string | null) => {
+	const handleDownloadComplete = async (valid: boolean, result: string | null) => {
 		setIsDownloading(false);
     }
 
@@ -115,7 +115,17 @@ function DungeonEditor(props: Props) {
 	}
 
 	const handleApplyClick = () => {
-		//TODO
+		if (map && map.config){
+			var newMap = Object.create(Object.getPrototypeOf(map));
+			Object.assign(newMap, map);
+
+			if (changes.difficulty != map.config.difficulty) {
+				DungeonGenerator.generateEncounters(newMap, newMap.config);
+			}
+
+			setMap(newMap);
+			props.onChange(newMap);
+		}
 	}
 	
     const handleAlertClose = (event?: React.SyntheticEvent, reason?: string) => {
@@ -125,19 +135,36 @@ function DungeonEditor(props: Props) {
         setAlert({ ...alert, active: false });
     };
 
+	const onDifficultyChange = (difficulty: number) => {
+		var newChanges = {} as any;
+		Object.assign(newChanges, changes);
+		newChanges.difficulty = difficulty;
+		setChanges(newChanges);
+	}
+
     return (
         <div>
-			{map &&
-               <div>
+			{map && map.config && <div>
 			   <Snackbar open={alert.active} autoHideDuration={6000} onClose={handleAlertClose}>
 				   <Alert onClose={handleAlertClose} severity={alert.severity as Color}>
 					   {alert.message}
 				   </Alert>
 			   </Snackbar>
-			   <DownloadDungeon open={isDownloading} map={map} getSingleImage={props.getSingleImage} getMultipleImages={props.getMultipleImages} onDownload={handleDownload} onCancel={() => handleDownload(true, null)}/>
+			   <DownloadDungeon open={isDownloading} map={map} getSingleImage={props.getSingleImage} getMultipleImages={props.getMultipleImages} onDownload={handleDownloadComplete} onCancel={() => handleDownloadComplete(true, null)}/>
 			   <Paper>
-				   {/* <Accordion expanded={true}>
-				   </Accordion> */}
+					<Accordion expanded={true}>
+						<AccordionSummary
+							aria-controls="panel1a-content"
+							id="panel1a-header">
+							<Typography>Map Level Options</Typography>
+						</AccordionSummary>
+						<AccordionDetails>
+								<DifficultySlider
+									disabled={isDownloading}
+									onChange={onDifficultyChange}
+									value={changes.difficulty ? changes.difficulty : map.config.difficulty}/>
+						</AccordionDetails>
+					</Accordion>
 			   </Paper>
 			   <Grid container direction="row" justify="center">
 				   <div className={classes.button}>
@@ -147,8 +174,7 @@ function DungeonEditor(props: Props) {
 					   <Button disabled={isDownloading} onClick={handleDownloadClick} variant="contained" color="primary">Download</Button>
 				   </div>
 			   </Grid>
-		   </div>
-            }
+		   </div>}
         </div>
     );
 }

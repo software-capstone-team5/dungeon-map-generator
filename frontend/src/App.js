@@ -7,7 +7,7 @@ import MenuItem from '@material-ui/core/MenuItem';
 import { makeStyles } from '@material-ui/core/styles';
 import ListIcon from '@material-ui/icons/List';
 import MenuIcon from '@material-ui/icons/Menu';
-import { React, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import './App.css';
 import { Authenticator } from './Authenticator';
 import ConfigurationEditor from "./components/ConfigurationEditor";
@@ -42,6 +42,9 @@ const useStyles = makeStyles((theme) => ({
     zIndex: theme.zIndex.drawer + 1,
     color: '#fff',
   },
+  spaced: {
+    margin: "5px"
+  }
 }));
 
 function App() {
@@ -209,11 +212,10 @@ function App() {
           <Grid
             container
             direction="row"
-            justify="space-evenly"
             alignItems="center"
             className={classes.content}
           >
-            <div>
+            <div className={classes.spaced}>
               <Typography variant="h5" gutterBottom>Configuration</Typography>
               <div>
                 <IconButton onClick={handleLoadConfigClick} color="primary">
@@ -234,9 +236,7 @@ function App() {
                 />
               }
             </div>
-
             <DungeonDisplay map={dungeonMap} canvasProps={null}></DungeonDisplay>
-            <p></p>
           </Grid>
         </Grid>
       }

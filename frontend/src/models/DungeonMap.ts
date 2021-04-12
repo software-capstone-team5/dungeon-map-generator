@@ -1,3 +1,4 @@
+import { Direction } from "../constants/Direction";
 import { Configuration } from "./Configuration";
 import { Coordinates } from "./Coordinates";
 import { CorridorInstance } from "./CorridorInstance";
@@ -9,7 +10,7 @@ export class DungeonMap {
 	private width: number;
 	private height: number;
 	private map: Map<string, RegionInstance[]>;
-	private config: Configuration;
+	config: Configuration;
 	corridors: CorridorInstance[] = [];
 	rooms: RoomInstance[] = [];
 	tileSize: number = 48;
@@ -178,6 +179,33 @@ export class DungeonMap {
 		}
 
 		return next;
+	}
+
+	getAvailableDirection(point: Coordinates): Direction | null {
+		if (point){
+			var adjacent = point.getAdjacent();
+			for (var i = 0; i < adjacent.length; i++){
+				var next = adjacent[i];
+				if (!this.getRegionInstance(next.x, next.y) && !this.isOutOfBounds(next.x, next.y)){
+					return point.getDirectionTo(next);
+				}
+			}
+		}
+		return null;
+	}
+
+	getDirectionToNeighbor(point: Coordinates, neighbor: RegionInstance | null = null): Direction | null{
+		if (point){
+			var adjacent = point.getAdjacent();
+			for (var i = 0; i < adjacent.length; i++){
+				var next = adjacent[i];
+				var region =  this.getRegionInstance(next.x, next.y);
+				if (region && (!neighbor || region === neighbor)){
+					return point.getDirectionTo(next);
+				}
+			}
+		}
+		return null;
 	}
 
 	// Note, if a location is already occupied then it will not be 

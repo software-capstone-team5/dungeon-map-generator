@@ -60,7 +60,7 @@ export class DungeonGenerator {
 					numRooms ++;
 					lastPath = [next];
 	
-					var dirToNeighbor = this.getDirectionToNeighbor(next, map, room)!;
+					var dirToNeighbor = map.getDirectionToNeighbor(next, room)!;
 					var neighborPoint = next.getNextLocation(dirToNeighbor);
 					lastEntrance = this.generateEntrance(room, config, neighborPoint, Direction.getOppositeDirection(dirToNeighbor));
 					lastRegion = room;
@@ -118,7 +118,7 @@ export class DungeonGenerator {
 						next = result[0];
 						lastPath = [];
 
-						var dirToNeighbor = this.getDirectionToNeighbor(next, map)!;
+						var dirToNeighbor = map.getDirectionToNeighbor(next)!;
 						var neightborPoint = next.getNextLocation(dirToNeighbor);
 						var neighbor = map.getRegionInstance(neightborPoint.x, neightborPoint.y)!;
 						lastEntrance = this.generateEntrance(neighbor, config, neightborPoint, Direction.getOppositeDirection(dirToNeighbor));
@@ -146,7 +146,7 @@ export class DungeonGenerator {
 							numRooms ++;
 							lastPath = [];
 
-							var dirToNeighbor = this.getDirectionToNeighbor(next, map, room)!;
+							var dirToNeighbor = map.getDirectionToNeighbor(next, room)!;
 							var neighborPoint = next.getNextLocation(dirToNeighbor);
 							lastEntrance = this.generateEntrance(room, config, neighborPoint, Direction.getOppositeDirection(dirToNeighbor));
 							lastRegion = room;
@@ -168,7 +168,7 @@ export class DungeonGenerator {
 		return map;
 	}
 
-	private static generateEntrance(region: RegionInstance, config: Configuration, location: Coordinates, direction: Direction, goalType: EntranceType | null = null): Entrance{
+	static generateEntrance(region: RegionInstance, config: Configuration, location: Coordinates, direction: Direction, goalType: EntranceType | null = null): Entrance{
 		var category;
 		var defaultCategory;
 		if (region.isCorridor){
@@ -192,43 +192,16 @@ export class DungeonGenerator {
 	private static branchFromRegion(region: RegionInstance, map: DungeonMap): [Coordinates, Direction | null]{
 		var next = Probabilities.buildUniform<Coordinates>(map.getRegionBorder(region, true)).randPickOne()!;
 		
-		var direction = this.getAvailableDirection(next, map);
+		var direction = map.getAvailableDirection(next);
 		
 		return [next, direction];
 	}
 
 	private static branchFromMap(map: DungeonMap): [Coordinates, Direction | null]{
 		var next = Probabilities.buildUniform<Coordinates>(map.getMapBorder(true)).randPickOne()!;
-		var direction = this.getAvailableDirection(next, map);
+		var direction = map.getAvailableDirection(next);
 
 		return [next, direction];
-	}
-
-	private static getAvailableDirection(point: Coordinates, map: DungeonMap): Direction | null {
-		if (point){
-			var adjacent = point.getAdjacent();
-			for (var i = 0; i < adjacent.length; i++){
-				var next = adjacent[i];
-				if (!map.getRegionInstance(next.x, next.y) && !map.isOutOfBounds(next.x, next.y)){
-					return point.getDirectionTo(next);
-				}
-			}
-		}
-		return null;
-	}
-
-	private static getDirectionToNeighbor(point: Coordinates, map: DungeonMap, neighbor: RegionInstance | null = null): Direction | null{
-		if (point){
-			var adjacent = point.getAdjacent();
-			for (var i = 0; i < adjacent.length; i++){
-				var next = adjacent[i];
-				var region =  map.getRegionInstance(next.x, next.y);
-				if (region && (!neighbor || region === neighbor)){
-					return point.getDirectionTo(next);
-				}
-			}
-		}
-		return null;
 	}
 
 	private static getNewDirectionProb(map: DungeonMap, currentPath: Coordinates[], currentDir: Direction): Probabilities<Direction> {
@@ -308,7 +281,7 @@ export class DungeonGenerator {
 		return corridor;
 	}
 
-	private static generateEncounters(map: DungeonMap, config: Configuration){
+	static generateEncounters(map: DungeonMap, config: Configuration){
 		var regionsWithMonstersOrTraps = new Map<number, RegionInstance>();
 		var regionsWithItems = new Map<number, RegionInstance>();
 		var doesDefaultRoomHaveMonsters = config.defaultRoomCategory.monsters && config.defaultRoomCategory.monsters.objects && config.defaultRoomCategory.monsters.objects.length > 0;
