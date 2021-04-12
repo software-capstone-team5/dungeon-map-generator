@@ -4,9 +4,12 @@ import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogTitle from '@material-ui/core/DialogTitle';
+import Grid from '@material-ui/core/Grid';
 import GridList from '@material-ui/core/GridList';
 import GridListTile from '@material-ui/core/GridListTile';
 import TextField from '@material-ui/core/TextField';
+import Tooltip from '@material-ui/core/Tooltip';
+import HelpOutlineIcon from '@material-ui/icons/HelpOutline';
 import { useState } from "react";
 import ImageUploading, { ImageListType, ImageType } from "react-images-uploading";
 import { TileType } from "../constants/TileType";
@@ -32,6 +35,17 @@ const useStyles = makeStyles((theme) =>  ({
   icon: {
     color: 'rgba(255, 255, 255, 0.54)',
   },
+  helpIcon: {
+    paddingLeft: theme.spacing(1),
+    paddingRight: theme.spacing(1)
+  },
+  customWidth: {
+    maxWidth: 200,
+  },
+  verticalPadding: {
+    paddingTop: theme.spacing(1),
+    paddingBottom: theme.spacing(1)
+  }
 }));
 
 type Props = {
@@ -45,6 +59,8 @@ TileSetEditor.defaultProps = {
 
 type Errors = {
   name: boolean;
+  notFullSet: boolean;
+  emptyType: boolean;
 }
 
 export default function TileSetEditor(props: Props) {
@@ -53,16 +69,18 @@ export default function TileSetEditor(props: Props) {
   const [tileSet, setTileSet] = useState(new TileSet("", 48, new Map()));
   const [images, setImages] = useState<ImageListType>([]);
   const [tileTypes, setTileTypes] = useState<(TileType|"")[]>([]);
-  const [errors, setErrors] = useState<Errors>({
-    name: false
+  const [myErrors, setMyErrors] = useState<Errors>({
+    name: false,
+    notFullSet: false,
+    emptyType: false,
   })
 
   const maxNumber = Object.keys(TileType).length;
 
   const handleNameChange = (value: string) => {
-    if (value) {
-      setErrors({
-        ...errors,
+    if (value && value.toLowerCase() !== "Default".toLowerCase()) {
+      setMyErrors({
+        ...myErrors,
         name: false
       })
     }
@@ -70,12 +88,20 @@ export default function TileSetEditor(props: Props) {
   }
 
   const handleNameBlur = () => {
-    if (!tileSet.name) {
-      setErrors({
-        ...errors,
+    if (!tileSet.name || tileSet.name.toLowerCase() === "Default".toLowerCase()) {
+      setMyErrors({
+        ...myErrors,
         name: true
       })
     }
+  }
+
+  const handleSaveBlur = () => {
+      setMyErrors({
+        ...myErrors,
+        notFullSet: false,
+        emptyType: false
+      })
   }
 
   const handleSaveClick = () => {
@@ -85,14 +111,22 @@ export default function TileSetEditor(props: Props) {
     } else if (tileSet.name.toLowerCase() === "Default".toLowerCase()) {
       return;
     } else if (images.length !== maxNumber) {
+      setMyErrors({
+        ...myErrors,
+        notFullSet: true
+      })
       return;
     } else if (tileTypes.includes("")) {
+      setMyErrors({
+        ...myErrors,
+        emptyType: true
+      })
       return;
     }
 
     var imagesCopy = [...images];
     imagesCopy.forEach((image: ImageType, index: number) => {
-      // image.file!.name = ""
+
     });
     
     // TODO: Make call to backend, 'images' contains the images
@@ -144,12 +178,30 @@ export default function TileSetEditor(props: Props) {
           className={classes.root}
           disableTypography
           id="form-dialog-title">
-          <Typography component={'span'} variant="h6">Upload a Tile Set</Typography>
+          <Grid container alignItems="center">
+            <Typography component={'span'} variant="h6">Upload a Tile Set</Typography>
+              <Tooltip
+                arrow
+                classes={{ tooltip: classes.customWidth }}
+                title={
+                  <>
+                    <Typography align="center" color="inherit"><u>Help</u></Typography>
+                    <Typography variant="body2" color="inherit">Accepted File Types: .png/jpg</Typography>
+                    <Typography variant="body2" color="inherit">Max File Size: 5MB</Typography> 
+                    <Typography variant="body2" color="inherit">Required Resolution: 48px by 48px</Typography>
+                    <br></br>
+                    <Typography variant="body2" color="inherit">Files will be uploaded to your Google Drive, under the "DMG_Tilesets" folder</Typography> 
+                  </>
+                }
+              >
+                <HelpOutlineIcon className={classes.helpIcon} color="primary"></HelpOutlineIcon>
+              </Tooltip>
+            </Grid>
         </DialogTitle>
         <DialogContent>
           <TextField
               required
-              error={errors.name}
+              error={myErrors.name}
               onBlur={handleNameBlur}
               variant="outlined"
               autoFocus
@@ -169,6 +221,11 @@ export default function TileSetEditor(props: Props) {
               value={images}
               onChange={onChange}
               maxNumber={maxNumber}
+              acceptType={['jpg','png']}
+              resolutionType="absolute"
+              resolutionWidth={48}
+              resolutionHeight={48}
+              maxFileSize={5242880}
             >
               {({
                 imageList,
@@ -177,7 +234,8 @@ export default function TileSetEditor(props: Props) {
                 onImageUpdate,
                 onImageRemove,
                 isDragging,
-                dragProps
+                dragProps,
+                errors
               }) => (
                 // write your building UI
                 <div className="upload__image-wrapper">
@@ -198,6 +256,17 @@ export default function TileSetEditor(props: Props) {
                   >
                     Remove all images
                   </Button>
+                  {errors && <div className={classes.verticalPadding}>
+                    {errors.maxNumber && <span>Number of selected images exceeds max</span>}
+                    {errors.acceptType && <span>Your selected file type is not .jpg or .png</span>}
+                    {errors.maxFileSize && <span>Selected file size exceeds 5MB</span>}
+                    {errors.resolution && <span>Selected file needs to be 48px by 48px</span>}
+                  </div>}
+                  {myErrors && <div className={classes.verticalPadding}>
+                    {myErrors.notFullSet && <span>Can only save a full set ({maxNumber} images)</span>}
+                    {myErrors.emptyType && <span>Must select a type for every image</span>}
+                    {myErrors.name && tileSet.name.toLowerCase() === "Default".toLowerCase() && <span>Name of set cannot be "Default"</span>}
+                  </div>}
                   <div className={classes.aboveGridList}>
                     <GridList cols={4} className={classes.gridList}>
                     {imageList.map((image, index) => (
@@ -235,7 +304,7 @@ export default function TileSetEditor(props: Props) {
           <Button onClick={props.onCancelClick} color="primary">
             Cancel
           </Button>
-          <Button onClick={handleSaveClick} variant="contained" color="primary">
+          <Button onBlur={handleSaveBlur} onClick={handleSaveClick} variant="contained" color="primary">
             Save
           </Button>
         </DialogActions>

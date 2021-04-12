@@ -1,11 +1,13 @@
+from firebase_admin import auth, credentials, firestore, initialize_app
 from flask import jsonify
-from firebase_admin import credentials, firestore, auth, initialize_app
 
 cred = credentials.Certificate('./certs/key.json') # change later to either environment var or something else
 default_app = initialize_app(cred)
 
 db = firestore.client()
 users_collection = db.collection('Users')
+
+premade_id = "6E0pmXEtSmZLWeWt8mDXInGlOJF3"
 
 def saveTileSetDB(user_id, tileset_name):
     tileset_collection = users_collection.document(user_id).collection("Tileset")
@@ -84,14 +86,25 @@ def getReferences(references):
         result.append(doc.to_dict())
     return result
 
-def saveReferences(data, collection_ref):
+def saveReferences(data, collection_ref, premade_collection_ref):
     references = []
     for i in range(len(data['objects'])):
         reference = data['objects'][i]
         ref_id = reference['id']
-        db_reference = collection_ref.document(ref_id)
+        if reference['premade']:
+            db_reference = premade_collection_ref.document(ref_id)
+        else:
+            db_reference = collection_ref.document(ref_id)
         references.append(db_reference)
     return references
+
+def saveReference(data, collection_ref, premade_collection_ref):
+    ref_id = data['id']
+    if data['premade']:
+        db_reference = premade_collection_ref.document(ref_id)
+    else:
+        db_reference = collection_ref.document(ref_id)
+    return db_reference
 
 # REQ-28: Save.RoomCategory - The system should allow the user to save a Room Category that they have created in the database.
 # REQ-37: Save.CorridorCategory - The system should allow the user to save a Corridor Category that they have created in the database.
@@ -101,20 +114,40 @@ def saveCategory(categoryData, collection_ref, users_collection, user_id):
     # Save monster references in Monsters collection in DB
     monsters = categoryData['monsters']
     monster_collection = users_collection.document(user_id).collection("Monsters")
+    premade_monster_collection = users_collection.document(premade_id).collection("Monsters")
     # Update category to hold DB references
-    categoryData['monsters']['objects'] = saveReferences(monsters, monster_collection)
+    categoryData['monsters']['objects'] = saveReferences(monsters, monster_collection, premade_monster_collection)
 
     # Save item references in Items collection in DB
     items = categoryData['items']
     item_collection = users_collection.document(user_id).collection("Items")
+    premade_item_collection = users_collection.document(premade_id).collection("Items")
     # Update configuration to hold DB references
-    categoryData['items']['objects'] = saveReferences(items, item_collection)
+    categoryData['items']['objects'] = saveReferences(items, item_collection, premade_item_collection)
 
     # Save trap references in Traps collection in DB
     traps = categoryData['traps']
     trap_collection = users_collection.document(user_id).collection("Traps")
+    premade_trap_collection = users_collection.document(premade_id).collection("Traps")
     # Update configuration to hold DB references
-    categoryData['traps']['objects'] = saveReferences(traps, trap_collection)
+    categoryData['traps']['objects'] = saveReferences(traps, trap_collection, premade_trap_collection)
 
     dbCategory.set(categoryData) # TODO remove episilon including child nodes that have them
     return dbCategory
+
+def getPremades(collection_id):
+    result = []
+    premadeCollection = users_collection.document(premade_id).collection(collection_id)
+    for premadeItem in premadeCollection.stream():
+        premadeDict = premadeItem.to_dict()
+        result.append(premadeDict)
+    return result
+
+def getPremadeRegions(collection_id):
+    result = []
+    regions = users_collection.document(premade_id).collection(collection_id)
+    for region in regions.stream():
+        regionDict = region.to_dict()
+        regionCategory = getCategoryReferences(regionDict)
+        result.append(regionCategory)
+    return result
