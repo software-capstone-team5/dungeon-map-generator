@@ -14,6 +14,7 @@ import ConfigurationEditor from "./components/ConfigurationEditor";
 import DungeonDisplay from './components/DungeonDisplay';
 import ImportMonsters from './components/ImportMonsters';
 import SelectConfiguration from "./components/SelectConfiguration";
+import TileSetEditor from './components/TileSetEditor';
 import { TileType } from './constants/TileType';
 import DB from './DB';
 import { DungeonGenerator } from './generator/DungeonGenerator';
@@ -113,6 +114,7 @@ function App() {
 
   const [menuAnchorEl, setMenuAnchorEl] = useState(null);
   const [importMonstersOpen, setImportMonstersOpen] = useState(false);
+  const [uploadTileSetOpen, setUploadTileSetOpen] = useState(false);
 
   const handleMenuClick = (event) => {
     setMenuAnchorEl(event.currentTarget);
@@ -127,9 +129,16 @@ function App() {
     handleClose();
   }
 
+  const uploadTilesetClick = () => {
+    setUploadTileSetOpen(true);
+    handleClose();
+  }
+
   const handleGenerateClick = (config) => {
     if (config){
       // TODO: Remove this after config includes tile sets
+
+      // Fetch images from google drive, 
       var defaultSet = new TileSet("default", 48, new Map());
       for (var tileType of Object.values(TileType)){
           var img = new Image();
@@ -160,9 +169,13 @@ function App() {
         onClose={handleClose}
       >
         <MenuItem onClick={importMonstersClick}>Import Monsters</MenuItem>
+        <MenuItem onClick={uploadTilesetClick}>Upload Tileset</MenuItem>
       </Menu>
       {importMonstersOpen &&
         <ImportMonsters open={importMonstersOpen} onCancelClick={()=>setImportMonstersOpen(false)}></ImportMonsters>
+      }
+      {uploadTileSetOpen &&
+        <TileSetEditor open={uploadTileSetOpen} onCancelClick={()=>setUploadTileSetOpen(false)}></TileSetEditor>
       }
       <Backdrop className={classes.backdrop} open={loggedIn === null || isLoading}>
         <CircularProgress color="inherit" />

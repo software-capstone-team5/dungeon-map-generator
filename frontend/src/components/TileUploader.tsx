@@ -1,12 +1,11 @@
 import { Button, InputLabel, MenuItem, Select } from "@material-ui/core";
+import GridList from '@material-ui/core/GridList';
+import GridListTile from '@material-ui/core/GridListTile';
+import { createStyles, makeStyles } from '@material-ui/core/styles';
 import React from "react";
 import ImageUploading, { ImageListType } from "react-images-uploading";
 import { TileType } from "../constants/TileType";
-import { TileSet } from "../models/TileSet";
-import {createStyles, makeStyles } from '@material-ui/core/styles';
 
-import GridList from '@material-ui/core/GridList';
-import GridListTile from '@material-ui/core/GridListTile';
 
 const useStyles = makeStyles((theme) =>
   createStyles({
@@ -28,16 +27,14 @@ const useStyles = makeStyles((theme) =>
 );
 
 
-
-type Props = {
-  tileSet?: TileSet
-}
-
-export default function TileUploader(props: Props) {
+export default function TileUploader() {
   const classes = useStyles();
   const [images, setImages] = React.useState([]);
   const [tileTypes, setTileTypes] = React.useState<(TileType|"")[]>([]);
   const maxNumber = Object.keys(TileType).length;
+
+  console.log(tileTypes);
+  console.log(images);
 
   const onChange = (
     imageList: ImageListType,
@@ -71,24 +68,13 @@ export default function TileUploader(props: Props) {
 
 
   const handleTypeChange = (index: number, type: TileType | "") => {
-    console.log(type);
     var typeCopy = [...tileTypes];
     typeCopy[index] = type;
     setTileTypes(typeCopy);
-    console.log(tileTypes);
   }
 
-  const onSave = () => {
-    var ts = new TileSet();
-    // TODO: Upload images to Google drive
-    // Get file paths back
-    // if (!tileTypes.includes("")) {
-    //   tileTypes.forEach((type, index) => {
-    //     if (type !== "") {
-    //       ts.addTileToSet(type, "")
-    //     }
-    //   });
-    // }
+  const handleSaveFirstImage = () => {
+    console.log(images[0])
   }
 
   return (
@@ -119,6 +105,7 @@ export default function TileUploader(props: Props) {
             </Button>
             &nbsp;
             <Button onClick={() => handleImageRemoveAll(onImageRemoveAll)}>Remove all images</Button>
+            <Button onClick={handleSaveFirstImage}>SAVE FIrst</Button>
             <div className={classes.root}>
               <GridList cols={4} className={classes.gridList}>
               {imageList.map((image, index) => (
