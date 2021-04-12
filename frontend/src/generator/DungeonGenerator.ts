@@ -336,7 +336,7 @@ export class DungeonGenerator {
 			}
 		})
 
-		var difficulties = this.randSplitNumber(config.difficulty, regionsWithMonstersOrTraps.keys.length) 
+		var difficulties = this.randSplitNumber(config.difficulty, regionsWithMonstersOrTraps.size) 
 		var diffIndex = 0;
 		regionsWithMonstersOrTraps.forEach((region, index) => {
 			if (region.isCorridor){
@@ -348,7 +348,7 @@ export class DungeonGenerator {
 			diffIndex += 1;
 		})
 
-		var values = this.randSplitNumber(config.difficulty, regionsWithItems.keys.length) 
+		var values = this.randSplitNumber(config.difficulty, regionsWithItems.size) 
 		var valIndex = 0;
 		regionsWithItems.forEach((region, index) => {
 			if (region.isCorridor){
@@ -433,7 +433,7 @@ export class DungeonGenerator {
 		var traps: Trap[] = [];
 
 		while (sumDiff < goalDifficulty){
-			if (!trapProbs || !trapProbs.objects || trapProbs.objects.length == 0 || Math.random() < 0.5){
+			if (!trapProbs || !trapProbs.objects || trapProbs.objects.length === 0 || Math.random() < 0.5){
 				var monster = monsterProbs.randPickOne();
 				if (monster){
 					sumDiff += monster.challenge;
