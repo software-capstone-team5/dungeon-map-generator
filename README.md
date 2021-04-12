@@ -11,7 +11,7 @@ Dependencies:
 In the `frontend` directory, run `npm install` to install the dependencies.
 
 ### Firebase Certificates
-Download `key.json` from Team Google Drive.\
+Download `firestore_key.json` from Team Google Drive.\
 In the `frontend/src` directory, create a directory named `certs` and add `firestore_key.json` to this folder.
 
 To start the react app, run
@@ -35,7 +35,8 @@ In the `backend` directory, run `pipenv install` to install the project dependen
 
 ### Firebase Certificates
 Download `key.json` from Team Google Drive.\
-In the `backend` directory, create a directory named `certs` and add `key.json` to this folder.
+Download `google_key.json` Team Google Drive.\
+In the `backend` directory, create a directory named `certs`, add `key.json` and add `google_key.json` to this folder.
 
 To start the server, run
 
