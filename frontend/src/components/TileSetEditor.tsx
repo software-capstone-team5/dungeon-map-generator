@@ -82,6 +82,8 @@ export default function TileSetEditor(props: Props) {
     console.log(images);
     if (!tileSet.name) {
       return;
+    } else if (tileSet.name.toLowerCase() === "Default".toLowerCase()) {
+      return;
     } else if (images.length !== maxNumber) {
       return;
     } else if (tileTypes.includes("")) {
