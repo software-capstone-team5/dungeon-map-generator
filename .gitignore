@@ -24,5 +24,7 @@ yarn-error.log*
 
 __pycache__
 
+google_key.json
 key.json
 firebase_key.json
+temp.jpg
