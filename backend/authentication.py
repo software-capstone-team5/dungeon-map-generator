@@ -2,24 +2,12 @@ from backend import app
 from flask import request, jsonify
 from firebase_admin import credentials, firestore, auth, initialize_app  # Initialize Flask App
 from flask_cors import CORS, cross_origin
-from drive import createFolder
+from drive import createFolder, findFolder
+from util import *
 
-cred = credentials.Certificate('./certs/key.json') # change later to either environment var or something else
-default_app = initialize_app(cred)
 
 cors = CORS(app, resources={r'/*': {'origins': '*'}})
 
-db = firestore.client()
-users_collection = db.collection('Users')
-
-def verifyToken(idToken):
-    try:
-        decoded_token = auth.verify_id_token(idToken, check_revoked=True)
-        return decoded_token['uid']
-    except auth.RevokedIdTokenError:
-        return jsonify({"valid": False, "response": "Revoked ID"}), 400
-    except auth.InvalidIdTokenError:
-        return jsonify({"valid": False, "response": "Invalid ID"}), 400
 
 # REQ-1: Request.Registration - The system will allow the user to register a DMG account through a linked Google Account.
 @app.route("/register", methods=['POST'])
@@ -34,7 +22,11 @@ def register():
                 return jsonify({"valid": False, "response": "Account Already Exists"}), 400
             else:
                 users_collection.document(user_id).set({"temp": True})
-                createFolder(requestData['accessToken'], requestData['refreshToken'], "DMG Tilesets")
+                access_token = requestData['accessToken']
+                refresh_token = requestData['refreshToken']
+                dmg_folder = findFolder(access_token, refresh_token, "DMG Tilesets")
+                if not dmg_folder:
+                    createFolder(access_token, refresh_token, "DMG Tilesets", [])
                 return jsonify({"valid": True, "response": "Account Created"}), 200
         else:
             return user_id

@@ -5,6 +5,7 @@ import { createStyles, makeStyles } from '@material-ui/core/styles';
 import React from "react";
 import ImageUploading, { ImageListType } from "react-images-uploading";
 import { TileType } from "../constants/TileType";
+import { DB } from "../DB";
 
 
 const useStyles = makeStyles((theme) =>
@@ -30,7 +31,7 @@ const useStyles = makeStyles((theme) =>
 export default function TileUploader() {
   const classes = useStyles();
   const [images, setImages] = React.useState([]);
-  const [tileTypes, setTileTypes] = React.useState<(TileType|"")[]>([]);
+  const [tileTypes, setTileTypes] = React.useState<(TileType | "")[]>([]);
   const maxNumber = Object.keys(TileType).length;
 
   console.log(tileTypes);
@@ -44,7 +45,7 @@ export default function TileUploader() {
     console.log(imageList, addUpdateIndex);
     var amountToAdd = imageList.length - tileTypes.length;
     var typeCopy = [...tileTypes];
-    for (var i=0; i < amountToAdd; i++) {
+    for (var i = 0; i < amountToAdd; i++) {
       typeCopy.push("");
     }
     if (amountToAdd > 0) {
@@ -74,7 +75,9 @@ export default function TileUploader() {
   }
 
   const handleSaveFirstImage = () => {
-    console.log(images[0])
+    var result: File[] = [];
+    images.forEach(image => result.push(image['file']));
+    DB.saveTileSets(result);
   }
 
   return (
@@ -108,29 +111,29 @@ export default function TileUploader() {
             <Button onClick={handleSaveFirstImage}>SAVE FIrst</Button>
             <div className={classes.root}>
               <GridList cols={4} className={classes.gridList}>
-              {imageList.map((image, index) => (
-                <GridListTile>
-                <div key={index}>
-                  <img src={image.dataURL} alt="" width="50" height="50" />
-                  <InputLabel id="demo-simple-select-label">Tile Type</InputLabel>
-                  <Select
-                    labelId="demo-simple-select-label"
-                    id="demo-simple-select"
-                    value={tileTypes[index]}
-                    onChange={(e, c)=>handleTypeChange(index, e.target.value as TileType)}
-                  > 
-                    <MenuItem value=""></MenuItem>
-                    {Object.values(TileType).map((type, i) => 
-                      <MenuItem key={index.toString() + "_" + i.toString()} disabled={tileTypes.includes(type)} value={type}>{type}</MenuItem>
-                    )}
-                  </Select>
-                  <div className="image-item__btn-wrapper">
-                    <button onClick={() => onImageUpdate(index)}>Update</button>
-                    <button onClick={() => handleImageRemove(onImageRemove, index)}>Remove</button>
-                  </div>
-                </div>
-                </GridListTile>
-              ))}
+                {imageList.map((image, index) => (
+                  <GridListTile>
+                    <div key={index}>
+                      <img src={image.dataURL} alt="" width="50" height="50" />
+                      <InputLabel id="demo-simple-select-label">Tile Type</InputLabel>
+                      <Select
+                        labelId="demo-simple-select-label"
+                        id="demo-simple-select"
+                        value={tileTypes[index]}
+                        onChange={(e, c) => handleTypeChange(index, e.target.value as TileType)}
+                      >
+                        <MenuItem value=""></MenuItem>
+                        {Object.values(TileType).map((type, i) =>
+                          <MenuItem key={index.toString() + "_" + i.toString()} disabled={tileTypes.includes(type)} value={type}>{type}</MenuItem>
+                        )}
+                      </Select>
+                      <div className="image-item__btn-wrapper">
+                        <button onClick={() => onImageUpdate(index)}>Update</button>
+                        <button onClick={() => handleImageRemove(onImageRemove, index)}>Remove</button>
+                      </div>
+                    </div>
+                  </GridListTile>
+                ))}
               </GridList>
             </div>
           </div>
