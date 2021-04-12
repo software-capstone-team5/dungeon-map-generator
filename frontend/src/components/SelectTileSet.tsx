@@ -1,14 +1,11 @@
-import { useEffect, useState } from 'react';
 import Button from '@material-ui/core/Button';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogTitle from '@material-ui/core/DialogTitle';
-import NameList from './common/NameList';
-import TileSetEditor from './TileSetEditor';
+import { useState } from 'react';
 import { TileSet } from '../models/TileSet';
-import { nameOf } from '../utils/util';
-import differenceBy from 'lodash/differenceBy';
+import NameList from './common/NameList';
 
 type Props = {
   open: boolean;
@@ -59,13 +56,13 @@ export default function SelectTileSet(props: Props) {
           </Button>
         </DialogActions>
       </Dialog>
-      {tileSetEditorOpen &&
+      {/* {tileSetEditorOpen &&
           <TileSetEditor
               open={tileSetEditorOpen}
               onSave={handleSave}
               onCancelClick={()=>setTileSetEditorOpen(false)}
           />
-      }
+      } */}
     </div>
   );
 }
