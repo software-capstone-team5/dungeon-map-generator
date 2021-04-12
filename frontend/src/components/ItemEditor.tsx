@@ -16,7 +16,6 @@ import { Item } from '../models/Item';
 import { nameOf, valueOf } from '../utils/util';
 
 
-
 const useStyles = makeStyles((theme) => ({
   root: {
     margin: 0,
@@ -40,6 +39,7 @@ type Props = {
 
 type Errors = {
   name: boolean;
+  value: boolean;
 }
 
 ItemEditor.defaultProps = {
@@ -52,7 +52,8 @@ export default function ItemEditor(props: Props) {
 
   const [viewMode, setViewMode] = useState(props.viewOnly);
   const [errors, setErrors] = useState<Errors>({
-    name: false
+    name: false,
+    value: false
   });
   const [item, setItem] = useState<Item>(() => {
     if (props.item !== undefined) {
@@ -71,8 +72,13 @@ export default function ItemEditor(props: Props) {
         })
       }
     } else if (name === nameOf<Item>("value")) {
-      if (Number.isNaN(value) || value < 0) {
+      if (value < 1) {
         return
+      } else if (!Number.isNaN(value)) {
+        setErrors({
+          ...errors,
+          value: false
+        })
       }
     }
     setItem(Object.assign(Object.create(Object.getPrototypeOf(item)), item, { [name]: value }));
@@ -83,7 +89,7 @@ export default function ItemEditor(props: Props) {
   }
 
   const handleSaveClick = async () => {
-    if (!item.name) {
+    if (!item.name || item.value < 1 || Number.isNaN(item.value)) {
       return;
     }
 
@@ -107,6 +113,15 @@ export default function ItemEditor(props: Props) {
       setErrors({
         ...errors,
         name: true
+      })
+    }
+  }
+
+  const handleValueBlur = () => {
+    if (Number.isNaN(item.value)) {
+      setErrors({
+        ...errors,
+        value: true,
       })
     }
   }
@@ -145,6 +160,8 @@ export default function ItemEditor(props: Props) {
           />
           <TextField
             required
+            error={errors.value}
+            onBlur={handleValueBlur}
             disabled={viewMode}
             type="number"
             variant="outlined"
@@ -154,7 +171,7 @@ export default function ItemEditor(props: Props) {
             InputLabelProps={{
               shrink: true,
             }}
-            value={item.value}
+            value={Number.isNaN(item.value) ? "" : item.value}
             onChange={(e) => handleChange(nameOf<Item>("value"), parseFloat(e.target.value))}
           />
           <TextField
