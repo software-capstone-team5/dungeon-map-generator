@@ -90,28 +90,28 @@ class Parent extends React.Component<Props, State> {
     }
 
     handleSingleDownload() {
-        var current = this.dungeonDisplay.current;
-        if (current && this.state.map){
-            var url = current.getSingleImage();
-            var link = document.createElement('a');
-            link.download = 'DungeonMap.png';
-            link.href = url;
-            link.click();
-        }
+        // var current = this.dungeonDisplay.current;
+        // if (current && this.state.map){
+        //     var url = current.getSingleImage();
+        //     var link = document.createElement('a');
+        //     link.download = 'DungeonMap.png';
+        //     link.href = url[0];
+        //     link.click();
+        // }
     }
 
     handleLayerDownloads() {
-        var current = this.dungeonDisplay.current;
-        if (current && this.state.map){
-            var urls = current.getMultipleImages();
-            urls.forEach((url, i) => {
-                // TODO: zip?
-                var link = document.createElement('a');
-                link.download = 'DungeonMap' + i + '.png';
-                link.href = url;
-                link.click();
-            })
-        }
+        // var current = this.dungeonDisplay.current;
+        // if (current && this.state.map){
+        //     var urls = current.getMultipleImages();
+        //     urls.forEach((url, i) => {
+        //         // TODO: zip?
+        //         var link = document.createElement('a');
+        //         link.download = 'DungeonMap' + i + '.png';
+        //         link.href = url;
+        //         link.click();
+        //     })
+        // }
     }
 
     async handleJsonDownload() {

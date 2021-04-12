@@ -121,7 +121,7 @@ function ConfigurationEditor(props: Props) {
 
     // REQ-18: Save.MapConfiguration - The system allows logged -in users to save the entire map configuration(both Map Level and Region Level) as a Preset.
     const handleSave = async (name: string) => {
-        var configToSave = Object.assign({}, configuration, { name: name });
+        var configToSave = Object.assign(Object.create(Object.getPrototypeOf(configuration)), configuration, { name: name });
         configToSave.roomCategories.normalize();
         configToSave.corridorCategories.normalize();
 
