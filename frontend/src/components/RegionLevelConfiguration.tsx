@@ -237,13 +237,13 @@ const RegionLevelConfiguration = memo(
             </div>
         );
     },
-    (prevProps, nextProps) =>
-        prevProps.configuration.roomCategories === nextProps.configuration.roomCategories &&
-        prevProps.configuration.corridorCategories === nextProps.configuration.corridorCategories &&
-        prevProps.configuration.defaultRoomCategory === nextProps.configuration.defaultRoomCategory &&
-        prevProps.configuration.defaultCorridorCategory === nextProps.configuration.defaultCorridorCategory &&
-        prevProps.configuration.premade === nextProps.configuration.premade &&
-        prevProps.isSaving === nextProps.isSaving
+    // (prevProps, nextProps) =>
+    //     prevProps.configuration.roomCategories === nextProps.configuration.roomCategories &&
+    //     prevProps.configuration.corridorCategories === nextProps.configuration.corridorCategories &&
+    //     prevProps.configuration.defaultRoomCategory === nextProps.configuration.defaultRoomCategory &&
+    //     prevProps.configuration.defaultCorridorCategory === nextProps.configuration.defaultCorridorCategory &&
+    //     prevProps.configuration.premade === nextProps.configuration.premade &&
+    //     prevProps.isSaving === nextProps.isSaving
 )
 
 
