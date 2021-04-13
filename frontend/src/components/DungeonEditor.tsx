@@ -178,6 +178,31 @@ function DungeonEditor(props: Props) {
 		}
 	}
 
+	const handleRegionInstanceDelete = (name: keyof DungeonMap, index: number) => {
+		if (name as keyof DungeonMap){
+			setConfirmFunction(() => confirmInstanceDelete);
+			setConfirmMessage("Are you sure you would like to delete this region?");
+			setConfirmArgs({name: name, index: index})
+			setConfirmOpen(true);
+		}
+	}
+
+	const confirmInstanceDelete = (decision: boolean, args: {name: any, index: number}) => {
+		var name = args.name as keyof DungeonMap
+		if (decision && name){
+			var newMap = Object.create(Object.getPrototypeOf(map)) as DungeonMap;
+			Object.assign(newMap, map);
+			if (name === nameOf<DungeonMap>("rooms")){
+				newMap.removeRoom(newMap.rooms[args.index]);
+			}
+			else{
+				newMap.removeCorridor(newMap.corridors[args.index]);
+			}
+			props.onChange(newMap);
+		}
+		setConfirmOpen(false);
+	}
+
 	const confirmInstanceRegenerate = (decision: boolean, args: {name: any, index: number}) => {
 		var name = args.name as keyof DungeonMap
 		if (decision && name){
@@ -262,7 +287,14 @@ function DungeonEditor(props: Props) {
 							<Typography>Region Instance Options</Typography>
 						</AccordionSummary>
 						<AccordionDetails>
-							<RegionInstanceModify isSaving={isDownloading} map={map} onChange={handleRegionInstanceChanges} onRegenerateClick={handleRegenerateInstanceClick} selectInstance={props.selectInstance} savePhrase={"Apply"}/>
+							<RegionInstanceModify 
+								isSaving={isDownloading} 
+								savePhrase={"Apply"}
+								map={map} 
+								onChange={handleRegionInstanceChanges} 
+								onRegenerateClick={handleRegenerateInstanceClick} 
+								onDeleteClick={handleRegionInstanceDelete}
+								selectInstance={props.selectInstance}/>
 						</AccordionDetails>
 					</Accordion>
 			   </Paper>

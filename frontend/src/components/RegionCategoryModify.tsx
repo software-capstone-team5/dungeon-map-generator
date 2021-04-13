@@ -6,15 +6,12 @@ import { memo, useState } from 'react';
 import { Probabilities } from '../generator/Probabilities';
 import { Configuration } from '../models/Configuration';
 import { CorridorCategory } from '../models/CorridorCategory';
-import { DungeonMap } from '../models/DungeonMap';
 import { RegionCategory } from '../models/RegionCategory';
 import { RoomCategory } from '../models/RoomCategory';
-import { RoomInstance } from '../models/RoomInstance';
 import { nameOf, valueOf } from '../utils/util';
 import NameList from "./common/NameList";
 import CorridorCategoryEditor from './CorridorCategoryEditor';
 import RoomCategoryEditor from './RoomCategoryEditor';
-import RoomEditor from './RoomEditor';
 import SelectCorridorCategory from './SelectCorridorCategory';
 import SelectRoomCategory from './SelectRoomCategory';
 
@@ -44,8 +41,6 @@ const RegionCategoryModify = memo(
         const [addCorridorDialogOpen, setAddCorridorDialogOpen] = useState(false);
         const [roomCategoryEditorOpen, setRoomCategoryEditorOpen] = useState(false);
         const [roomCategoryToEdit, setRoomCategoryToEdit] = useState<RoomCategory>();
-        const [roomEditorOpen, setRoomEditorOpen] = useState(false);
-        const [roomToEdit, setRoomToEdit] = useState<RoomInstance>();
         const [corridorCategoryEditorOpen, setCorridorEditorOpen] = useState(false);
         const [corridorCategoryToEdit, setCorridorCategoryToEdit] = useState<CorridorCategory>();
         const [editingDefault, setEditingDefault] = useState(false);

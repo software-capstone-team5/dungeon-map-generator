@@ -24,6 +24,7 @@ type Props = {
     savePhrase?: string;
     onChange: (name: keyof DungeonMap, value: valueOf<DungeonMap>)=>void;
     onRegenerateClick: (name: keyof DungeonMap, index: number) => void;
+    onDeleteClick: (name: keyof DungeonMap, index: number) => void;
     selectInstance?: (category: RegionInstance) => void;
 }
 
@@ -82,8 +83,10 @@ const RegionInstanceModify = memo(
                 <NameList
                     disabled={disabled}
                     showRegenerate
+                    showDelete
                     list={props.map.rooms}
                     onClick={handleRoomClick}
+                    onDeleteClick={(index) => props.onDeleteClick(nameOf<DungeonMap>("rooms"), index)}
                     onRegenerateClick={(index) => props.onRegenerateClick(nameOf<DungeonMap>("rooms"), index)}
                 />      
                 <div className={classes.listLabel}>
@@ -92,8 +95,10 @@ const RegionInstanceModify = memo(
                 <NameList
                     disabled={disabled}
                     showRegenerate
+                    showDelete
                     list={props.map.corridors}
                     onClick={handleCorridorClick}
+                    onDeleteClick={(index) => props.onDeleteClick(nameOf<DungeonMap>("corridors"), index)}
                     onRegenerateClick={(index) => props.onRegenerateClick(nameOf<DungeonMap>("corridors"), index)}
                 />
                 {roomEditorOpen &&
