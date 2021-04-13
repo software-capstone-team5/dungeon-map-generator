@@ -17,6 +17,7 @@ import { RoomCategory } from '../../models/RoomCategory';
 import { CorridorCategory } from '../../models/CorridorCategory';
 import { DungeonGenerator } from '../../generator/DungeonGenerator';
 import { RoomInstance } from '../../models/RoomInstance';
+import { CorridorInstance } from '../../models/CorridorInstance';
 
 type Props = {
     map: DungeonMap | null;
@@ -31,6 +32,7 @@ type State = {
 	selectedCategoryIndex: number;
 	isAddingRegion: boolean;
 	cursor: any;
+	startPoint: Coordinates | null;
 }
 
 class DungeonDisplay extends Component {
@@ -73,6 +75,7 @@ class DungeonDisplay extends Component {
 			selectedCategoryIndex: -1,
 			isAddingRegion: false,
 			cursor: 'crosshair',
+			startPoint: null,
 		};
 		this.backgroundRef = React.createRef();
 		this.mainRef = React.createRef();
@@ -357,15 +360,25 @@ class DungeonDisplay extends Component {
 			var region: RegionInstance | null = null;
 			if (!this.state.map.isOutOfBounds(x, y)){
 				if (this.state.isAddingRegion && this.state.selectedCategory){
-					var start = new Coordinates(x, y);
+					var point = new Coordinates(x, y);
 					if (this.state.selectedCategory.isCorridor){
-						// TODO
-						this.setState({isAddingRegion: false, cursor: 'auto'});
+						if (this.state.startPoint){
+							var newMap = Object.create(Object.getPrototypeOf(this.state.map)) as DungeonMap;
+							Object.assign(newMap, this.state.map)
+							region = DungeonGenerator.generatePathAndCorridor(this.state.startPoint, point, this.state.selectedCategory as CorridorCategory, newMap);
+							newMap.addCorridor(region as CorridorInstance);
+							DungeonGenerator.generateEntrancesForNeighbours(region, newMap);
+							this.setState({isAddingRegion: false, cursor: 'auto', startPoint: null, map: newMap});
+							this.drawDungeon(newMap);
+						}
+						else{
+							this.setState({startPoint: point});
+						}
 					}
 					else{
-						var direction = this.state.map.getAvailableDirection(start);
+						var direction = this.state.map.getAvailableDirection(point);
 						var center = Math.floor(this.state.map.getWidth() / 2);
-						region = DungeonGenerator.generateRoom(this.state.selectedCategory as RoomCategory, this.state.map.config.defaultRoomCategory, start, direction ? direction : start.getDirectionTo(new Coordinates(center, center)));
+						region = DungeonGenerator.generateRoom(this.state.selectedCategory as RoomCategory, this.state.map.config.defaultRoomCategory, point, direction ? direction : point.getDirectionTo(new Coordinates(center, center)));
 						var newMap = Object.create(Object.getPrototypeOf(this.state.map)) as DungeonMap;
 						Object.assign(newMap, this.state.map)
 						newMap.addRoom(region as RoomInstance);

@@ -200,6 +200,23 @@ export class DungeonGenerator {
 		return [next, direction];
 	}
 
+	private static getGoalDirectionProb(map: DungeonMap, currentLocation: Coordinates, currentDir: Direction, goal: Coordinates): Probabilities<Direction> {
+		var probs: Map<Direction, number> = new Map<Direction, number>();
+		if (goal.x < currentLocation.x && currentDir !== Direction.right){
+			probs.set(Direction.left, 0.5);
+		}
+		if (goal.x > currentLocation.x && currentDir !== Direction.left){
+			probs.set(Direction.right, 0.5);
+		}
+		if (goal.y > currentLocation.y && currentDir !== Direction.down){
+			probs.set(Direction.up, 0.5);
+		}
+		if (goal.y < currentLocation.y && currentDir !== Direction.up){
+			probs.set(Direction.down, 0.5);
+		}
+		return new Probabilities(probs);;
+	}
+
 	private static getNewDirectionProb(map: DungeonMap, currentPath: Coordinates[], currentDir: Direction): Probabilities<Direction> {
 		var probs: Map<Direction, number> = new Map<Direction, number>();
 		var length = currentPath.length;
@@ -297,6 +314,20 @@ export class DungeonGenerator {
 		return corridor;
 	}
 
+	static generatePathAndCorridor(start: Coordinates, end: Coordinates, category: CorridorCategory, map: DungeonMap){
+		var path: Coordinates[] = [];
+		var startDirection = map.getAvailableDirection(start) ?? Direction.down;
+		var current = start;
+		var direction = startDirection;
+		while (current.toString() !== end.toString()){
+			path.push(current);
+			direction = this.getGoalDirectionProb(map, current, direction, end)!.randPickOne()!;
+			current = current.getNextLocation(direction);
+		}
+		path.push(current);
+		return this.generateCorridor(category, map.config.defaultCorridorCategory, path, direction, startDirection, null, null, true);
+	}
+
 	static generateEntrancesForNeighbours(region: RegionInstance, map: DungeonMap){
 		var regionCategory = region.isCorridor ? (region as CorridorInstance).category : (region as RoomInstance).category
 		var defaultCategory = region.isCorridor ? map.config.defaultCorridorCategory : map.config.defaultRoomCategory
@@ -312,8 +343,8 @@ export class DungeonGenerator {
 							visited.push(neighbour);
 							var entranceDirection = location.getDirectionTo(point);
 							if (entranceDirection){
-								if (index == 0){
-									region.entrances[0].direction = entranceDirection;
+								if (index == 0 || (region.isCorridor && index == region.locations.length - 1)){
+									region.entrances[index === 0 ? 0 : 1].direction = entranceDirection;
 								}
 								else{
 									region.entrances.push(DungeonGenerator.generateEntrance(region, map.config, location, entranceDirection))
