@@ -408,8 +408,9 @@ export default function RoomCategoryEditor(props: Props) {
             </div>
             <ProbabilityNameList
               showProbs
+              disableProbs={viewMode}
               showDelete={!viewMode}
-              disabled={viewMode}
+              disableListItem={viewMode && editMode}
               list={roomCategory.monsters}
               onClick={handleMonsterClick}
               onDeleteClick={(index) => handleDeleteClick(nameOf<RoomCategory>("monsters"), index)}
@@ -444,8 +445,9 @@ export default function RoomCategoryEditor(props: Props) {
             </div>
             <ProbabilityNameList
               showProbs
+              disableProbs={viewMode}
               showDelete={!viewMode}
-              disabled={viewMode}
+              disableListItem={viewMode && editMode}
               list={roomCategory.items}
               onClick={handleItemClick}
               onDeleteClick={(index) => handleDeleteClick(nameOf<RoomCategory>("items"), index)}
@@ -473,8 +475,9 @@ export default function RoomCategoryEditor(props: Props) {
             </div>
             <ProbabilityNameList
               showProbs
+              disableProbs={viewMode}
               showDelete={!viewMode}
-              disabled={viewMode}
+              disableListItem={viewMode && editMode}
               list={roomCategory.traps}
               onClick={handleTrapClick}
               onDeleteClick={(index) => handleDeleteClick(nameOf<RoomCategory>("traps"), index)}

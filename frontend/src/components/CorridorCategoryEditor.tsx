@@ -396,8 +396,9 @@ export default function CorridorCategoryEditor(props: Props) {
             </div>
             <ProbabilityNameList
               showProbs
+              disableProbs={viewMode}
               showDelete={!viewMode}
-              disabled={viewMode}
+              disableListItem={viewMode && editMode}
               list={corridorCategory.monsters}
               onClick={handleMonsterClick}
               onDeleteClick={(index) => handleDeleteClick(nameOf<CorridorCategory>("monsters"), index)}
@@ -432,8 +433,9 @@ export default function CorridorCategoryEditor(props: Props) {
             </div>
             <ProbabilityNameList
               showProbs
+              disableProbs={viewMode}
               showDelete={!viewMode}
-              disabled={viewMode}
+              disableListItem={viewMode && editMode}
               list={corridorCategory.items}
               onClick={handleItemClick}
               onDeleteClick={(index) => handleDeleteClick(nameOf<CorridorCategory>("items"), index)}
@@ -461,8 +463,9 @@ export default function CorridorCategoryEditor(props: Props) {
             </div>
             <ProbabilityNameList
               showProbs
+              disableProbs={viewMode}
               showDelete={!viewMode}
-              disabled={viewMode}
+              disableListItem={viewMode && editMode}
               list={corridorCategory.traps}
               onClick={handleTrapClick}
               onDeleteClick={(index) => handleDeleteClick(nameOf<CorridorCategory>("traps"), index)}
