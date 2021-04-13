@@ -152,7 +152,7 @@ const RegionLevelConfiguration = memo(
                     </IconButton>
                 </div>
                 <NameList
-                    disabled={disabled}
+                    disabled={disabled && !props.configuration.premade}
                     onClick={handleDefaultRoomClick}
                     list={props.configuration.defaultRoomCategory ? [props.configuration.defaultRoomCategory] : []}
                 />
@@ -164,9 +164,10 @@ const RegionLevelConfiguration = memo(
                 </div>
 
                 <ProbabilityNameList
-                    disabled={disabled}
+                    disableListItem={disabled && !props.configuration.premade}
+                    disableProbs={disabled}
                     showProbs
-                    showDelete
+                    showDelete={!disabled}
                     list={props.configuration.roomCategories}
                     onClick={handleRoomClick}
                     onDeleteClick={(index) => handleDeleteClick(nameOf<Configuration>("roomCategories"), index)}
@@ -179,7 +180,7 @@ const RegionLevelConfiguration = memo(
                     </IconButton>
                 </div>
                 <NameList
-                    disabled={disabled}
+                    disabled={disabled && !props.configuration.premade}
                     onClick={handleDefaultCorridorClick}
                     list={props.configuration.defaultCorridorCategory ? [props.configuration.defaultCorridorCategory] : []}
                 />
@@ -190,9 +191,10 @@ const RegionLevelConfiguration = memo(
                     </IconButton>
                 </div>
                 <ProbabilityNameList
-                    disabled={disabled}
+                    disableListItem={disabled && !props.configuration.premade}
+                    disableProbs={disabled}
                     showProbs
-                    showDelete
+                    showDelete={!disabled}
                     list={props.configuration.corridorCategories}
                     onClick={handleCorridorClick}
                     onDeleteClick={(index) => handleDeleteClick(nameOf<Configuration>("corridorCategories"), index)}
