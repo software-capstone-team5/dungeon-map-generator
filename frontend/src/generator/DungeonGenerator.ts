@@ -297,6 +297,49 @@ export class DungeonGenerator {
 		return corridor;
 	}
 
+	static generateEntrancesForNeighbours(region: RegionInstance, map: DungeonMap){
+		var regionCategory = region.isCorridor ? (region as CorridorInstance).category : (region as RoomInstance).category
+		var defaultCategory = region.isCorridor ? map.config.defaultCorridorCategory : map.config.defaultRoomCategory
+		if (region.entrances && region.entrances.length > 0){
+			var visited : RegionInstance[] = [];
+			region.locations.forEach((location, index) => {
+				if (map.getRegionInstance(location.x, location.y) === region){
+					var adjacent = location.getAdjacent();
+					for (var i = 0; i < adjacent.length; i++){
+						var point = adjacent[i];
+						var neighbour = map.getRegionInstance(point.x, point.y);
+						if (neighbour && !visited.find((x) => x.name === neighbour!.name) && !map.isOutOfBounds(point.x, point.y) &&  neighbour && neighbour !== region){
+							visited.push(neighbour);
+							var entranceDirection = location.getDirectionTo(point);
+							if (entranceDirection){
+								if (index == 0){
+									region.entrances[0].direction = entranceDirection;
+								}
+								else{
+									region.entrances.push(DungeonGenerator.generateEntrance(region, map.config, location, entranceDirection))
+								}
+									
+							}
+	
+							var neighbourDirection = Direction.getOppositeDirection(entranceDirection);
+							if (!neighbour.entrances){
+								neighbour.entrances = [];
+							}
+							let existing = neighbour.entrances.find((x) => x.location.toString() === point.toString());
+							if (existing && existing.direction === neighbourDirection){
+								region.entrances[region.entrances.length - 1].type = DungeonGenerator.tryMatchEntrances(regionCategory, defaultCategory, existing.type)
+							}
+							else{
+								neighbour.entrances.push(DungeonGenerator.generateEntrance(neighbour, map.config, point, neighbourDirection, region.entrances[region.entrances.length - 1].type));
+							}
+	
+						}
+					}
+				}
+			});
+		}
+	}
+
 	static generateEncounters(map: DungeonMap, config: Configuration){
 		var regionsWithMonstersOrTraps = new Map<number, RegionInstance>();
 		var regionsWithItems = new Map<number, RegionInstance>();
@@ -449,7 +492,7 @@ export class DungeonGenerator {
 		} as RegionInstance;
 	}
 
-	private static tryMatchEntrances(category: CorridorCategory, defaultCategory: CorridorCategory, goalEntranceType: EntranceType | null){
+	private static tryMatchEntrances(category: RegionCategory, defaultCategory: RegionCategory, goalEntranceType: EntranceType | null){
 		var entranceType = null;
 		if (goalEntranceType && category.entranceTypes && category.entranceTypes.toMap().has(goalEntranceType)){
 			entranceType = goalEntranceType;

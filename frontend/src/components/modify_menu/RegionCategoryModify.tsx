@@ -29,8 +29,9 @@ type Props = {
     savePhrase?: string;
     selectedRoomCategoryIndex?: number;
     selectedCorridorCategoryIndex?: number;
-    onChange: (name: keyof Configuration, value: valueOf<Configuration>)=>void;
+    onChange: (name: keyof Configuration, value: valueOf<Configuration>) => void;
     onRegenerateClick: (name: keyof Configuration, index: number) => void;
+    onAddClick: (name: keyof Configuration, index: number) => void;
     selectCategory?: (category: RegionCategory) => void;
 }
 
@@ -129,14 +130,15 @@ const RegionCategoryModify = memo(
                     disabled={disabled}
                     showRegenerate
                     showSelection
-                    // showAdd
+                    showAdd
                     onlyShowSelectedIcons
                     doubleClick
                     list={props.configuration.roomCategories.objects}
                     selectedIndex={props.selectedRoomCategoryIndex}
                     onSelect={props.selectCategory}
                     onClick={handleRoomClick}
-                    onRegenerateClick={(index) => props.onRegenerateClick(nameOf<Configuration>("roomCategories"), index)}
+                    onRegenerateClick={(index: number) => props.onRegenerateClick(nameOf<Configuration>("roomCategories"), index)}
+                    onAddClick={(index: number) => props.onAddClick(nameOf<Configuration>("roomCategories"), index)}
                 />      
                 <div className={classes.listLabel}>
                     <FormLabel disabled={disabled}>Corridor Categories</FormLabel>
@@ -148,14 +150,15 @@ const RegionCategoryModify = memo(
                     disabled={disabled}
                     showRegenerate
                     showSelection
-                    // showAdd
+                    showAdd
                     onlyShowSelectedIcons
                     doubleClick
                     list={props.configuration.corridorCategories.objects}
                     selectedIndex={props.selectedCorridorCategoryIndex}
                     onSelect={props.selectCategory}
                     onClick={handleCorridorClick}
-                    onRegenerateClick={(index) => props.onRegenerateClick(nameOf<Configuration>("corridorCategories"), index)}
+                    onRegenerateClick={(index: number) => props.onRegenerateClick(nameOf<Configuration>("corridorCategories"), index)}
+                    onAddClick={(index: number) => props.onAddClick(nameOf<Configuration>("corridorCategories"), index)}
                 />
                 {addRoomDialogOpen &&
                     <SelectRoomCategory

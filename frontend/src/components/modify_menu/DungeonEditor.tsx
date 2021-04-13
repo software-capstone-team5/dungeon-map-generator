@@ -78,6 +78,7 @@ type Props = {
 	selectedRoomCategoryIndex?: number;
 	selectedCorridorCategoryIndex?: number;
 	onChange: (map: DungeonMap) => void;
+	onAddRegion: (category: RegionCategory) => void;
 	getSingleImage: () => Map<string, any>;
 	getMultipleImages: () => Map<string, any>;
 	selectCategory: (category: RegionCategory) => void;
@@ -179,6 +180,23 @@ function DungeonEditor(props: Props) {
 			setConfirmMessage("Are you sure you would like to regenerate the contents of all of the regions with this category?");
 			setConfirmArgs({name: name, index: index})
 			setConfirmOpen(true);
+		}
+	}
+
+	const handleAddCategoriesClick = (name: keyof Configuration, index: number) => {
+		if (name as keyof Configuration && map){
+			setAlert({ message: "Click anywhere on the map to add a room. The entrance will be at the clicked location.", active: true, severity: "success" });
+			var category = null;
+			if (name === nameOf<Configuration>("roomCategories")){
+				category = map.config.roomCategories.objects[index];
+			}
+			else{
+				category = map.config.corridorCategories.objects[index];
+			}
+
+			if (category && props.onAddRegion){
+				props.onAddRegion(category)
+			}
 		}
 	}
 
@@ -287,8 +305,9 @@ function DungeonEditor(props: Props) {
 								configuration={map.config} 
 								selectedRoomCategoryIndex={props.selectedRoomCategoryIndex}
 								selectedCorridorCategoryIndex={props.selectedCorridorCategoryIndex}
-								onChange={handleRegionChanges} 
-								onRegenerateClick={handleRegenerateClick} 
+								onChange={handleRegionChanges}
+								onRegenerateClick={handleRegenerateClick}
+								onAddClick={handleAddCategoriesClick}
 								selectCategory={props.selectCategory} />
 						</AccordionDetails>
 					</Accordion>
@@ -305,7 +324,7 @@ function DungeonEditor(props: Props) {
 								map={map}
 								selectedRoomIndex={props.selectedRoomIndex}
 								selectedCorridorIndex={props.selectedCorridorIndex}
-								onChange={handleRegionInstanceChanges} 
+								onChange={handleRegionInstanceChanges}
 								onRegenerateClick={handleRegenerateInstanceClick} 
 								onDeleteClick={handleRegionInstanceDelete}
 								selectInstance={props.selectInstance}/>

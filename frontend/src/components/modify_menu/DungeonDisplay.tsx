@@ -15,9 +15,8 @@ import lodash from 'lodash';
 import { Probabilities } from '../../generator/Probabilities';
 import { RoomCategory } from '../../models/RoomCategory';
 import { CorridorCategory } from '../../models/CorridorCategory';
+import { DungeonGenerator } from '../../generator/DungeonGenerator';
 import { RoomInstance } from '../../models/RoomInstance';
-import { CorridorInstance } from '../../models/CorridorInstance';
-import { IndexKind } from 'typescript';
 
 type Props = {
     map: DungeonMap | null;
@@ -30,10 +29,11 @@ type State = {
 	selectedCategory: RegionCategory | null;
 	selectedRegionIndex: number;
 	selectedCategoryIndex: number;
+	isAddingRegion: boolean;
+	cursor: any;
 }
 
 class DungeonDisplay extends Component {
-		
 	private backgroundRef: React.RefObject<any>;
 	private mainRef: React.RefObject<any>;
 	private hiddenRef: React.RefObject<any>;
@@ -55,6 +55,13 @@ class DungeonDisplay extends Component {
 		margin: "15px"
 	}
 
+	private selectedStyle: CSS.Properties = {
+		gridArea: '1/1',
+		margin: 'auto',
+		zIndex: 4,
+		cursor: this.state && this.state.cursor ? this.state.cursor : 'auto',
+	}
+
 	constructor(props: Props) {
 		super(props)
 		this.props = props
@@ -64,6 +71,8 @@ class DungeonDisplay extends Component {
 			selectedCategory: null,
 			selectedRegionIndex: -1,
 			selectedCategoryIndex: -1,
+			isAddingRegion: false,
+			cursor: 'crosshair',
 		};
 		this.backgroundRef = React.createRef();
 		this.mainRef = React.createRef();
@@ -77,6 +86,7 @@ class DungeonDisplay extends Component {
 		this.mouseUpInMap = this.mouseUpInMap.bind(this);
 		this.onSelectCategory = this.onSelectCategory.bind(this);
 		this.onSelectRegion = this.onSelectRegion.bind(this);
+		this.onAddRegion = this.onAddRegion.bind(this);
 	}
 	
 	private getCanvasStyle(zIndex: number): CSS.Properties {
@@ -129,7 +139,8 @@ class DungeonDisplay extends Component {
 	private setMapState(map: DungeonMap | null){
 		var newMap = null;
 		if (map){
-			newMap = cloneDeep(map);
+			newMap = Object.create(Object.getPrototypeOf(map));
+			Object.assign(newMap, map)
 			newMap.config.roomCategories = this.getAllRoomCats(newMap);
 			newMap.config.corridorCategories = this.getAllCorridorCats(newMap);
 		}
@@ -204,6 +215,8 @@ class DungeonDisplay extends Component {
 			canvas.width = canvasWidth;
 			canvas.height = canvasHeight;
 		})
+		this.selectionRef.current.width = (width) * dungeonMap.tileSize;
+		this.selectionRef.current.height = (height) * dungeonMap.tileSize;
 
 		// TODO: Use background image;
 		contexts[0].fillStyle = '#E0D3AF';
@@ -281,6 +294,7 @@ class DungeonDisplay extends Component {
 		canvases.forEach((canvas) => {
 			this.clearCanvas(canvas);
 		})
+		this.clearCanvas(this.selectionRef.current);
 	}
 	
 	private getTileForEntrance(direction: Direction, type: EntranceType, tileSet: TileSet): any{
@@ -330,24 +344,39 @@ class DungeonDisplay extends Component {
 			return []
 		}
 
-		const selectionCanvas = this.selectionRef.current;
-		if (!selectionCanvas){
-			return []
-		}
-
-		return [backgroundCanvas, mainCanvas, hiddenCanvas, combinedCanvas, selectionCanvas];
+		return [backgroundCanvas, mainCanvas, hiddenCanvas, combinedCanvas];
 	}
 
 	private mouseUpInMap(event: any) {
 		if (this.state.map){
 			var canvas = this.selectionRef.current;
 			let rect = canvas.getBoundingClientRect();
-			let x = Math.floor((event.clientX - rect.left)/this.state.map.tileSize - 1);
-			let y = Math.floor((canvas.height - (event.clientY - rect.top))/this.state.map.tileSize - 1);
+			let x = Math.floor((event.clientX - rect.left)/this.state.map.tileSize);
+			let y = Math.floor((canvas.height - (event.clientY - rect.top))/this.state.map.tileSize);
 
 			var region: RegionInstance | null = null;
 			if (!this.state.map.isOutOfBounds(x, y)){
-				region = this.state.map.getRegionInstance(x, y);
+				if (this.state.isAddingRegion && this.state.selectedCategory){
+					var start = new Coordinates(x, y);
+					if (this.state.selectedCategory.isCorridor){
+						// TODO
+						this.setState({isAddingRegion: false, cursor: 'auto'});
+					}
+					else{
+						var direction = this.state.map.getAvailableDirection(start);
+						var center = Math.floor(this.state.map.getWidth() / 2);
+						region = DungeonGenerator.generateRoom(this.state.selectedCategory as RoomCategory, this.state.map.config.defaultRoomCategory, start, direction ? direction : start.getDirectionTo(new Coordinates(center, center)));
+						var newMap = Object.create(Object.getPrototypeOf(this.state.map)) as DungeonMap;
+						Object.assign(newMap, this.state.map)
+						newMap.addRoom(region as RoomInstance);
+						DungeonGenerator.generateEntrancesForNeighbours(region, newMap);
+						this.setState({isAddingRegion: false, cursor: 'auto', map: newMap});
+						this.drawDungeon(newMap);
+					}
+				}
+				else {
+					region = this.state.map.getRegionInstance(x, y);
+				}
 			}
 
 			if (region !== this.state.selectedRegion){
@@ -373,8 +402,8 @@ class DungeonDisplay extends Component {
 			var canvas = this.selectionRef.current;
 			var context = canvas.getContext("2d");
 			region.locations.forEach((location) => {
-				var startx = map.tileSize * (location.x + 1);
-				var starty = canvas.height - map.tileSize * (location.y + 2);
+				var startx = map.tileSize * (location.x);
+				var starty = canvas.height - map.tileSize * (location.y + 1);
 				if (region && !map.isOutOfBounds(location.x, location.y) && lodash.isEqual(map.getRegionInstance(location.x, location.y), region)){
 					context.fillStyle = "rgba(255, 255, 255, 0.5)";
 					context.fillRect(startx, starty, map.tileSize, map.tileSize);
@@ -436,6 +465,20 @@ class DungeonDisplay extends Component {
 		}
 	}
 
+	private onAddRegion(category: RegionCategory){var index = undefined;
+		var index = undefined;
+		if (category && this.state.map && this.state.map.config){
+			if (category.isCorridor){
+				index = this.state.map.config.corridorCategories.objects.findIndex((x) => lodash.isEqual(x, category));
+			}
+			else{
+				index = this.state.map.config.roomCategories.objects.findIndex((x) => lodash.isEqual(x, category));
+			}
+			this.selectRegionCategory(category);
+		}
+		this.setState({isAddingRegion: true, cursor: 'crosshair', selectedCategory: category, selectedRegion: null, selectedRegionIndex: undefined, selectedCategoryIndex: index});
+	}
+
 	private clearCanvas(canvas: any){
 		var context = canvas.getContext("2d");
 		context.clearRect(0, 0, canvas.width, canvas.height);
@@ -446,13 +489,14 @@ class DungeonDisplay extends Component {
 			<Grid 
 				container 
 				direction="row"
-				alignItems="center">
+				alignItems="center"
+				justify="center">
 					<div onMouseUp={this.mouseUpInMap}>
 						<div style={{...this.containerStyle, ...this.spacedStyle}}>
 							<canvas style={this.getCanvasStyle(1)} ref={this.backgroundRef} {...this.props.canvasProps}/>
 							<canvas style={this.getCanvasStyle(2)} ref={this.mainRef} {...this.props.canvasProps}/>
 							<canvas style={this.getCanvasStyle(3)} ref={this.hiddenRef} {...this.props.canvasProps}/>
-							<canvas style={this.getCanvasStyle(4)} ref={this.selectionRef} {...this.props.canvasProps}/>
+							<canvas style={this.selectedStyle} ref={this.selectionRef} {...this.props.canvasProps}/>
 							<canvas style={this.combinedStyle} ref={this.combinedRef} {...this.props.canvasProps}/>
 						</div>
 					</div>
@@ -466,9 +510,10 @@ class DungeonDisplay extends Component {
 							map={this.state.map} 
 							getSingleImage={this.getSingleImage} 
 							getMultipleImages={this.getMultipleImages} 
-							onChange={this.onChange} 
+							onChange={this.onChange}
+							onAddRegion={this.onAddRegion}
 							selectCategory={this.onSelectCategory} 
-							selectInstance={this.onSelectRegion}></DungeonEditor>
+							selectInstance={this.onSelectRegion}/>
 					</div>
 			</Grid>
 		</div>
