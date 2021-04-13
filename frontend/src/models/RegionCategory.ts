@@ -34,8 +34,7 @@ export class RegionCategory {
 		this.tileSets = new Probabilities<TileSet>(null);
 	}
 
-	// TODO: Tilesets
 	canBeUsedAsDefault() : boolean {
-		return Boolean(this.monsters && this.states && this.items && this.entranceTypes && this.traps);
+		return Boolean(this.monsters && this.states && this.items && this.entranceTypes && this.traps && this.tileSets);
 	}
 }
