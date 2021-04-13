@@ -110,7 +110,6 @@ def saveReference(data, collection_ref, premade_collection_ref):
 # REQ-37: Save.CorridorCategory - The system should allow the user to save a Corridor Category that they have created in the database.
 def saveCategory(categoryData, collection_ref, users_collection, user_id):
     categoryData, dbCategory = getDBID(categoryData, collection_ref)
-    #Also update db for Monster, items, traps TODO
     # Save monster references in Monsters collection in DB
     monsters = categoryData['monsters']
     monster_collection = users_collection.document(user_id).collection("Monsters")
