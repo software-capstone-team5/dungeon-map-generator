@@ -97,11 +97,22 @@ def saveTileSet(idToken):
 			service = buildService(access_token, refresh_token)
 			result = saveTileSetDB(user_id, name)
 			if not result['valid']:
-				return jsonify(result), 200
+				return jsonify(result), 400
+			dmg_folder = findFolder(access_token, refresh_token, "DMG Tilesets")
+			# if not dmg_folder:
+			# 	createFolder(access_token, refresh_token, "DMG Tilesets", [])
+			child_folder = createFolder(access_token, refresh_token, name, dmg_folder).get('id')
+			# tileset_folder = findFolder(access_token, refresh_token, "DMG Tilesets/" + name)
+			# if not tileset_folder:
+			# 	return jsonify({ "valid": False, "response": child_folder}), 400
 			for image in images:
 				image.save("temp.jpg")
 				# dmg_folder = findFolder(access_token, refresh_token, "DMG Tilesets")
-				file_metadata = {'name': image.filename, 'mimeType': 'image/jpeg'}
+				file_metadata = {
+					'name': image.filename,
+					'mimeType': 'image/jpeg',
+					'parents': [child_folder]
+				}
 				media = MediaFileUpload('temp.jpg', mimetype = 'image/jpeg')
 
 				file = service.files().create(body=file_metadata,

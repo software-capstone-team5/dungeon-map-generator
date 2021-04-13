@@ -375,7 +375,7 @@ export class DB {
                 return { valid: false, "response": "Not Logged In" };
             }
             var formData = new FormData();
-            formData.append('name', 'Temp'); // Replace Temp with Tileset.name or whatever
+            formData.append('name', 'Test'); // Replace Temp with Tileset.name or whatever
             files.forEach(file => formData.append('images', file));
             console.log(files)
             const requestOptions = {
