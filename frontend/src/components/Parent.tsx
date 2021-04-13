@@ -2,7 +2,7 @@ import React from 'react';
 import { Button } from '@material-ui/core';
 import { Configuration } from '../models/Configuration';
 import { DungeonGenerator } from '../generator/DungeonGenerator';
-import DungeonDisplay from './DungeonDisplay';
+import DungeonDisplay from './modify_menu/DungeonDisplay';
 import { DungeonMap } from '../models/DungeonMap';
 import { Probabilities } from '../generator/Probabilities';
 import { TileSet } from '../models/TileSet';

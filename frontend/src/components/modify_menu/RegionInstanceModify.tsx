@@ -1,13 +1,13 @@
 import { makeStyles } from '@material-ui/core';
 import FormLabel from '@material-ui/core/FormLabel';
 import { memo, useState } from 'react';
-import { DungeonMap } from '../models/DungeonMap';
-import { RegionInstance } from '../models/RegionInstance';
-import { RoomInstance } from '../models/RoomInstance';
-import { nameOf, valueOf } from '../utils/util';
-import NameList from "./common/NameList";
+import { DungeonMap } from '../../models/DungeonMap';
+import { RegionInstance } from '../../models/RegionInstance';
+import { RoomInstance } from '../../models/RoomInstance';
+import { nameOf, valueOf } from '../../utils/util';
+import NameList from "../common/NameList";
 import RoomEditor from './RoomEditor';
-import { CorridorInstance } from '../models/CorridorInstance';
+import { CorridorInstance } from '../../models/CorridorInstance';
 import CorridorEditor from './CorridorEditor';
 
 const useStyles = makeStyles({

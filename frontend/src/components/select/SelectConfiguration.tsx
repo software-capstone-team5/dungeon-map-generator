@@ -6,10 +6,10 @@ import DialogContent from '@material-ui/core/DialogContent';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import differenceWith from 'lodash/differenceWith';
 import { useEffect, useState } from 'react';
-import DB from '../DB';
-import { Configuration } from '../models/Configuration';
-import { compareByID } from '../utils/util';
-import NameList from './common/NameList';
+import DB from '../../DB';
+import { Configuration } from '../../models/Configuration';
+import { compareByID } from '../../utils/util';
+import NameList from '../common/NameList';
 
 type Props = {
   open: boolean;

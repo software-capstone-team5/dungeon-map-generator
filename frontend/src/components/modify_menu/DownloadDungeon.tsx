@@ -4,7 +4,7 @@ import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import JSZip from 'jszip';
-import { DungeonMap } from '../models/DungeonMap';
+import { DungeonMap } from '../../models/DungeonMap';
 
 type Props = {
 	open: boolean;

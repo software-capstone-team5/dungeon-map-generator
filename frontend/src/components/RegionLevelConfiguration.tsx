@@ -14,8 +14,8 @@ import NameList from "./common/NameList";
 import ProbabilityNameList from "./common/ProbabilityNameList";
 import CorridorCategoryEditor from './CorridorCategoryEditor';
 import RoomCategoryEditor from './RoomCategoryEditor';
-import SelectCorridorCategory from './SelectCorridorCategory';
-import SelectRoomCategory from './SelectRoomCategory';
+import SelectCorridorCategory from './select/SelectCorridorCategory';
+import SelectRoomCategory from './select/SelectRoomCategory';
 
 
 const useStyles = makeStyles({

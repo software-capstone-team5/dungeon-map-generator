@@ -13,25 +13,26 @@ import Typography from '@material-ui/core/Typography';
 import AddBoxIcon from '@material-ui/icons/AddBox';
 import cloneDeep from 'lodash/cloneDeep';
 import { useState } from 'react';
-import Authenticator from '../Authenticator';
-import { MonsterState } from '../constants/MonsterState';
-import { Probabilities } from '../generator/Probabilities';
-import { Item } from '../models/Item';
-import { Monster } from '../models/Monster';
-import { CorridorInstance } from '../models/CorridorInstance';
-import { TileSet } from '../models/TileSet';
-import { Trap } from '../models/Trap';
-import { nameOf, valueOf } from '../utils/util';
-import EnumRadio from './common/EnumRadio';
-import NameList from './common/NameList';
-import ItemEditor from './ItemEditor';
-import MonsterEditor from './MonsterEditor';
-import SelectItem from './SelectItem';
-import SelectMonster from './SelectMonster';
-import SelectTileSet from './SelectTileSet';
-import SelectTrap from './SelectTrap';
-import TrapEditor from './TrapEditor';
-import { CorridorWidth } from '../constants/CorridorWidth';
+import Authenticator from '../../Authenticator';
+import { MonsterState } from '../../constants/MonsterState';
+import { RoomShape } from '../../constants/RoomShape';
+import { Size } from "../../constants/Size";
+import { Probabilities } from '../../generator/Probabilities';
+import { Item } from '../../models/Item';
+import { Monster } from '../../models/Monster';
+import { RoomInstance } from '../../models/RoomInstance';
+import { TileSet } from '../../models/TileSet';
+import { Trap } from '../../models/Trap';
+import { nameOf, valueOf } from '../../utils/util';
+import EnumRadio from '../common/EnumRadio';
+import NameList from '../common/NameList';
+import ItemEditor from '../ItemEditor';
+import MonsterEditor from '../MonsterEditor';
+import SelectItem from '../select/SelectItem';
+import SelectMonster from '../select/SelectMonster';
+import SelectTileSet from '../select/SelectTileSet';
+import SelectTrap from '../select/SelectTrap';
+import TrapEditor from '../TrapEditor';
 
 
 const useStyles = makeStyles((theme) => ({
@@ -62,33 +63,33 @@ const useStyles = makeStyles((theme) => ({
 type Props = {
 	open: boolean;
 	viewOnly?: boolean;
-	corridor?: CorridorInstance;
+	room?: RoomInstance;
 	savePhrase?: string;
 	onCancelClick: () => void;
-	onSave?: (corridor: CorridorInstance) => void;
+	onSave?: (room: RoomInstance) => void;
 }
 
 type Errors = {
 	name: boolean;
 }
 
-CorridorEditor.defaultProps = {
+RoomEditor.defaultProps = {
 	viewOnly: false,
 }
 
-export default function CorridorEditor(props: Props) {
+export default function RoomEditor(props: Props) {
 	const editMode: boolean = true;
 	const classes = useStyles();
 
-	const [corridor, setCorridor] = useState(() => {
-		if (props.corridor !== undefined) {
-			return cloneDeep(props.corridor);
+	const [room, setRoom] = useState(() => {
+		if (props.room !== undefined) {
+			return cloneDeep(props.room);
 		} else {
-			var corridorInstance = new CorridorInstance();
+			var roomInstance = new RoomInstance();
 			if (!Authenticator.isLoggedIn()) {
-				corridorInstance.tileSet = Probabilities.buildUniform([TileSet.getDefault()]).randPickOne()!;
+				roomInstance.tileSet = Probabilities.buildUniform([TileSet.getDefault()]).randPickOne()!;
 			}
-			return corridorInstance;
+			return roomInstance;
 		}
 	});
 
@@ -111,20 +112,20 @@ export default function CorridorEditor(props: Props) {
 
 	const [selectTileSetDialogOpen, setSelectTileSetDialogOpen] = useState<boolean>(false);
 
-	const handleChange = (name: keyof CorridorInstance, value: valueOf<CorridorInstance>) => {
-		setCorridor(Object.assign(Object.create(Object.getPrototypeOf(corridor)), corridor, { [name]: value }));
+	const handleChange = (name: keyof RoomInstance, value: valueOf<RoomInstance>) => {
+		setRoom(Object.assign(Object.create(Object.getPrototypeOf(room)), room, { [name]: value }));
 	}
 
-	const handleDeleteClick = (name: keyof CorridorInstance, index: number) => {
-		var updatedList = Object.create(Object.getPrototypeOf(corridor[name]));
-		updatedList = Object.assign(updatedList, corridor[name]);
+	const handleDeleteClick = (name: keyof RoomInstance, index: number) => {
+		var updatedList = Object.create(Object.getPrototypeOf(room[name]));
+		updatedList = Object.assign(updatedList, room[name]);
 		updatedList.remove(index);
 		handleChange(name, updatedList);
 	}
 
-	const handleSelect = (name: keyof CorridorInstance, item: any) => {
-		var updatedList = Object.create(Object.getPrototypeOf(corridor[name]));
-		updatedList = Object.assign(updatedList, corridor[name]);
+	const handleSelect = (name: keyof RoomInstance, item: any) => {
+		var updatedList = Object.create(Object.getPrototypeOf(room[name]));
+		updatedList = Object.assign(updatedList, room[name]);
 		updatedList.add(item);
 		handleChange(name, updatedList);
 		closeSelectDialogs();
@@ -147,12 +148,12 @@ export default function CorridorEditor(props: Props) {
 	}
 
 	const handleMonsterSave = (newMonster: Monster) => {
-		var updatedList = corridor.monsters.map((x) => x);
+		var updatedList = room.monsters.map((x) => x);
 		var index = updatedList.indexOf(monsterToEdit!);
 		if (index > -1){
 			updatedList[index] = newMonster;
 		}
-		handleChange(nameOf<CorridorInstance>("monsters"), updatedList);
+		handleChange(nameOf<RoomInstance>("monsters"), updatedList);
 		setMonsterEditorOpen(false);
 		setMonsterToEdit(undefined);
 	}
@@ -167,12 +168,12 @@ export default function CorridorEditor(props: Props) {
 	}
 
 	const handleItemSave = (newItem: Item) => {
-		var updatedList = corridor.items.map((x) => x);
+		var updatedList = room.items.map((x) => x);
 		var index = updatedList.indexOf(itemToEdit!);
 		if (index > -1){
 			updatedList[index] = newItem;
 		}
-		handleChange(nameOf<CorridorInstance>("items"), updatedList);
+		handleChange(nameOf<RoomInstance>("items"), updatedList);
 		setItemEditorOpen(false);
 		setItemToEdit(undefined);
 	}
@@ -187,10 +188,10 @@ export default function CorridorEditor(props: Props) {
 	}
 
 	const handleTrapSave = (newTrap: Trap) => {
-		var updatedList = Object.create(Object.getPrototypeOf(corridor.traps) as Trap[]);
-		updatedList = Object.assign(updatedList, corridor.traps);
+		var updatedList = Object.create(Object.getPrototypeOf(room.traps) as Trap[]);
+		updatedList = Object.assign(updatedList, room.traps);
 		updatedList.updateObject(trapToEdit!, newTrap);
-		handleChange(nameOf<CorridorInstance>("traps"), updatedList);
+		handleChange(nameOf<RoomInstance>("traps"), updatedList);
 		setTrapEditorOpen(false);
 		setTrapToEdit(undefined);
 	}
@@ -204,19 +205,19 @@ export default function CorridorEditor(props: Props) {
 	}
 
 	const handleSaveClick = async () => {
-		if (!corridor.name) {
+		if (!room.name) {
 			return;
 		}
 
-		props.onSave!(corridor);
+		props.onSave!(room);
 	}
 
 	const handleClose = () => {
-		setCorridor(new CorridorInstance());
+		setRoom(new RoomInstance());
 	}
 
 	const handleNameBlur = () => {
-		if (!corridor.name) {
+		if (!room.name) {
 		  setErrors({
 			...errors,
 			name: true
@@ -233,7 +234,7 @@ export default function CorridorEditor(props: Props) {
 						disableTypography
 						id="form-dialog-title">
 						<Grid container alignItems="center">
-							<Typography component={'span'} variant="h6">{viewMode ? "Edit" : "Add"} Corridor {corridor.name} </Typography>
+							<Typography component={'span'} variant="h6">{viewMode ? "Edit" : "Add"} Room {room.name} </Typography>
 						</Grid>
 					</DialogTitle>
 					<DialogContent>
@@ -251,75 +252,82 @@ export default function CorridorEditor(props: Props) {
 								shrink: true,
 							}}
 							fullWidth
-							value={corridor.name}
-							onChange={(e) => handleChange(nameOf<CorridorInstance>("name"), e.target.value)}
+							value={room.name}
+							onChange={(e) => handleChange(nameOf<RoomInstance>("name"), e.target.value)}
 							/>
-						<EnumRadio<CorridorWidth>
-							label="Width"
-							enum={CorridorWidth}
-							value={corridor.width}
+						<EnumRadio<Size>
+							label="Size"
+							enum={Size}
+							value={room.size}
 							disabled={viewMode}
-							onChange={(value: CorridorWidth) => handleChange(nameOf<CorridorInstance>("width"), value)}
+							onChange={(value: Size) => handleChange(nameOf<RoomInstance>("size"), value)}
+						/>
+						<EnumRadio<RoomShape>
+							label="Room Shape"
+							enum={RoomShape}
+							disabled={viewMode}
+							value={room.shape}
+							onChange={(value: RoomShape) => handleChange(nameOf<RoomInstance>("shape"), value)}
 						/>
 						<div className={classes.listLabel}>
-							<FormControl disabled={viewMode || !Boolean(corridor.tileSet) || !Authenticator.isLoggedIn()}>
-								<FormLabel>Tile Sets</FormLabel>
+							<FormControl disabled={viewMode || !Boolean(room.tileSet) || !Authenticator.isLoggedIn()}>
+								<FormLabel>Tile Set</FormLabel>
 							</FormControl>
-							<IconButton disabled={viewMode || !Boolean(corridor.tileSet) || !Authenticator.isLoggedIn()} onClick={handleAddTileSetClick} aria-label="add" color="primary">
+							<IconButton disabled={viewMode || !Boolean(room.tileSet) || !Authenticator.isLoggedIn()} onClick={handleAddTileSetClick} aria-label="add" color="primary">
 								<AddBoxIcon />
 							</IconButton>
 						</div>
 						<div className={classes.listLabel}>
-							<FormControl disabled={viewMode || !Boolean(corridor.monsters)}>
+							<FormControl disabled={viewMode || !Boolean(room.monsters)}>
 								<FormLabel>Monsters</FormLabel>
 							</FormControl>
-							<IconButton disabled={viewMode || !Boolean(corridor.monsters)} onClick={handleAddMonsterClick} aria-label="add" color="primary">
+							<IconButton disabled={viewMode || !Boolean(room.monsters)} onClick={handleAddMonsterClick} aria-label="add" color="primary">
 								<AddBoxIcon />
 							</IconButton>
 						</div>
 						<NameList
 							showDelete={!viewMode}
 							disabled={viewMode}
-							list={corridor.monsters}
+							list={room.monsters}
 							onClick={handleMonsterClick}
-							onDeleteClick={(index) => handleDeleteClick(nameOf<CorridorInstance>("monsters"), index)}
+							onDeleteClick={(index) => handleDeleteClick(nameOf<RoomInstance>("monsters"), index)}
 						/>
 						<EnumRadio<MonsterState>
 							label="Monster State"
 							enum={MonsterState}
 							disabled={viewMode}
-							value={corridor.state}
-							onChange={(value: MonsterState) => handleChange(nameOf<CorridorInstance>("state"), value)}
+							value={room.state}
+							onChange={(value: MonsterState) => handleChange(nameOf<RoomInstance>("state"), value)}
 						/>
 						<div className={classes.listLabel}>
-							<FormControl disabled={viewMode || !Boolean(corridor.items)}>
+							<FormControl disabled={viewMode || !Boolean(room.items)}>
 								<FormLabel>Items</FormLabel>
 							</FormControl>
-							<IconButton disabled={viewMode || !Boolean(corridor.items)} onClick={handleAddItemClick} aria-label="add" color="primary">
+							<IconButton disabled={viewMode || !Boolean(room.items)} onClick={handleAddItemClick} aria-label="add" color="primary">
 								<AddBoxIcon />
 							</IconButton>
 						</div>
 						<NameList
 							showDelete={!viewMode}
 							disabled={viewMode}
-							list={corridor.items}
+							list={room.items}
 							onClick={handleItemClick}
-							onDeleteClick={(index) => handleDeleteClick(nameOf<CorridorInstance>("items"), index)}
+							onDeleteClick={(index) => handleDeleteClick(nameOf<RoomInstance>("items"), index)}
 						/>
 						<div className={classes.listLabel}>
-							<FormControl disabled={viewMode || !Boolean(corridor.traps)}>
+							<FormControl disabled={viewMode || !Boolean(room.traps)}>
 								<FormLabel>Traps</FormLabel>
 							</FormControl>
-							<IconButton disabled={viewMode || !Boolean(corridor.traps)} onClick={handleAddTrapClick} aria-label="add" color="primary">
+							<IconButton disabled={viewMode || !Boolean(room.traps)} onClick={handleAddTrapClick} aria-label="add" color="primary">
 								<AddBoxIcon />
 							</IconButton>
 						</div>
 						<NameList
 							showDelete={!viewMode}
 							disabled={viewMode}
-							list={corridor.traps}
+							list={room.traps}
 							onClick={handleTrapClick}
-							onDeleteClick={(index) => handleDeleteClick(nameOf<CorridorInstance>("traps"), index)}
+							onDeleteClick={(index) => handleDeleteClick(nameOf<RoomInstance>("traps"), index)}
 						/>
 						// TODO: Entrances Here
 						{/*<EntranceEditor />*/}
@@ -341,8 +349,8 @@ export default function CorridorEditor(props: Props) {
 			{selectMonsterDialogOpen &&
 				<SelectMonster
 					open={selectMonsterDialogOpen}
-					exclude={corridor.monsters ? corridor.monsters : []}
-					onSelect={(m) => handleSelect(nameOf<CorridorInstance>("monsters"), m)}
+					exclude={room.monsters ? room.monsters : []}
+					onSelect={(m) => handleSelect(nameOf<RoomInstance>("monsters"), m)}
 					onCancelClick={() => setSelectMonsterDialogOpen(false)}
 				/>
 			}
@@ -358,8 +366,8 @@ export default function CorridorEditor(props: Props) {
 			{selectItemDialogOpen &&
 				<SelectItem
 					open={selectItemDialogOpen}
-					exclude={corridor.items ? corridor.items : []}
-					onSelect={(i) => handleSelect(nameOf<CorridorInstance>("items"), i)}
+					exclude={room.items ? room.items : []}
+					onSelect={(i) => handleSelect(nameOf<RoomInstance>("items"), i)}
 					onCancelClick={() => setSelectItemDialogOpen(false)}
 				/>
 			}
@@ -375,8 +383,8 @@ export default function CorridorEditor(props: Props) {
 			{selectTrapDialogOpen &&
 				<SelectTrap
 					open={selectTrapDialogOpen}
-					exclude={corridor.traps ? corridor.traps : []}
-					onSelect={(i) => handleSelect(nameOf<CorridorInstance>("traps"), i)}
+					exclude={room.traps ? room.traps : []}
+					onSelect={(i) => handleSelect(nameOf<RoomInstance>("traps"), i)}
 					onCancelClick={() => setSelectTrapDialogOpen(false)}
 				/>
 			}
@@ -392,8 +400,8 @@ export default function CorridorEditor(props: Props) {
 			{selectTileSetDialogOpen &&
 				<SelectTileSet
 					open={selectTileSetDialogOpen}
-					exclude={[corridor.tileSet]}
-					onSelect={(i) => handleSelect(nameOf<CorridorInstance>("tileSet"), i)}
+					exclude={[room.tileSet]}
+					onSelect={(i) => handleSelect(nameOf<RoomInstance>("tileSet"), i)}
 					onCancelClick={() => setSelectTileSetDialogOpen(false)}
 				/>
 			}

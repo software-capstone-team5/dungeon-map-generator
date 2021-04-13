@@ -35,10 +35,10 @@ import EnumProbabilityText from './common/EnumProbabilityText';
 import ProbabilityNameList from './common/ProbabilityNameList';
 import ItemEditor from './ItemEditor';
 import MonsterEditor from './MonsterEditor';
-import SelectItem from './SelectItem';
-import SelectMonster from './SelectMonster';
-import SelectTileSet from './SelectTileSet';
-import SelectTrap from './SelectTrap';
+import SelectItem from './select/SelectItem';
+import SelectMonster from './select/SelectMonster';
+import SelectTileSet from './select/SelectTileSet';
+import SelectTrap from './select/SelectTrap';
 import TrapEditor from './TrapEditor';
 
 

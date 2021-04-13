@@ -8,24 +8,24 @@ import { makeStyles, Theme, withStyles } from '@material-ui/core/styles';
 import MuiAlert, { AlertProps, Color } from '@material-ui/lab/Alert';
 import cloneDeep from 'lodash/cloneDeep';
 import React, { useEffect, useState } from 'react';
-import { DungeonMap } from '../models/DungeonMap';
+import { DungeonMap } from '../../models/DungeonMap';
 import DownloadDungeon from './DownloadDungeon';
-import DifficultySlider from './DifficultySlider';
+import DifficultySlider from '../DifficultySlider';
 import Typography from '@material-ui/core/Typography';
 import AccordionDetails from '@material-ui/core/AccordionDetails';
-import { DungeonGenerator } from '../generator/DungeonGenerator';
-import { Configuration } from '../models/Configuration';
-import { nameOf, valueOf } from '../utils/util';
-import { RegionCategory } from '../models/RegionCategory';
+import { DungeonGenerator } from '../../generator/DungeonGenerator';
+import { Configuration } from '../../models/Configuration';
+import { nameOf, valueOf } from '../../utils/util';
+import { RegionCategory } from '../../models/RegionCategory';
 import ConfirmChange from './ConfirmChange';
 import RegionCategoryModify from './RegionCategoryModify';
 import lodash from 'lodash';
-import { RoomInstance } from '../models/RoomInstance';
-import { RoomCategory } from '../models/RoomCategory';
-import { CorridorInstance } from '../models/CorridorInstance';
-import { Probabilities } from '../generator/Probabilities';
+import { RoomInstance } from '../../models/RoomInstance';
+import { RoomCategory } from '../../models/RoomCategory';
+import { CorridorInstance } from '../../models/CorridorInstance';
+import { Probabilities } from '../../generator/Probabilities';
 import RegionInstanceModify from './RegionInstanceModify';
-import { RegionInstance } from '../models/RegionInstance';
+import { RegionInstance } from '../../models/RegionInstance';
 
 const styles = (theme: Theme) => ({
     root: {

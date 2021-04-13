@@ -1,20 +1,20 @@
 import React, { Component } from 'react'
-import { Direction } from '../constants/Direction';
-import { EntranceType } from '../constants/EntranceType';
-import { TileType } from '../constants/TileType';
-import { Coordinates } from '../models/Coordinates';
-import { DungeonMap } from '../models/DungeonMap';
-import { RegionInstance } from '../models/RegionInstance';
+import { Direction } from '../../constants/Direction';
+import { EntranceType } from '../../constants/EntranceType';
+import { TileType } from '../../constants/TileType';
+import { Coordinates } from '../../models/Coordinates';
+import { DungeonMap } from '../../models/DungeonMap';
+import { RegionInstance } from '../../models/RegionInstance';
 import CSS from 'csstype';
 import DungeonEditor from './DungeonEditor';
 import { Grid } from '@material-ui/core';
 import cloneDeep from 'lodash/cloneDeep';
-import { RegionCategory } from '../models/RegionCategory';
-import { TileSet } from '../models/TileSet';
+import { RegionCategory } from '../../models/RegionCategory';
+import { TileSet } from '../../models/TileSet';
 import lodash from 'lodash';
-import { Probabilities } from '../generator/Probabilities';
-import { RoomCategory } from '../models/RoomCategory';
-import { CorridorCategory } from '../models/CorridorCategory';
+import { Probabilities } from '../../generator/Probabilities';
+import { RoomCategory } from '../../models/RoomCategory';
+import { CorridorCategory } from '../../models/CorridorCategory';
 
 type Props = {
     map: DungeonMap | null;

@@ -11,9 +11,9 @@ import { useEffect, useState } from 'react';
 import './App.css';
 import { Authenticator } from './Authenticator';
 import ConfigurationEditor from "./components/ConfigurationEditor";
-import DungeonDisplay from './components/DungeonDisplay';
+import DungeonDisplay from './components/modify_menu/DungeonDisplay';
 import ImportMonsters from './components/ImportMonsters';
-import SelectConfiguration from "./components/SelectConfiguration";
+import SelectConfiguration from "./components/select/SelectConfiguration";
 import TileSetEditor from './components/TileSetEditor';
 import { TileType } from './constants/TileType';
 import DB from './DB';
@@ -155,6 +155,7 @@ function App() {
       config.defaultRoomCategory.tileSets = tileSets;
       config.defaultCorridorCategory.tileSets = tileSets;
       var dungeonMap = DungeonGenerator.generateDungeon(config);
+
       // updateAndRetrieveTileSets(dungeonMap);
       setDungeonMap(dungeonMap);
     }

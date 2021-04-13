@@ -6,11 +6,11 @@ import DialogContent from '@material-ui/core/DialogContent';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import differenceWith from 'lodash/differenceWith';
 import { useEffect, useState } from 'react';
-import DB from '../DB';
-import { RoomCategory } from '../models/RoomCategory';
-import { compareByID } from '../utils/util';
-import NameList from './common/NameList';
-import RoomCategoryEditor from './RoomCategoryEditor';
+import DB from '../../DB';
+import { RoomCategory } from '../../models/RoomCategory';
+import { compareByID } from '../../utils/util';
+import NameList from '../common/NameList';
+import RoomCategoryEditor from '../RoomCategoryEditor';
 
 type Props = {
   open: boolean;

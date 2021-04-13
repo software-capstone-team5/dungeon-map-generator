@@ -3,17 +3,17 @@ import FormLabel from '@material-ui/core/FormLabel';
 import IconButton from '@material-ui/core/IconButton';
 import AddBoxIcon from '@material-ui/icons/AddBox';
 import { memo, useState } from 'react';
-import { Probabilities } from '../generator/Probabilities';
-import { Configuration } from '../models/Configuration';
-import { CorridorCategory } from '../models/CorridorCategory';
-import { RegionCategory } from '../models/RegionCategory';
-import { RoomCategory } from '../models/RoomCategory';
-import { nameOf, valueOf } from '../utils/util';
-import NameList from "./common/NameList";
-import CorridorCategoryEditor from './CorridorCategoryEditor';
-import RoomCategoryEditor from './RoomCategoryEditor';
-import SelectCorridorCategory from './SelectCorridorCategory';
-import SelectRoomCategory from './SelectRoomCategory';
+import { Probabilities } from '../../generator/Probabilities';
+import { Configuration } from '../../models/Configuration';
+import { CorridorCategory } from '../../models/CorridorCategory';
+import { RegionCategory } from '../../models/RegionCategory';
+import { RoomCategory } from '../../models/RoomCategory';
+import { nameOf, valueOf } from '../../utils/util';
+import NameList from "../common/NameList";
+import CorridorCategoryEditor from '../CorridorCategoryEditor';
+import RoomCategoryEditor from '../RoomCategoryEditor';
+import SelectCorridorCategory from '../select/SelectCorridorCategory';
+import SelectRoomCategory from '../select/SelectRoomCategory';
 
 const useStyles = makeStyles({
     listLabel: {
