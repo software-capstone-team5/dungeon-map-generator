@@ -14,12 +14,16 @@ import DifficultySlider from './DifficultySlider';
 import Typography from '@material-ui/core/Typography';
 import AccordionDetails from '@material-ui/core/AccordionDetails';
 import { DungeonGenerator } from '../generator/DungeonGenerator';
-import RegionLevelConfiguration from './RegionLevelConfiguration';
 import { Configuration } from '../models/Configuration';
-import { valueOf } from '../utils/util';
+import { nameOf, valueOf } from '../utils/util';
 import { RegionCategory } from '../models/RegionCategory';
 import ConfirmChange from './ConfirmChange';
 import RegionLevelModify from './RegionLevelModify';
+import lodash from 'lodash';
+import { RoomInstance } from '../models/RoomInstance';
+import { RoomCategory } from '../models/RoomCategory';
+import { CorridorInstance } from '../models/CorridorInstance';
+import { Probabilities } from '../generator/Probabilities';
 
 const styles = (theme: Theme) => ({
     root: {
@@ -89,22 +93,10 @@ function DungeonEditor(props: Props) {
     });
 	const [confirmOpen, setConfirmOpen] = useState(false);
 	const [confirmMessage, setConfirmMessage] = useState("");
+	const [confirmArgs, setConfirmArgs] = useState({name: nameOf<Configuration>("corridorCategories"), index: 0});
+	const [confirmFunction, setConfirmFunction] = useState<(decision: boolean, args: {name: keyof Configuration, index: number}) => void>();
     const [isDownloading, setIsDownloading] = useState(false);
-    const [viewMode, setViewMode] = useState(() => {
-        return false;
-        // if (props.configuration.default) {
-        //     return true;
-        // } else {
-        //     return false
-        // }
-    });
-    const [map, setMap] = useState<DungeonMap | null>(() => {
-        if (props.map) {
-            return cloneDeep(props.map);
-        } else {
-            return null;
-        }
-    });
+    const [map, setMap] = useState<DungeonMap | null>(null);
 
     useEffect(() => {
         if (props.map) {
@@ -127,7 +119,7 @@ function DungeonEditor(props: Props) {
 			var newMap = Object.create(Object.getPrototypeOf(map));
 			Object.assign(newMap, map);
 
-			if (changes.difficulty != map.config.difficulty) {
+			if (changes.difficulty !== map.config.difficulty) {
 				DungeonGenerator.generateEncounters(newMap, newMap.config);
 			}
 
@@ -156,12 +148,36 @@ function DungeonEditor(props: Props) {
 		setRegionChanges(newChanges);
 	}
 
-	const handleConfirmDecision = (decision: boolean) => {
-		if (decision) {
-			// TODO
+	const handleRegenerateClick = (name: keyof Configuration, index: number) => {
+		setConfirmFunction(() => confirmRegenerate);
+		setConfirmMessage("Are you sure you would like to regenerate all of the regions with this category?");
+		setConfirmArgs({name: name, index: index})
+		setConfirmOpen(true);
+	}
+
+	const confirmRegenerate = (decision: boolean, args: {name: keyof Configuration, index: number}) => {
+		if (decision){
+			var newMap = Object.create(Object.getPrototypeOf(map)) as DungeonMap;
+			Object.assign(newMap, map);
+			if (args.name === nameOf<Configuration>("roomCategories")){
+				var category = (newMap.config[args.name] as Probabilities<RoomCategory>).objects[args.index];
+				newMap.rooms.forEach((room: RoomInstance, index: number) => {
+					if (lodash.isEqual(room.category, category)){
+						newMap.rooms[index] = Object.assign(room, DungeonGenerator.regenerateRegion(room, category, newMap.config));
+					}
+				});
+			}
+			else{
+				var category = (newMap.config[args.name] as Probabilities<RoomCategory>).objects[args.index];
+				newMap.corridors.forEach((corridor: CorridorInstance, index: number) => {
+					if (lodash.isEqual(corridor.category, category)){
+						newMap.corridors[index] = Object.assign(corridor, DungeonGenerator.regenerateRegion(corridor, category, newMap.config));
+					}
+				});
+			}
+			props.onChange(newMap);
 		}
-		
-		setRegionChanges({} as any);
+		setConfirmOpen(false);
 	}
 
     return (
@@ -194,7 +210,7 @@ function DungeonEditor(props: Props) {
 							<Typography>Region Level Options</Typography>
 						</AccordionSummary>
 						<AccordionDetails>
-							<RegionLevelModify isSaving={isDownloading} configuration={map.config} onChange={handleRegionChanges} selectCategory={props.selectCategory} savePhrase={"Apply"}/>
+							<RegionLevelModify isSaving={isDownloading} configuration={map.config} onChange={handleRegionChanges} onRegenerateClick={handleRegenerateClick} selectCategory={props.selectCategory} savePhrase={"Apply"}/>
 						</AccordionDetails>
 					</Accordion>
 			   </Paper>
@@ -207,11 +223,13 @@ function DungeonEditor(props: Props) {
 				   </div>
 			   </Grid>
 		   </div>}
-		   {confirmOpen && 
+			{confirmOpen &&
 				<ConfirmChange
 					open={confirmOpen}
 					message={confirmMessage}
-					onDecision={handleConfirmDecision}/>}
+					args={confirmArgs}
+					onDecision={confirmFunction}/>
+			}
         </div>
     );
 }

@@ -16,15 +16,13 @@ import { EntranceType } from '../constants/EntranceType';
 import { Monster } from '../models/Monster';
 import { Trap } from '../models/Trap';
 import { Item } from '../models/Item';
+import cloneDeep from 'lodash/cloneDeep';
 
 export class DungeonGenerator {
 	// TODO: Chose actual values
-	private static itemChance: number = 5;
-	private static trapChance: number = 5;
-	private static monsterChance: number = 5;
 	private static defaultSqrtArea = 3;
 	private static additionalExitProb = 0.5;
-	private static startRoomChance = 1;
+	private static startRoomChance = 0.5;
 
 	static generateDungeon(config: Configuration): DungeonMap {
 		var map: DungeonMap = new DungeonMap(config);
@@ -35,7 +33,6 @@ export class DungeonGenerator {
 		start.y = Math.floor(Math.min(Math.max(Math.random() * map.getHeight(), map.getHeight() - map.getHeight()/4), map.getHeight()/4));
 		lastPath.push(start);
 		var done = false;
-
 		var turnChance = config.getTurnChance();
 		var maxLength = config.getMaxLength();
 		var maxRooms = config.getMaxRooms();
@@ -70,14 +67,13 @@ export class DungeonGenerator {
 				}
 			}
 		}
-		// TODO: Add option to start from room instead of corridor. Just set lastRegion and lastEntrance acordingly
 
 		while(!done){
 			// Chance to be done increases as room number increases.
 			if (numRooms > minRooms && Math.random() > (maxRooms - numRooms)/maxRooms){
 				// chance to add a corridor to a second exterior exit
 				if (lastPath.length > 0 && Math.random() < this.additionalExitProb){
-					// map.addCorridor(this.generateCorridor(config.corridorCategories.randPickOne(), config.defaultCorridorCategory, lastPath, direction, Direction.getOppositeDirection(lastEntrance.direction), null, lastEntrance.type));
+					map.addCorridor(this.generateCorridor(config.corridorCategories.randPickOne(), config.defaultCorridorCategory, lastPath, direction, Direction.getOppositeDirection(lastEntrance.direction), null, lastEntrance.type));
 				}
 				done = true;
 			}
@@ -239,7 +235,7 @@ export class DungeonGenerator {
 		return new Probabilities(probs);
 	}
 
-	private static generateRoom(category: RoomCategory | null, defaultCategory: RoomCategory, start: Coordinates, direction: Direction): RoomInstance {
+	static generateRoom(category: RoomCategory | null, defaultCategory: RoomCategory, start: Coordinates, direction: Direction): RoomInstance {
 		if (!category){
 			category = defaultCategory;
 		}
@@ -255,6 +251,22 @@ export class DungeonGenerator {
 		var sizeModifier = room.getRoomSizeModifier();
 		room.locations = this.getRoomLocations(room.shape, start, sizeModifier, direction);
 		return room;
+	}
+
+	static regenerateRegion(region: RegionInstance, defaultCategory: RegionCategory, config: Configuration){
+		var category;
+		if (region.isCorridor){
+			category = (region as CorridorInstance).category;
+		}
+		else{
+			category = (region as RoomInstance).category;
+		}
+
+		var newRegion = cloneDeep(region);
+		newRegion.tileSet = category.tileSets ? category.tileSets.randPickOne()! : defaultCategory.tileSets!.randPickOne()!;
+		Object.assign(newRegion, this.generateRegionItems(region, config, region.value));
+		Object.assign(newRegion, this.genearteRegionEncounter(region, config, region.difficulty));
+		return newRegion;
 	}
 
 	private static generateCorridor(category: CorridorCategory | null, defaultCategory: CorridorCategory, path: Coordinates[], 
@@ -375,6 +387,7 @@ export class DungeonGenerator {
 
 		return {
 			items: items,
+			value: sumVal
 		} as RegionInstance;
 	}
 

@@ -16,4 +16,6 @@ export class RegionInstance {
 	entrances: Entrance[] = [];
 	isCorridor = false;
 	difficulty: number = 0;
+	value: number = 0;
+	regionNumber: number = 0;
 }

@@ -10,6 +10,7 @@ export class DungeonMap {
 	private width: number;
 	private height: number;
 	private map: Map<string, RegionInstance[]>;
+	private lastRegionNumber = 0;
 	config: Configuration;
 	corridors: CorridorInstance[] = [];
 	rooms: RoomInstance[] = [];
@@ -215,12 +216,16 @@ export class DungeonMap {
 	// Also, if a location is out of map bounds then the locations will remain
 	// in the region in case it is moved, but won't be added to the map
 	private addRegion(region: RegionInstance) {
+		region.regionNumber = this.lastRegionNumber++;
 		region.locations.forEach((location) => {
 			this.addLocationToMap(region, location);
 		});
 	}
 
 	private removeRegion(region: RegionInstance) {
+		if (region.regionNumber === this.lastRegionNumber && this.lastRegionNumber > 0){
+			this.lastRegionNumber--;
+		}
 		region.locations.forEach((location) => {
 			this.removeLocationFromMap(region, location);
 		});

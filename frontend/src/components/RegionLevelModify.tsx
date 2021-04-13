@@ -2,7 +2,6 @@ import { makeStyles } from '@material-ui/core';
 import FormLabel from '@material-ui/core/FormLabel';
 import IconButton from '@material-ui/core/IconButton';
 import AddBoxIcon from '@material-ui/icons/AddBox';
-import lodash from 'lodash';
 import { memo, useState } from 'react';
 import { Probabilities } from '../generator/Probabilities';
 import { Configuration } from '../models/Configuration';
@@ -29,12 +28,13 @@ type Props = {
     configuration: Configuration;
     savePhrase?: string;
     onChange: (name: keyof Configuration, value: valueOf<Configuration>)=>void;
+    onRegenerateClick: (name: keyof Configuration, index: number) => void;
     selectCategory?: (category: RegionCategory) => void;
 }
 
 const RegionLevelModify = memo(
     (props: Props) => {
-        var disabled = props.isSaving || props.configuration.premade;
+        var disabled = props.isSaving;
 
         const classes = useStyles();
         const [addRoomDialogOpen, setAddRoomDialogOpen] = useState(false);
@@ -45,13 +45,6 @@ const RegionLevelModify = memo(
         const [corridorCategoryToEdit, setCorridorCategoryToEdit] = useState<CorridorCategory>();
         const [editingDefault, setEditingDefault] = useState(false);
         const [selectingDefault, setSelectingDefault] = useState(false);
-
-        const handleDeleteClick = (name: keyof Configuration, index: number) => {
-            var updatedList = Object.create(Object.getPrototypeOf(props.configuration[name]) as Probabilities<any>);
-            updatedList = Object.assign(updatedList, props.configuration[name]);
-            updatedList.remove(index);
-            props.onChange(name, updatedList);
-        }
 
         const handleAddRoomClick = () => {
            setAddRoomDialogOpen(true);
@@ -127,26 +120,6 @@ const RegionLevelModify = memo(
             setCorridorCategoryToEdit(undefined);
         }
 
-        const getRoomCatList = () => {
-			var objects = props.configuration.roomCategories.objects;
-            if (!objects.find((item) => lodash.isEqual(item, props.configuration.defaultRoomCategory))) {
-				return objects.concat([props.configuration.defaultRoomCategory]);
-            }
-            else{
-                return objects;
-            }
-        }
-
-        const getCorridorCatList = () => {
-			var objects = props.configuration.corridorCategories.objects;
-            if (!objects.filter((item) => lodash.isEqual(item, props.configuration.defaultCorridorCategory))) {
-				return objects.concat([props.configuration.defaultCorridorCategory]);
-            }
-            else{
-                return objects;
-            }
-        }
-
         return (
             <div style={{width: '100%'}}>
                 <div className={classes.listLabel}>
@@ -158,10 +131,11 @@ const RegionLevelModify = memo(
 
                 <NameList
                     disabled={disabled}
-                    showDelete
-                    list={getRoomCatList()}
+                    showRegenerate
+                    // showAdd
+                    list={props.configuration.roomCategories.objects}
                     onClick={handleRoomClick}
-                    onDeleteClick={(index) => handleDeleteClick(nameOf<Configuration>("roomCategories"), index)}
+                    onRegenerateClick={(index) => props.onRegenerateClick(nameOf<Configuration>("roomCategories"), index)}
                 />      
                 <div className={classes.listLabel}>
                     <FormLabel disabled={disabled}>Corridor Categories</FormLabel>
@@ -171,10 +145,11 @@ const RegionLevelModify = memo(
                 </div>
                 <NameList
                     disabled={disabled}
-                    showDelete
-                    list={getCorridorCatList()}
+                    showRegenerate
+                    // showAdd
+                    list={props.configuration.corridorCategories.objects}
                     onClick={handleCorridorClick}
-                    onDeleteClick={(index) => handleDeleteClick(nameOf<Configuration>("corridorCategories"), index)}
+                    onRegenerateClick={(index) => props.onRegenerateClick(nameOf<Configuration>("corridorCategories"), index)}
                 />
                 {addRoomDialogOpen &&
                     <SelectRoomCategory
@@ -196,7 +171,7 @@ const RegionLevelModify = memo(
                 }
                 {roomEditorOpen &&
                     <RoomCategoryEditor
-                        viewOnly
+                        isDefault={editingDefault}
                         open={roomEditorOpen}
                         roomCategory={roomCategoryToEdit}
                         savePhrase={props.savePhrase}
@@ -206,7 +181,7 @@ const RegionLevelModify = memo(
                 }
                 {corridorEditorOpen &&
                     <CorridorCategoryEditor
-                        viewOnly
+                        isDefault={editingDefault}
                         open={corridorEditorOpen}
                         corridorCategory={corridorCategoryToEdit}
                         savePhrase={props.savePhrase}
@@ -224,7 +199,7 @@ const RegionLevelModify = memo(
         prevProps.configuration.defaultCorridorCategory === nextProps.configuration.defaultCorridorCategory &&
         prevProps.configuration.premade === nextProps.configuration.premade &&
         prevProps.isSaving === nextProps.isSaving && 
-        prevProps.savePhrase == nextProps.savePhrase
+        prevProps.savePhrase === nextProps.savePhrase
 )
 
 

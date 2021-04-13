@@ -12,6 +12,9 @@ import cloneDeep from 'lodash/cloneDeep';
 import { RegionCategory } from '../models/RegionCategory';
 import { TileSet } from '../models/TileSet';
 import lodash from 'lodash';
+import { Probabilities } from '../generator/Probabilities';
+import { RoomCategory } from '../models/RoomCategory';
+import { CorridorCategory } from '../models/CorridorCategory';
 
 type Props = {
     map: DungeonMap | null;
@@ -77,8 +80,8 @@ class DungeonDisplay extends Component {
 
 	componentDidMount() {
 		if (this.props.map !== this.state.map){
+			this.setMapState(this.props.map);
 			this.setState({
-				map: cloneDeep(this.props.map),
 				selectedRegion: null,
 				selectedCategory: null});
 			if (this.props.map){
@@ -89,8 +92,8 @@ class DungeonDisplay extends Component {
 
 	componentDidUpdate(prevProps: Props) {
 		if (prevProps.map !== this.props.map && this.props.map !== this.state.map){
+			this.setMapState(this.props.map);
 			this.setState({
-				map: cloneDeep(this.props.map),
 				selectedRegion: null,
 				selectedCategory: null});
 			if (prevProps.map) {
@@ -110,9 +113,47 @@ class DungeonDisplay extends Component {
 
 	private onChange(map: DungeonMap){
 		if (map !== this.state.map){
-			this.setState({map: cloneDeep(map)});
+			this.setMapState(map);
 			this.drawDungeon(map);
 		}
+	}
+
+	private setMapState(map: DungeonMap | null){
+		var newMap = null;
+		if (map){
+			newMap = cloneDeep(map);
+			newMap.config.roomCategories = this.getAllRoomCats(newMap);
+			newMap.config.corridorCategories = this.getAllCorridorCats(newMap);
+		}
+		this.setState({map: newMap});
+	}
+
+	private getAllRoomCats(map: DungeonMap) {
+		var probs;
+		if (map && map.config && map.config.roomCategories){
+			probs = map.config.roomCategories;
+		}
+		else{
+			probs = new Probabilities<RoomCategory>(null);
+		}
+		if (!probs.objects || !probs.objects.find((item: any) => lodash.isEqual(item, map.config.defaultRoomCategory))) {
+			probs.add(map.config.defaultRoomCategory)
+		}
+		return probs;
+	}
+
+	private getAllCorridorCats(map: DungeonMap) {
+		var probs;
+		if (map && map.config && map.config.corridorCategories){
+			probs = map.config.corridorCategories;
+		}
+		else{
+			probs = new Probabilities<CorridorCategory>(null);
+		}
+		if (!probs.objects || !probs.objects.find((item: any) => lodash.isEqual(item, map.config.defaultCorridorCategory))) {
+			probs.add(map.config.defaultCorridorCategory)
+		}
+		return probs;
 	}
 
 	getSingleImage(): Map<string, any>{
@@ -377,7 +418,7 @@ class DungeonDisplay extends Component {
 					</div>
 
 					<div style={this.spacedStyle}>
-						<DungeonEditor map={this.props.map} getSingleImage={this.getSingleImage} getMultipleImages={this.getMultipleImages} onChange={this.onChange} selectCategory={this.onSelectCategory}></DungeonEditor>
+						<DungeonEditor map={this.state.map} getSingleImage={this.getSingleImage} getMultipleImages={this.getMultipleImages} onChange={this.onChange} selectCategory={this.onSelectCategory}></DungeonEditor>
 					</div>
 			</Grid>
 		</div>

@@ -219,6 +219,7 @@ const RegionLevelConfiguration = memo(
                 {roomEditorOpen &&
                     <RoomCategoryEditor
                         viewOnly
+                        isDefault={editingDefault}
                         open={roomEditorOpen}
                         roomCategory={roomCategoryToEdit}
                         onSave={(rc: RoomCategory) => editingDefault ? handleRoomDefaultSave(rc) : handleSave(nameOf<Configuration>("roomCategories"), rc)}
@@ -228,6 +229,7 @@ const RegionLevelConfiguration = memo(
                 {corridorEditorOpen &&
                     <CorridorCategoryEditor
                         viewOnly
+                        isDefault={editingDefault}
                         open={corridorEditorOpen}
                         corridorCategory={corridorCategoryToEdit}
                         onSave={(cc: CorridorCategory) => editingDefault ? handleCorridorDefaultSave(cc) : handleSave(nameOf<Configuration>("corridorCategories"), cc)}
