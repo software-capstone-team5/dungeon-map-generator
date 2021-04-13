@@ -73,6 +73,10 @@ const useStyles = makeStyles((theme) => ({
 
 type Props = {
     map: DungeonMap | null;
+	selectedRoomIndex?: number;
+	selectedCorridorIndex?: number;
+	selectedRoomCategoryIndex?: number;
+	selectedCorridorCategoryIndex?: number;
 	onChange: (map: DungeonMap) => void;
 	getSingleImage: () => Map<string, any>;
 	getMultipleImages: () => Map<string, any>;
@@ -277,7 +281,15 @@ function DungeonEditor(props: Props) {
 							<Typography>Region Category Options</Typography>
 						</AccordionSummary>
 						<AccordionDetails>
-							<RegionCategoryModify isSaving={isDownloading} configuration={map.config} onChange={handleRegionChanges} onRegenerateClick={handleRegenerateClick} selectCategory={props.selectCategory} savePhrase={"Apply"}/>
+							<RegionCategoryModify 
+								isSaving={isDownloading} 
+								savePhrase={"Apply"}
+								configuration={map.config} 
+								selectedRoomCategoryIndex={props.selectedRoomCategoryIndex}
+								selectedCorridorCategoryIndex={props.selectedCorridorCategoryIndex}
+								onChange={handleRegionChanges} 
+								onRegenerateClick={handleRegenerateClick} 
+								selectCategory={props.selectCategory} />
 						</AccordionDetails>
 					</Accordion>
 					<Accordion expanded={true}>
@@ -290,7 +302,9 @@ function DungeonEditor(props: Props) {
 							<RegionInstanceModify 
 								isSaving={isDownloading} 
 								savePhrase={"Apply"}
-								map={map} 
+								map={map}
+								selectedRoomIndex={props.selectedRoomIndex}
+								selectedCorridorIndex={props.selectedCorridorIndex}
 								onChange={handleRegionInstanceChanges} 
 								onRegenerateClick={handleRegenerateInstanceClick} 
 								onDeleteClick={handleRegionInstanceDelete}

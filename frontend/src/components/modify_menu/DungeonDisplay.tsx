@@ -15,6 +15,9 @@ import lodash from 'lodash';
 import { Probabilities } from '../../generator/Probabilities';
 import { RoomCategory } from '../../models/RoomCategory';
 import { CorridorCategory } from '../../models/CorridorCategory';
+import { RoomInstance } from '../../models/RoomInstance';
+import { CorridorInstance } from '../../models/CorridorInstance';
+import { IndexKind } from 'typescript';
 
 type Props = {
     map: DungeonMap | null;
@@ -25,6 +28,8 @@ type State = {
 	map: DungeonMap | null;
 	selectedRegion: RegionInstance | null;
 	selectedCategory: RegionCategory | null;
+	selectedRegionIndex: number;
+	selectedCategoryIndex: number;
 }
 
 class DungeonDisplay extends Component {
@@ -56,7 +61,9 @@ class DungeonDisplay extends Component {
 		this.state = {
 			map: cloneDeep(props.map),
 			selectedRegion: null,
-			selectedCategory: null
+			selectedCategory: null,
+			selectedRegionIndex: -1,
+			selectedCategoryIndex: -1,
 		};
 		this.backgroundRef = React.createRef();
 		this.mainRef = React.createRef();
@@ -338,17 +345,24 @@ class DungeonDisplay extends Component {
 			let x = Math.floor((event.clientX - rect.left)/this.state.map.tileSize - 1);
 			let y = Math.floor((canvas.height - (event.clientY - rect.top))/this.state.map.tileSize - 1);
 
-			var region = null;
+			var region: RegionInstance | null = null;
 			if (!this.state.map.isOutOfBounds(x, y)){
 				region = this.state.map.getRegionInstance(x, y);
 			}
 
-			if (region != this.state.selectedRegion){
+			if (region !== this.state.selectedRegion){
 				this.clearCanvas(canvas);
-				if (region){
+				var index = undefined;
+				if (region && this.state.map){
+					if (region.isCorridor){
+						index = this.state.map.corridors.findIndex((x) => lodash.isEqual(x, region));
+					}
+					else{
+						index = this.state.map.rooms.findIndex((x) => lodash.isEqual(x, region));
+					}
 					this.selectRegion(region);
 				}
-				this.setState({selectedCategory: null, selectedRegion: region});
+				this.setState({selectedCategory: null, selectedRegion: region, selectedRegionIndex: index, selectedCategoryIndex: undefined});
 			}
 		}
 	}
@@ -361,7 +375,7 @@ class DungeonDisplay extends Component {
 			region.locations.forEach((location) => {
 				var startx = map.tileSize * (location.x + 1);
 				var starty = canvas.height - map.tileSize * (location.y + 2);
-				if (region && !map.isOutOfBounds(location.x, location.y) && map.getRegionInstance(location.x, location.y) === region){
+				if (region && !map.isOutOfBounds(location.x, location.y) && lodash.isEqual(map.getRegionInstance(location.x, location.y), region)){
 					context.fillStyle = "rgba(255, 255, 255, 0.5)";
 					context.fillRect(startx, starty, map.tileSize, map.tileSize);
 				}
@@ -390,10 +404,17 @@ class DungeonDisplay extends Component {
 		if (category != this.state.selectedCategory){
 			var canvas = this.selectionRef.current;
 			this.clearCanvas(canvas);
-			if (category){
+			var index = undefined;
+			if (category && this.state.map && this.state.map.config){
+				if (category.isCorridor){
+					index = this.state.map.config.corridorCategories.objects.findIndex((x) => lodash.isEqual(x, category));
+				}
+				else{
+					index = this.state.map.config.roomCategories.objects.findIndex((x) => lodash.isEqual(x, category));
+				}
 				this.selectRegionCategory(category);
 			}
-			this.setState({selectedCategory: category, selectedRegion: null});
+			this.setState({selectedCategory: category, selectedRegion: null, selectedRegionIndex: undefined, selectedCategoryIndex: index});
 		}
 	}
 
@@ -401,10 +422,17 @@ class DungeonDisplay extends Component {
 		var canvas = this.selectionRef.current;
 		if (region != this.state.selectedRegion){
 			this.clearCanvas(canvas);
-			if (region){
+			var index = undefined;
+			if (region && this.state.map){
+				if (region.isCorridor){
+					index = this.state.map.corridors.findIndex((x) => lodash.isEqual(x, region));
+				}
+				else{
+					index = this.state.map.rooms.findIndex((x) => lodash.isEqual(x, region));
+				}
 				this.selectRegion(region);
 			}
-			this.setState({selectedCategory: null, selectedRegion: region});
+			this.setState({selectedCategory: null, selectedRegion: region, selectedRegionIndex: index, selectedCategoryIndex: undefined});
 		}
 	}
 
@@ -430,7 +458,17 @@ class DungeonDisplay extends Component {
 					</div>
 
 					<div style={this.spacedStyle}>
-						<DungeonEditor map={this.state.map} getSingleImage={this.getSingleImage} getMultipleImages={this.getMultipleImages} onChange={this.onChange} selectCategory={this.onSelectCategory} selectInstance={this.onSelectRegion}></DungeonEditor>
+						<DungeonEditor 
+							selectedRoomIndex={!this.state.selectedRegion || this.state.selectedRegion.isCorridor ? undefined : this.state.selectedRegionIndex}
+							selectedCorridorIndex={this.state.selectedRegion && this.state.selectedRegion.isCorridor ? this.state.selectedRegionIndex : undefined}
+							selectedRoomCategoryIndex={!this.state.selectedCategory || this.state.selectedCategory.isCorridor ? undefined : this.state.selectedCategoryIndex}
+							selectedCorridorCategoryIndex={this.state.selectedCategory && this.state.selectedCategory.isCorridor ? this.state.selectedCategoryIndex : undefined}
+							map={this.state.map} 
+							getSingleImage={this.getSingleImage} 
+							getMultipleImages={this.getMultipleImages} 
+							onChange={this.onChange} 
+							selectCategory={this.onSelectCategory} 
+							selectInstance={this.onSelectRegion}></DungeonEditor>
 					</div>
 			</Grid>
 		</div>

@@ -27,6 +27,8 @@ type Props = {
     isSaving: boolean;
     configuration: Configuration;
     savePhrase?: string;
+    selectedRoomCategoryIndex?: number;
+    selectedCorridorCategoryIndex?: number;
     onChange: (name: keyof Configuration, value: valueOf<Configuration>)=>void;
     onRegenerateClick: (name: keyof Configuration, index: number) => void;
     selectCategory?: (category: RegionCategory) => void;
@@ -90,17 +92,11 @@ const RegionCategoryModify = memo(
         }
 
         const handleRoomClick = (rc: RoomCategory) => {
-            if (props.selectCategory){
-                props.selectCategory(rc);
-            }
             setRoomCategoryToEdit(rc);
             setRoomCategoryEditorOpen(true);
         }
 
         const handleCorridorClick = (cc: CorridorCategory) => {
-            if (props.selectCategory){
-                props.selectCategory(cc);
-            }
             setCorridorCategoryToEdit(cc);
             setCorridorEditorOpen(true);
         }
@@ -132,8 +128,13 @@ const RegionCategoryModify = memo(
                 <NameList
                     disabled={disabled}
                     showRegenerate
+                    showSelection
                     // showAdd
+                    onlyShowSelectedIcons
+                    doubleClick
                     list={props.configuration.roomCategories.objects}
+                    selectedIndex={props.selectedRoomCategoryIndex}
+                    onSelect={props.selectCategory}
                     onClick={handleRoomClick}
                     onRegenerateClick={(index) => props.onRegenerateClick(nameOf<Configuration>("roomCategories"), index)}
                 />      
@@ -146,8 +147,13 @@ const RegionCategoryModify = memo(
                 <NameList
                     disabled={disabled}
                     showRegenerate
+                    showSelection
                     // showAdd
+                    onlyShowSelectedIcons
+                    doubleClick
                     list={props.configuration.corridorCategories.objects}
+                    selectedIndex={props.selectedCorridorCategoryIndex}
+                    onSelect={props.selectCategory}
                     onClick={handleCorridorClick}
                     onRegenerateClick={(index) => props.onRegenerateClick(nameOf<Configuration>("corridorCategories"), index)}
                 />
@@ -199,7 +205,9 @@ const RegionCategoryModify = memo(
         prevProps.configuration.defaultCorridorCategory === nextProps.configuration.defaultCorridorCategory &&
         prevProps.configuration.premade === nextProps.configuration.premade &&
         prevProps.isSaving === nextProps.isSaving && 
-        prevProps.savePhrase === nextProps.savePhrase
+        prevProps.savePhrase === nextProps.savePhrase &&
+        prevProps.selectedCorridorCategoryIndex == nextProps.selectedCorridorCategoryIndex &&
+        prevProps.selectedRoomCategoryIndex == nextProps.selectedRoomCategoryIndex
 )
 
 
