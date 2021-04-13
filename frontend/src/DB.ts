@@ -77,31 +77,19 @@ export class DB {
     static async getAllConfig() {
         try {
             var token = await Authenticator.getIDToken();
-            if (token === undefined) {
-                return { valid: false, "response": "Not Logged In" }; // Not sure how we want to handle
-            }
+            var fetchString = token ? `${BACKEND_URL}/user/${token}/config` : `${BACKEND_URL}/config`
+
             const requestOptions = {
                 method: 'GET'
             };
-            var response = await fetch(`${BACKEND_URL}/user/${token}/config`, requestOptions);
+            var response = await fetch(fetchString, requestOptions);
             var data = await response.json();
             if (!data.valid) {
                 return data;
             }
             var configs: Configuration[] = [];
             data.response.forEach((element: Object) => {
-                var config = plainToClass(Configuration, element);
-                if (config.roomCategories) {
-                    for (var i = 0; i < config.roomCategories.objects.length; i++) {
-                        config.roomCategories.objects[i] = plainToClass(RoomCategory, config.roomCategories.objects[i])
-                    }
-                }
-                if (config.corridorCategories) {
-                    for (var i = 0; i < config.corridorCategories.objects.length; i++) {
-                        config.corridorCategories.objects[i] = plainToClass(CorridorCategory, config.corridorCategories.objects[i])
-                    }
-                }
-                configs.push(config)
+                configs.push(plainToClass(Configuration, element))
             });
             return { valid: true, "response": configs };
         } catch (error) {
@@ -109,16 +97,17 @@ export class DB {
         }
     }
 
-    static async getConfigByID(id: string) {
+    static async getConfigByID(id: string, premade: boolean) {
         try {
             var token = await Authenticator.getIDToken();
-            if (token === undefined) {
+            if (token === undefined && !premade) {
                 return { valid: false, "response": "Not Logged In" };
             }
+            var fetchString = premade ? `${BACKEND_URL}/config/${id}` : `${BACKEND_URL}/user/${token}/config/${id}` 
             const requestOptions = {
                 method: 'GET'
             };
-            var response = await fetch(`${BACKEND_URL}/user/${token}/config/${id}`, requestOptions);
+            var response = await fetch(fetchString, requestOptions);
             var data = await response.json();
             if (!data.valid) {
                 return data;
@@ -145,13 +134,12 @@ export class DB {
     static async getAllRoomCat() {
         try {
             var token = await Authenticator.getIDToken();
-            if (token === undefined) {
-                return { valid: false, "response": "Not Logged In" };
-            }
+            var fetchString = token ? `${BACKEND_URL}/user/${token}/room` : `${BACKEND_URL}/room`
+            
             const requestOptions = {
                 method: 'GET'
             };
-            var response = await fetch(`${BACKEND_URL}/user/${token}/room`, requestOptions);
+            var response = await fetch(fetchString, requestOptions);
             var data = await response.json();
             if (!data.valid) {
                 return data;
@@ -170,13 +158,12 @@ export class DB {
     static async getAllCorridorCat() {
         try {
             var token = await Authenticator.getIDToken();
-            if (token === undefined) {
-                return { valid: false, "response": "Not Logged In" };
-            }
+            var fetchString = token ? `${BACKEND_URL}/user/${token}/corridor` : `${BACKEND_URL}/corridor`
+
             const requestOptions = {
                 method: 'GET'
             };
-            var response = await fetch(`${BACKEND_URL}/user/${token}/corridor`, requestOptions);
+            var response = await fetch(fetchString, requestOptions);
             var data = await response.json();
             if (!data.valid) {
                 return data;
@@ -274,13 +261,12 @@ export class DB {
     static async getAllMonsters() {
         try {
             var token = await Authenticator.getIDToken();
-            if (token === undefined) {
-                return { valid: false, "response": "Not Logged In" };
-            }
+            var fetchString = token ? `${BACKEND_URL}/user/${token}/monster` : `${BACKEND_URL}/monster`
+            
             const requestOptions = {
                 method: 'GET'
             };
-            var response = await fetch(`${BACKEND_URL}/user/${token}/monster`, requestOptions);
+            var response = await fetch(fetchString, requestOptions);
             var data = await response.json();
             if (!data.valid) {
                 return data;
@@ -298,13 +284,12 @@ export class DB {
     static async getAllItems() {
         try {
             var token = await Authenticator.getIDToken();
-            if (token === undefined) {
-                return { valid: false, "response": "Not Logged In" };
-            }
+            var fetchString = token ? `${BACKEND_URL}/user/${token}/item` : `${BACKEND_URL}/item`
+
             const requestOptions = {
                 method: 'GET'
             };
-            var response = await fetch(`${BACKEND_URL}/user/${token}/item`, requestOptions);
+            var response = await fetch(fetchString, requestOptions);
             var data = await response.json();
             if (!data.valid) {
                 return data;
@@ -322,13 +307,12 @@ export class DB {
     static async getAllTraps() {
         try {
             var token = await Authenticator.getIDToken();
-            if (token === undefined) {
-                return { valid: false, "response": "Not Logged In" };
-            }
+            var fetchString = token ? `${BACKEND_URL}/user/${token}/trap` : `${BACKEND_URL}/trap`
+
             const requestOptions = {
                 method: 'GET'
             };
-            var response = await fetch(`${BACKEND_URL}/user/${token}/trap`, requestOptions);
+            var response = await fetch(fetchString, requestOptions);
             var data = await response.json();
             if (!data.valid) {
                 return data;

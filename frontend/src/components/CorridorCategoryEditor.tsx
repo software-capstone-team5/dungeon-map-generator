@@ -27,6 +27,7 @@ import { Probabilities } from '../generator/Probabilities';
 import { CorridorCategory } from '../models/CorridorCategory';
 import { Item } from '../models/Item';
 import { Monster } from '../models/Monster';
+import { TileSet } from '../models/TileSet';
 import { Trap } from '../models/Trap';
 import { nameOf, valueOf } from '../utils/util';
 import EnumProbabilityText from './common/EnumProbabilityText';
@@ -35,6 +36,7 @@ import ItemEditor from './ItemEditor';
 import MonsterEditor from './MonsterEditor';
 import SelectItem from './SelectItem';
 import SelectMonster from './SelectMonster';
+import SelectTileSet from './SelectTileSet';
 import SelectTrap from './SelectTrap';
 import TrapEditor from './TrapEditor';
 
@@ -88,7 +90,11 @@ export default function CorridorCategoryEditor(props: Props) {
     if (props.corridorCategory !== undefined) {
       return cloneDeep(props.corridorCategory);
     } else {
-      return new CorridorCategory();
+      var corridorCat = new CorridorCategory();
+      if (!Authenticator.isLoggedIn()) {
+        corridorCat.tileSets = Probabilities.buildUniform([TileSet.getDefault()]);
+      }
+      return corridorCat;
     }
   });
 
@@ -108,6 +114,8 @@ export default function CorridorCategoryEditor(props: Props) {
   const [trapToEdit, setTrapToEdit] = useState<Trap>()
   const [trapEditorOpen, setTrapEditorOpen] = useState<boolean>(false);
   const [selectTrapDialogOpen, setSelectTrapDialogOpen] = useState<boolean>(false);
+
+  const [selectTileSetDialogOpen, setSelectTileSetDialogOpen] = useState<boolean>(false);
 
   const handleChange = (name: keyof CorridorCategory, value: valueOf<CorridorCategory>) => {
     if (name === nameOf<CorridorCategory>("name")) {
@@ -220,6 +228,18 @@ export default function CorridorCategoryEditor(props: Props) {
     setTrapToEdit(undefined);
   }
 
+  const handleTileSetDefaultChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.checked) {
+      handleChange(nameOf<CorridorCategory>("tileSets"), null);
+    } else {
+      handleChange(nameOf<CorridorCategory>("tileSets"), new Probabilities<TileSet>(null));
+    }
+  }
+
+  const handleAddTileSetClick = () => {
+    setSelectTileSetDialogOpen(true);
+  }
+
   const handleEditClick = () => {
     setViewMode(false);
   }
@@ -228,7 +248,9 @@ export default function CorridorCategoryEditor(props: Props) {
     if (!corridorCategory.name) {
       return;
     }
-    // TODO: normalize tileset
+    if (corridorCategory.tileSets) {
+      corridorCategory.tileSets.normalize();
+    }
     if (corridorCategory.widths) {
       corridorCategory.widths.normalize();
     }
@@ -332,7 +354,26 @@ export default function CorridorCategoryEditor(props: Props) {
               probs={corridorCategory.widths}
               onProbUpdate={(newList: Probabilities<CorridorWidth> | null) => handleChange(nameOf<CorridorCategory>("widths"), newList)}
             />
-            {/* Tile assets */}
+            <div className={classes.listLabel}>
+              <FormControl disabled={viewMode || !Boolean(corridorCategory.tileSets) || !Authenticator.isLoggedIn()}>
+                <FormLabel>Tile Sets</FormLabel>
+              </FormControl>
+              <IconButton disabled={viewMode || !Boolean(corridorCategory.tileSets) || !Authenticator.isLoggedIn()} onClick={handleAddTileSetClick} aria-label="add" color="primary">
+                <AddBoxIcon />
+              </IconButton>
+              <FormControlLabel
+                disabled={viewMode || !Authenticator.isLoggedIn()}
+                control={
+                  <Checkbox
+                    checked={!Boolean(corridorCategory.tileSets)}
+                    onChange={handleTileSetDefaultChange}
+                    name="useDefault"
+                    color="default"
+                  />
+                }
+                label="Use Default"
+              />
+            </div>
             <div className={classes.listLabel}>
               <FormControl disabled={viewMode || !Boolean(corridorCategory.monsters)}>
                 <FormLabel>Monsters</FormLabel>
@@ -355,8 +396,9 @@ export default function CorridorCategoryEditor(props: Props) {
             </div>
             <ProbabilityNameList
               showProbs
+              disableProbs={viewMode}
               showDelete={!viewMode}
-              disabled={viewMode}
+              disableListItem={viewMode && editMode}
               list={corridorCategory.monsters}
               onClick={handleMonsterClick}
               onDeleteClick={(index) => handleDeleteClick(nameOf<CorridorCategory>("monsters"), index)}
@@ -391,8 +433,9 @@ export default function CorridorCategoryEditor(props: Props) {
             </div>
             <ProbabilityNameList
               showProbs
+              disableProbs={viewMode}
               showDelete={!viewMode}
-              disabled={viewMode}
+              disableListItem={viewMode && editMode}
               list={corridorCategory.items}
               onClick={handleItemClick}
               onDeleteClick={(index) => handleDeleteClick(nameOf<CorridorCategory>("items"), index)}
@@ -420,8 +463,9 @@ export default function CorridorCategoryEditor(props: Props) {
             </div>
             <ProbabilityNameList
               showProbs
+              disableProbs={viewMode}
               showDelete={!viewMode}
-              disabled={viewMode}
+              disableListItem={viewMode && editMode}
               list={corridorCategory.traps}
               onClick={handleTrapClick}
               onDeleteClick={(index) => handleDeleteClick(nameOf<CorridorCategory>("traps"), index)}
@@ -498,6 +542,14 @@ export default function CorridorCategoryEditor(props: Props) {
           trap={trapToEdit}
           onSave={(i: Trap) => handleTrapSave(i)}
           onCancelClick={() => setTrapEditorOpen(false)}
+        />
+      }
+      {selectTileSetDialogOpen &&
+        <SelectTileSet
+          open={selectTileSetDialogOpen}
+          exclude={corridorCategory.tileSets ? corridorCategory.tileSets.objects : []}
+          onSelect={(i) => handleSelect(nameOf<CorridorCategory>("tileSets"), i)}
+          onCancelClick={() => setSelectTileSetDialogOpen(false)}
         />
       }
     </div>

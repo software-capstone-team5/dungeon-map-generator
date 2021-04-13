@@ -146,7 +146,7 @@ function ConfigurationEditor(props: Props) {
         }
     }
 
-    const handleSaveClick = () => {
+    const validConfigCheck = () : boolean => {
         if (configuration.defaultRoomCategory) {
             if (!configuration.defaultRoomCategory.canBeUsedAsDefault()) {
                 setAlert({
@@ -154,7 +154,7 @@ function ConfigurationEditor(props: Props) {
                     message: "Room used for Default Room cannot be used as a default.",
                     severity: "error"
                 });
-                return;
+                return false;
             }
         } else {
             setAlert({
@@ -162,7 +162,7 @@ function ConfigurationEditor(props: Props) {
                 message: "Default Room is not set.",
                 severity: "error"
             });
-            return;
+            return false;
         }
         if (configuration.defaultCorridorCategory) {
             if (!configuration.defaultCorridorCategory.canBeUsedAsDefault()) {
@@ -171,7 +171,7 @@ function ConfigurationEditor(props: Props) {
                     message: "Corridor used for Default Corridor cannot be used as a default.",
                     severity: "error"
                 });
-                return;
+                return false;
             }
         } else {
             setAlert({
@@ -179,16 +179,24 @@ function ConfigurationEditor(props: Props) {
                 message: "Default Corridor is not set.",
                 severity: "error"
             });
-            return;
+            return false;
         }
-        setShowNameUpdate(true);
+        return true;
+    }
+
+    const handleSaveClick = () => {
+        if (validConfigCheck()) {
+            setShowNameUpdate(true);
+        }
     }
 
     const handleGenerate = () => {
-        // configuration.roomCategories.normalize();
-        // configuration.corridorCategories.normalize();
-        // TODO: Generate
-        props.onGenerateClick(configuration);
+        if (validConfigCheck()) {
+            var configToGenerate = Object.assign(Object.create(Object.getPrototypeOf(configuration)), configuration);
+            configToGenerate.roomCategories.normalize();
+            configToGenerate.corridorCategories.normalize();
+            props.onGenerateClick(configToGenerate);
+        }
     }
 
     const handleAlertClose = (event?: React.SyntheticEvent, reason?: string) => {

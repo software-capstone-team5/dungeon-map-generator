@@ -28,6 +28,7 @@ import { Probabilities } from '../generator/Probabilities';
 import { Item } from '../models/Item';
 import { Monster } from '../models/Monster';
 import { RoomCategory } from '../models/RoomCategory';
+import { TileSet } from '../models/TileSet';
 import { Trap } from '../models/Trap';
 import { nameOf, valueOf } from '../utils/util';
 import EnumProbabilityText from './common/EnumProbabilityText';
@@ -36,6 +37,7 @@ import ItemEditor from './ItemEditor';
 import MonsterEditor from './MonsterEditor';
 import SelectItem from './SelectItem';
 import SelectMonster from './SelectMonster';
+import SelectTileSet from './SelectTileSet';
 import SelectTrap from './SelectTrap';
 import TrapEditor from './TrapEditor';
 
@@ -89,7 +91,11 @@ export default function RoomCategoryEditor(props: Props) {
     if (props.roomCategory !== undefined) {
       return cloneDeep(props.roomCategory);
     } else {
-      return new RoomCategory();
+      var roomCat = new RoomCategory();
+      if (!Authenticator.isLoggedIn()) {
+        roomCat.tileSets = Probabilities.buildUniform([TileSet.getDefault()]);
+      }
+      return roomCat;
     }
   });
 
@@ -110,9 +116,7 @@ export default function RoomCategoryEditor(props: Props) {
   const [trapEditorOpen, setTrapEditorOpen] = useState<boolean>(false);
   const [selectTrapDialogOpen, setSelectTrapDialogOpen] = useState<boolean>(false);
 
-  // const [tileSetToEdit, setTileSetToEdit] = useState<TileSet>()
-  // const [tileSetEditorOpen, setTileSetEditorOpen] = useState<boolean>(false);
-  // const [selectTileSetDialogOpen, setSelectTileSetDialogOpen] = useState<boolean>(false);
+  const [selectTileSetDialogOpen, setSelectTileSetDialogOpen] = useState<boolean>(false);
 
   const handleChange = (name: keyof RoomCategory, value: valueOf<RoomCategory>) => {
     if (name === nameOf<RoomCategory>("name")) {
@@ -225,22 +229,17 @@ export default function RoomCategoryEditor(props: Props) {
     setTrapToEdit(undefined);
   }
 
-  // const handleTileSetClick = (tileSet: TileSet) => {
-  //   setTileSetToEdit(tileSet);
-  //   setTileSetEditorOpen(true);
-  // }
+  const handleTileSetDefaultChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.checked) {
+      handleChange(nameOf<RoomCategory>("tileSets"), null);
+    } else {
+      handleChange(nameOf<RoomCategory>("tileSets"), new Probabilities<TileSet>(null));
+    }
+  }
 
-  // const handleAddTileSetClick = () => {
-  //   setSelectTileSetDialogOpen(true);
-  // }
-
-  // const handleTileSetSave = (newTileSet: TileSet) => {
-  //   var updatedList = roomCategory.tileSets;
-  //   updatedList.updateObject(tileSetToEdit!, newTileSet);
-  //   handleChange(nameOf<RoomCategory>("tileSets"), updatedList);
-  //   setTileSetEditorOpen(false);
-  //   setTileSetToEdit(undefined);
-  // }
+  const handleAddTileSetClick = () => {
+    setSelectTileSetDialogOpen(true);
+  }
 
   const handleEditClick = () => {
     setViewMode(false);
@@ -250,7 +249,9 @@ export default function RoomCategoryEditor(props: Props) {
     if (!roomCategory.name) {
       return;
     }
-    // TODO : Normalize tileset
+    if (roomCategory.tileSets) {
+      roomCategory.tileSets.normalize();
+    }
     if (roomCategory.shapes) {
       roomCategory.shapes.normalize();
     }
@@ -366,6 +367,26 @@ export default function RoomCategoryEditor(props: Props) {
               onProbUpdate={(newList: Probabilities<RoomShape> | null) => handleChange(nameOf<RoomCategory>("shapes"), newList)}
             />
             <div className={classes.listLabel}>
+              <FormControl disabled={viewMode || !Boolean(roomCategory.tileSets) || !Authenticator.isLoggedIn()}>
+                <FormLabel>Tile Sets</FormLabel>
+              </FormControl>
+              <IconButton disabled={viewMode || !Boolean(roomCategory.tileSets) || !Authenticator.isLoggedIn()} onClick={handleAddTileSetClick} aria-label="add" color="primary">
+                <AddBoxIcon />
+              </IconButton>
+              <FormControlLabel
+                disabled={viewMode || !Authenticator.isLoggedIn()}
+                control={
+                  <Checkbox
+                    checked={!Boolean(roomCategory.tileSets)}
+                    onChange={handleTileSetDefaultChange}
+                    name="useDefault"
+                    color="default"
+                  />
+                }
+                label="Use Default"
+              />
+            </div>
+            <div className={classes.listLabel}>
               <FormControl disabled={viewMode || !Boolean(roomCategory.monsters)}>
                 <FormLabel>Monsters</FormLabel>
               </FormControl>
@@ -387,8 +408,9 @@ export default function RoomCategoryEditor(props: Props) {
             </div>
             <ProbabilityNameList
               showProbs
+              disableProbs={viewMode}
               showDelete={!viewMode}
-              disabled={viewMode}
+              disableListItem={viewMode && editMode}
               list={roomCategory.monsters}
               onClick={handleMonsterClick}
               onDeleteClick={(index) => handleDeleteClick(nameOf<RoomCategory>("monsters"), index)}
@@ -423,8 +445,9 @@ export default function RoomCategoryEditor(props: Props) {
             </div>
             <ProbabilityNameList
               showProbs
+              disableProbs={viewMode}
               showDelete={!viewMode}
-              disabled={viewMode}
+              disableListItem={viewMode && editMode}
               list={roomCategory.items}
               onClick={handleItemClick}
               onDeleteClick={(index) => handleDeleteClick(nameOf<RoomCategory>("items"), index)}
@@ -452,8 +475,9 @@ export default function RoomCategoryEditor(props: Props) {
             </div>
             <ProbabilityNameList
               showProbs
+              disableProbs={viewMode}
               showDelete={!viewMode}
-              disabled={viewMode}
+              disableListItem={viewMode && editMode}
               list={roomCategory.traps}
               onClick={handleTrapClick}
               onDeleteClick={(index) => handleDeleteClick(nameOf<RoomCategory>("traps"), index)}
@@ -530,6 +554,14 @@ export default function RoomCategoryEditor(props: Props) {
           trap={trapToEdit}
           onSave={(i: Trap) => handleTrapSave(i)}
           onCancelClick={() => setTrapEditorOpen(false)}
+        />
+      }
+      {selectTileSetDialogOpen &&
+        <SelectTileSet
+          open={selectTileSetDialogOpen}
+          exclude={roomCategory.tileSets ? roomCategory.tileSets.objects : []}
+          onSelect={(i) => handleSelect(nameOf<RoomCategory>("tileSets"), i)}
+          onCancelClick={() => setSelectTileSetDialogOpen(false)}
         />
       }
     </div>

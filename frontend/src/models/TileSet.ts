@@ -17,4 +17,13 @@ export class TileSet {
 	get(tileType: string){
 		return this.set.get(tileType);
 	}
+	
+	isDefault(): boolean {
+		// return false;
+		return (this.name === "Default");
+	}
+
+	static getDefault() {
+		return new TileSet("Default", 48, new Map());
+	}
 }

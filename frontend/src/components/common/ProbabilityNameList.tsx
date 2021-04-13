@@ -32,7 +32,8 @@ interface hasName {
 
 type Props<T extends hasName> = {
   list: Probabilities<T> | null;
-  disabled?: boolean;
+  disableListItem?: boolean;
+  disableProbs?: boolean;
   showProbs?: boolean;
   showDelete?: boolean;
   onDeleteClick?: (index: number) => void;
@@ -41,7 +42,8 @@ type Props<T extends hasName> = {
 }
 
 ProbabilityNameList.defaultProps = {
-  disabled: false,
+  disableListItem: false,
+  disableProbs: false,
   showProbs: false,
   showDelete: false
 }
@@ -70,7 +72,7 @@ function ProbabilityNameList<T extends hasName> (props: Props<T>) {
     }
 
     const handleClick = (item: T) => {
-      if (props.onClick && !props.disabled) {
+      if (props.onClick && !props.disableListItem) {
         props.onClick(item)
       }
     }
@@ -85,7 +87,7 @@ function ProbabilityNameList<T extends hasName> (props: Props<T>) {
   }
 
     const listItems = props.list ? props.list.objects.map((item: T, i: number) =>
-        <ListItem disabled={props.disabled} button={(!props.disabled) as true} onClick={(e)=>handleClick(item)} key={i}>
+        <ListItem disabled={props.disableListItem} button={(!props.disableListItem) as true} onClick={(e)=>handleClick(item)} key={i}>
           <ListItemText
             primary={item.name}
           />
@@ -93,7 +95,7 @@ function ProbabilityNameList<T extends hasName> (props: Props<T>) {
             <TextField
               type="number"
               onBlur={()=>handleBlur(i)}
-              disabled={props.disabled}
+              disabled={props.disableProbs}
               value={invalid.current === i ? "" : +(pureProbs.get(item)!*100).toFixed(2)}
               onClick={(event) => event.stopPropagation()}
               onFocus={(event) => event.stopPropagation()}
@@ -105,7 +107,7 @@ function ProbabilityNameList<T extends hasName> (props: Props<T>) {
           }
           {props.showDelete &&
             <ListItemSecondaryAction>
-              <IconButton disabled={props.disabled} onClick={()=>props.onDeleteClick!(i)} edge="end" aria-label="delete">
+              <IconButton disabled={props.disableListItem} onClick={()=>props.onDeleteClick!(i)} edge="end" aria-label="delete">
                 <DeleteIcon />
               </IconButton>
             </ListItemSecondaryAction>
