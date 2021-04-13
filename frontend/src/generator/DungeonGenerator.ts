@@ -96,7 +96,7 @@ export class DungeonGenerator {
 				var region = map.getRegionInstance(next.x, next.y);
 				if(forceMapBranch || region || map.isOutOfBounds(next.x, next.y)){
 					forceMapBranch = false;
-					// Add the last path to map if applicable // Ended up adding too many corridors
+					// Add the last path to map if applicable // <- Removed becauuse this ended up adding too many corridors
 					// if (lastPath && lastPath.length > 0){
 					// 	var endEntranceType = null;
 					// 	if (region){
@@ -286,34 +286,36 @@ export class DungeonGenerator {
 		var regionsWithItems = new Map<number, RegionInstance>();
 		var doesDefaultRoomHaveMonsters = config.defaultRoomCategory.monsters && config.defaultRoomCategory.monsters.objects && config.defaultRoomCategory.monsters.objects.length > 0;
 		var doesDefaultRoomHaveTraps = config.defaultRoomCategory.traps && config.defaultRoomCategory.traps.objects && config.defaultRoomCategory.traps.objects.length > 0;
+		var doesDefaultRoomHaveItems = config.defaultRoomCategory.items && config.defaultRoomCategory.items.objects && config.defaultRoomCategory.items.objects.length > 0;
 		map.rooms.forEach((room, index) => {
-			if ((!room.category.monsters && doesDefaultRoomHaveMonsters) || (room.category.monsters && room.category.monsters.objects.length > 0))
+			if ((!room.category.monsters && (doesDefaultRoomHaveMonsters || doesDefaultRoomHaveTraps)) || (room.category.monsters && room.category.monsters.objects.length > 0))
 			{
 				regionsWithMonstersOrTraps.set(index, room);
 			}
-			if ((!room.category.items && doesDefaultRoomHaveTraps) || (room.category.items && room.category.items.objects.length > 0))
+			if ((!room.category.items && doesDefaultRoomHaveItems) || (room.category.items && room.category.items.objects.length > 0))
 			{
-				regionsWithMonstersOrTraps.set(index, room);
+				regionsWithItems.set(index, room);
 			}
 		})
 		var doesDefaultCorridorHaveMonsters = config.defaultCorridorCategory.monsters && config.defaultCorridorCategory.monsters.objects && config.defaultCorridorCategory.monsters.objects.length > 0;
 		var doesDefaultCorridorHaveTraps = config.defaultCorridorCategory.traps && config.defaultCorridorCategory.traps.objects && config.defaultCorridorCategory.traps.objects.length > 0;
+		var doesDefaultCorridorHaveItems = config.defaultCorridorCategory.items && config.defaultCorridorCategory.items.objects && config.defaultCorridorCategory.items.objects.length > 0;
 		map.corridors.forEach((corridor, index) => {
-			if ((!corridor.category.monsters && doesDefaultCorridorHaveMonsters) || (corridor.category.monsters && corridor.category.monsters.objects.length > 0))
+			if ((!corridor.category.monsters && (doesDefaultCorridorHaveMonsters || doesDefaultCorridorHaveTraps)) || (corridor.category.monsters && corridor.category.monsters.objects.length > 0))
 			{
-				regionsWithItems.set(index, corridor);
+				regionsWithMonstersOrTraps.set(-index, corridor);
 			}
-			if ((!corridor.category.items && doesDefaultCorridorHaveTraps) || (corridor.category.items && corridor.category.items.objects.length > 0))
+			if ((!corridor.category.items && doesDefaultCorridorHaveItems) || (corridor.category.items && corridor.category.items.objects.length > 0))
 			{
-				regionsWithItems.set(index, corridor);
+				regionsWithItems.set(-index, corridor);
 			}
 		})
 
 		var difficulties = this.randSplitNumber(config.difficulty, regionsWithMonstersOrTraps.size) 
 		var diffIndex = 0;
 		regionsWithMonstersOrTraps.forEach((region, index) => {
-			if (region.isCorridor){
-				Object.assign(map.corridors[index], this.genearteRegionEncounter(region, config, difficulties[diffIndex]));
+			if (index < 0){
+				Object.assign(map.corridors[-index], this.genearteRegionEncounter(region, config, difficulties[diffIndex]));
 			}
 			else{
 				Object.assign(map.rooms[index], this.genearteRegionEncounter(region, config, difficulties[diffIndex]));
@@ -324,8 +326,8 @@ export class DungeonGenerator {
 		var values = this.randSplitNumber(config.difficulty, regionsWithItems.size) 
 		var valIndex = 0;
 		regionsWithItems.forEach((region, index) => {
-			if (region.isCorridor){
-				Object.assign(map.corridors[index], this.generateRegionItems(region, config, values[valIndex]));
+			if (index < 0){
+				Object.assign(map.corridors[-index], this.generateRegionItems(region, config, values[valIndex]));
 			}
 			else{
 				Object.assign(map.rooms[index], this.generateRegionItems(region, config, values[valIndex]));
@@ -409,7 +411,7 @@ export class DungeonGenerator {
 			if (!trapProbs || !trapProbs.objects || trapProbs.objects.length === 0 || Math.random() < 0.5){
 				var monster = monsterProbs.randPickOne();
 				if (monster){
-					sumDiff += monster.challenge;
+					sumDiff += monster.challenge * diffModifier;
 					monsters.push(monster)
 				}
 			}
