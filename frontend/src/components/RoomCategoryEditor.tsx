@@ -35,10 +35,10 @@ import EnumProbabilityText from './common/EnumProbabilityText';
 import ProbabilityNameList from './common/ProbabilityNameList';
 import ItemEditor from './ItemEditor';
 import MonsterEditor from './MonsterEditor';
-import SelectItem from './SelectItem';
-import SelectMonster from './SelectMonster';
-import SelectTileSet from './SelectTileSet';
-import SelectTrap from './SelectTrap';
+import SelectItem from './select/SelectItem';
+import SelectMonster from './select/SelectMonster';
+import SelectTileSet from './select/SelectTileSet';
+import SelectTrap from './select/SelectTrap';
 import TrapEditor from './TrapEditor';
 
 
@@ -70,7 +70,9 @@ const useStyles = makeStyles((theme) => ({
 type Props = {
   open: boolean;
   viewOnly?: boolean;
+  isDefault?: boolean;
   roomCategory?: RoomCategory;
+  savePhrase?: string;
   onCancelClick: () => void;
   onSave?: (rc: RoomCategory) => void;
 }
@@ -80,7 +82,8 @@ type Errors = {
 }
 
 RoomCategoryEditor.defaultProps = {
-  viewOnly: false
+  viewOnly: false,
+  isDefault: false
 }
 
 export default function RoomCategoryEditor(props: Props) {
@@ -373,18 +376,20 @@ export default function RoomCategoryEditor(props: Props) {
               <IconButton disabled={viewMode || !Boolean(roomCategory.tileSets) || !Authenticator.isLoggedIn()} onClick={handleAddTileSetClick} aria-label="add" color="primary">
                 <AddBoxIcon />
               </IconButton>
-              <FormControlLabel
-                disabled={viewMode || !Authenticator.isLoggedIn()}
-                control={
-                  <Checkbox
-                    checked={!Boolean(roomCategory.tileSets)}
-                    onChange={handleTileSetDefaultChange}
-                    name="useDefault"
-                    color="default"
-                  />
-                }
-                label="Use Default"
-              />
+              {!props.isDefault && 
+                <FormControlLabel
+                  disabled={viewMode || !Authenticator.isLoggedIn()}
+                  control={
+                    <Checkbox
+                      checked={!Boolean(roomCategory.tileSets)}
+                      onChange={handleTileSetDefaultChange}
+                      name="useDefault"
+                      color="default"
+                    />
+                  }
+                  label="Use Default"
+                />
+              }
             </div>
             <div className={classes.listLabel}>
               <FormControl disabled={viewMode || !Boolean(roomCategory.monsters)}>
@@ -393,18 +398,20 @@ export default function RoomCategoryEditor(props: Props) {
               <IconButton disabled={viewMode || !Boolean(roomCategory.monsters)} onClick={handleAddMonsterClick} aria-label="add" color="primary">
                 <AddBoxIcon />
               </IconButton>
-              <FormControlLabel
-                disabled={viewMode}
-                control={
-                  <Checkbox
-                    checked={!Boolean(roomCategory.monsters)}
-                    onChange={handleMonsterDefaultChange}
-                    name="useDefault"
-                    color="default"
-                  />
-                }
-                label="Use Default"
-              />
+              {!props.isDefault && 
+                <FormControlLabel
+                  disabled={viewMode}
+                  control={
+                    <Checkbox
+                      checked={!Boolean(roomCategory.monsters)}
+                      onChange={handleMonsterDefaultChange}
+                      name="useDefault"
+                      color="default"
+                    />
+                  }
+                  label="Use Default"
+                />
+              }
             </div>
             <ProbabilityNameList
               showProbs
@@ -430,18 +437,20 @@ export default function RoomCategoryEditor(props: Props) {
               <IconButton disabled={viewMode || !Boolean(roomCategory.items)} onClick={handleAddItemClick} aria-label="add" color="primary">
                 <AddBoxIcon />
               </IconButton>
-              <FormControlLabel
-                disabled={viewMode}
-                control={
-                  <Checkbox
-                    checked={!Boolean(roomCategory.items)}
-                    onChange={handleItemDefaultChange}
-                    name="useDefault"
-                    color="default"
-                  />
-                }
-                label="Use Default"
-              />
+              {!props.isDefault && 
+                <FormControlLabel
+                  disabled={viewMode}
+                  control={
+                    <Checkbox
+                      checked={!Boolean(roomCategory.items)}
+                      onChange={handleItemDefaultChange}
+                      name="useDefault"
+                      color="default"
+                    />
+                  }
+                  label="Use Default"
+                />
+              }
             </div>
             <ProbabilityNameList
               showProbs
@@ -460,18 +469,19 @@ export default function RoomCategoryEditor(props: Props) {
               <IconButton disabled={viewMode || !Boolean(roomCategory.traps)} onClick={handleAddTrapClick} aria-label="add" color="primary">
                 <AddBoxIcon />
               </IconButton>
-              <FormControlLabel
-                disabled={viewMode}
-                control={
-                  <Checkbox
-                    checked={!Boolean(roomCategory.traps)}
-                    onChange={handleTrapDefaultChange}
-                    name="useDefault"
-                    color="default"
-                  />
-                }
-                label="Use Default"
-              />
+              {!props.isDefault && 
+                <FormControlLabel
+                  disabled={viewMode}
+                  control={
+                    <Checkbox
+                      checked={!Boolean(roomCategory.traps)}
+                      onChange={handleTrapDefaultChange}
+                      name="useDefault"
+                      color="default"
+                    />
+                  }
+                  label="Use Default"/>
+              }
             </div>
             <ProbabilityNameList
               showProbs
@@ -498,7 +508,7 @@ export default function RoomCategoryEditor(props: Props) {
           </Button>
             {!viewMode &&
               <Button onClick={handleSaveClick} variant="contained" color="primary">
-                Save
+                {props.savePhrase ? props.savePhrase : "Save"}
             </Button>
             }
 

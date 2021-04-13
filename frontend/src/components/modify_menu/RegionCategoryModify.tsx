@@ -2,21 +2,18 @@ import { makeStyles } from '@material-ui/core';
 import FormLabel from '@material-ui/core/FormLabel';
 import IconButton from '@material-ui/core/IconButton';
 import AddBoxIcon from '@material-ui/icons/AddBox';
-import ListIcon from '@material-ui/icons/List';
 import { memo, useState } from 'react';
-import { Probabilities } from '../generator/Probabilities';
-import { Configuration } from '../models/Configuration';
-import { CorridorCategory } from '../models/CorridorCategory';
-import { RegionCategory } from '../models/RegionCategory';
-import { RoomCategory } from '../models/RoomCategory';
-import { nameOf, valueOf } from '../utils/util';
-import NameList from "./common/NameList";
-import ProbabilityNameList from "./common/ProbabilityNameList";
-import CorridorCategoryEditor from './CorridorCategoryEditor';
-import RoomCategoryEditor from './RoomCategoryEditor';
-import SelectCorridorCategory from './select/SelectCorridorCategory';
-import SelectRoomCategory from './select/SelectRoomCategory';
-
+import { Probabilities } from '../../generator/Probabilities';
+import { Configuration } from '../../models/Configuration';
+import { CorridorCategory } from '../../models/CorridorCategory';
+import { RegionCategory } from '../../models/RegionCategory';
+import { RoomCategory } from '../../models/RoomCategory';
+import { nameOf, valueOf } from '../../utils/util';
+import NameList from "../common/NameList";
+import CorridorCategoryEditor from '../CorridorCategoryEditor';
+import RoomCategoryEditor from '../RoomCategoryEditor';
+import SelectCorridorCategory from '../select/SelectCorridorCategory';
+import SelectRoomCategory from '../select/SelectRoomCategory';
 
 const useStyles = makeStyles({
     listLabel: {
@@ -29,29 +26,28 @@ const useStyles = makeStyles({
 type Props = {
     isSaving: boolean;
     configuration: Configuration;
-    onChange: (name: keyof Configuration, value: valueOf<Configuration>)=>void;
+    savePhrase?: string;
+    selectedRoomCategoryIndex?: number;
+    selectedCorridorCategoryIndex?: number;
+    onChange: (name: keyof Configuration, value: valueOf<Configuration>) => void;
+    onRegenerateClick: (name: keyof Configuration, index: number) => void;
+    onAddClick: (name: keyof Configuration, index: number) => void;
+    selectCategory?: (category: RegionCategory) => void;
 }
 
-const RegionLevelConfiguration = memo(
+const RegionCategoryModify = memo(
     (props: Props) => {
-        var disabled = props.isSaving || props.configuration.premade;
+        var disabled = props.isSaving;
 
         const classes = useStyles();
         const [addRoomDialogOpen, setAddRoomDialogOpen] = useState(false);
         const [addCorridorDialogOpen, setAddCorridorDialogOpen] = useState(false);
-        const [roomEditorOpen, setRoomEditorOpen] = useState(false);
+        const [roomCategoryEditorOpen, setRoomCategoryEditorOpen] = useState(false);
         const [roomCategoryToEdit, setRoomCategoryToEdit] = useState<RoomCategory>();
-        const [corridorEditorOpen, setCorridorEditorOpen] = useState(false);
+        const [corridorCategoryEditorOpen, setCorridorEditorOpen] = useState(false);
         const [corridorCategoryToEdit, setCorridorCategoryToEdit] = useState<CorridorCategory>();
         const [editingDefault, setEditingDefault] = useState(false);
         const [selectingDefault, setSelectingDefault] = useState(false);
-
-        const handleDeleteClick = (name: keyof Configuration, index: number) => {
-            var updatedList = Object.create(Object.getPrototypeOf(props.configuration[name]) as Probabilities<any>);
-            updatedList = Object.assign(updatedList, props.configuration[name]);
-            updatedList.remove(index);
-            props.onChange(name, updatedList);
-        }
 
         const handleAddRoomClick = () => {
            setAddRoomDialogOpen(true);
@@ -70,16 +66,6 @@ const RegionLevelConfiguration = memo(
             setAddCorridorDialogOpen(false);
         }
 
-        const handleSelectDefaultRoomClick = () => {
-            setSelectingDefault(true);
-            setAddRoomDialogOpen(true);
-        }
-
-        const handleSelectDefaultCorridorClick = () => {
-            setSelectingDefault(true);
-            setAddCorridorDialogOpen(true);
-        }
-
         const handleRoomDefaultSelect = (rc: RoomCategory) => {
             props.onChange(nameOf<Configuration>("defaultRoomCategory"), rc);
             setAddRoomDialogOpen(false);
@@ -92,22 +78,10 @@ const RegionLevelConfiguration = memo(
             setSelectingDefault(false);
         }
 
-        const handleDefaultRoomClick = (rc: RoomCategory) => {
-            setRoomCategoryToEdit(rc);
-            setEditingDefault(true);
-            setRoomEditorOpen(true);
-        }
-
-        const handleDefaultCorridorClick = (cc: CorridorCategory) => {
-            setCorridorCategoryToEdit(cc);
-            setEditingDefault(true);
-            setCorridorEditorOpen(true);
-        }
-
         const handleRoomDefaultSave = (rc: RoomCategory) => {
             props.onChange(nameOf<Configuration>("defaultRoomCategory"), rc);
             setRoomCategoryToEdit(undefined);
-            setRoomEditorOpen(false);
+            setRoomCategoryEditorOpen(false);
             setEditingDefault(false);
         }
 
@@ -120,7 +94,7 @@ const RegionLevelConfiguration = memo(
 
         const handleRoomClick = (rc: RoomCategory) => {
             setRoomCategoryToEdit(rc);
-            setRoomEditorOpen(true);
+            setRoomCategoryEditorOpen(true);
         }
 
         const handleCorridorClick = (cc: CorridorCategory) => {
@@ -137,7 +111,7 @@ const RegionLevelConfiguration = memo(
                 updatedList.updateObject(corridorCategoryToEdit, rc);
             }
             props.onChange(name, updatedList);
-            setRoomEditorOpen(false);
+            setRoomCategoryEditorOpen(false);
             setCorridorEditorOpen(false);
             setRoomCategoryToEdit(undefined);
             setCorridorCategoryToEdit(undefined);
@@ -146,59 +120,45 @@ const RegionLevelConfiguration = memo(
         return (
             <div style={{width: '100%'}}>
                 <div className={classes.listLabel}>
-                    <FormLabel disabled={disabled} required>Default Room</FormLabel>
-                    <IconButton disabled={disabled} onClick={handleSelectDefaultRoomClick} aria-label="add" color="primary">
-                        <ListIcon/>
-                    </IconButton>
-                </div>
-                <NameList
-                    disabled={disabled && !props.configuration.premade}
-                    onClick={handleDefaultRoomClick}
-                    list={props.configuration.defaultRoomCategory ? [props.configuration.defaultRoomCategory] : []}
-                />
-                <div className={classes.listLabel}>
-                    <FormLabel disabled={disabled}>Rooms</FormLabel>
+                    <FormLabel disabled={disabled}>Room Categories</FormLabel>
                     <IconButton disabled={disabled} onClick={handleAddRoomClick} aria-label="add" color="primary">
                         <AddBoxIcon/>
                     </IconButton>
                 </div>
 
-                <ProbabilityNameList
-                    disableListItem={disabled && !props.configuration.premade}
-                    disableProbs={disabled}
-                    showProbs
-                    showDelete={!disabled}
-                    list={props.configuration.roomCategories}
-                    onClick={handleRoomClick}
-                    onDeleteClick={(index) => handleDeleteClick(nameOf<Configuration>("roomCategories"), index)}
-                    onProbUpdate={(newList) => props.onChange(nameOf<Configuration>("roomCategories"), newList!)}
-                />
-                <div className={classes.listLabel}>
-                    <FormLabel disabled={disabled} required>Default Corridor</FormLabel>
-                    <IconButton disabled={disabled} onClick={handleSelectDefaultCorridorClick} aria-label="add" color="primary">
-                        <ListIcon/>
-                    </IconButton>
-                </div>
                 <NameList
-                    disabled={disabled && !props.configuration.premade}
-                    onClick={handleDefaultCorridorClick}
-                    list={props.configuration.defaultCorridorCategory ? [props.configuration.defaultCorridorCategory] : []}
-                />
+                    disabled={disabled}
+                    showRegenerate
+                    showSelection
+                    showAdd
+                    onlyShowSelectedIcons
+                    doubleClick
+                    list={props.configuration.roomCategories.objects}
+                    selectedIndex={props.selectedRoomCategoryIndex}
+                    onSelect={props.selectCategory}
+                    onClick={handleRoomClick}
+                    onRegenerateClick={(index: number) => props.onRegenerateClick(nameOf<Configuration>("roomCategories"), index)}
+                    onAddClick={(index: number) => props.onAddClick(nameOf<Configuration>("roomCategories"), index)}
+                />      
                 <div className={classes.listLabel}>
-                    <FormLabel disabled={disabled}>Corridors</FormLabel>
+                    <FormLabel disabled={disabled}>Corridor Categories</FormLabel>
                     <IconButton disabled={disabled} onClick={handleAddCorridorClick} aria-label="add" color="primary">
                         <AddBoxIcon />
                     </IconButton>
                 </div>
-                <ProbabilityNameList
-                    disableListItem={disabled && !props.configuration.premade}
-                    disableProbs={disabled}
-                    showProbs
-                    showDelete={!disabled}
-                    list={props.configuration.corridorCategories}
+                <NameList
+                    disabled={disabled}
+                    showRegenerate
+                    showSelection
+                    showAdd
+                    onlyShowSelectedIcons
+                    doubleClick
+                    list={props.configuration.corridorCategories.objects}
+                    selectedIndex={props.selectedCorridorCategoryIndex}
+                    onSelect={props.selectCategory}
                     onClick={handleCorridorClick}
-                    onDeleteClick={(index) => handleDeleteClick(nameOf<Configuration>("corridorCategories"), index)}
-                    onProbUpdate={(newList) => props.onChange(nameOf<Configuration>("corridorCategories"), newList!)}
+                    onRegenerateClick={(index: number) => props.onRegenerateClick(nameOf<Configuration>("corridorCategories"), index)}
+                    onAddClick={(index: number) => props.onAddClick(nameOf<Configuration>("corridorCategories"), index)}
                 />
                 {addRoomDialogOpen &&
                     <SelectRoomCategory
@@ -218,22 +178,22 @@ const RegionLevelConfiguration = memo(
                         onCancelClick={()=>{setAddCorridorDialogOpen(false); setSelectingDefault(false);}}
                     />
                 }
-                {roomEditorOpen &&
+                {roomCategoryEditorOpen &&
                     <RoomCategoryEditor
-                        viewOnly
                         isDefault={editingDefault}
-                        open={roomEditorOpen}
+                        open={roomCategoryEditorOpen}
                         roomCategory={roomCategoryToEdit}
+                        savePhrase={props.savePhrase}
                         onSave={(rc: RoomCategory) => editingDefault ? handleRoomDefaultSave(rc) : handleSave(nameOf<Configuration>("roomCategories"), rc)}
-                        onCancelClick={()=>setRoomEditorOpen(false)}
+                        onCancelClick={()=>setRoomCategoryEditorOpen(false)}
                     />
                 }
-                {corridorEditorOpen &&
+                {corridorCategoryEditorOpen &&
                     <CorridorCategoryEditor
-                        viewOnly
                         isDefault={editingDefault}
-                        open={corridorEditorOpen}
+                        open={corridorCategoryEditorOpen}
                         corridorCategory={corridorCategoryToEdit}
+                        savePhrase={props.savePhrase}
                         onSave={(cc: CorridorCategory) => editingDefault ? handleCorridorDefaultSave(cc) : handleSave(nameOf<Configuration>("corridorCategories"), cc)}
                         onCancelClick={()=>setCorridorEditorOpen(false)}
                     />
@@ -241,14 +201,17 @@ const RegionLevelConfiguration = memo(
             </div>
         );
     },
-    // (prevProps, nextProps) =>
-    //     prevProps.configuration.roomCategories === nextProps.configuration.roomCategories &&
-    //     prevProps.configuration.corridorCategories === nextProps.configuration.corridorCategories &&
-    //     prevProps.configuration.defaultRoomCategory === nextProps.configuration.defaultRoomCategory &&
-    //     prevProps.configuration.defaultCorridorCategory === nextProps.configuration.defaultCorridorCategory &&
-    //     prevProps.configuration.premade === nextProps.configuration.premade &&
-    //     prevProps.isSaving === nextProps.isSaving
+    (prevProps, nextProps) =>
+        prevProps.configuration.roomCategories === nextProps.configuration.roomCategories &&
+        prevProps.configuration.corridorCategories === nextProps.configuration.corridorCategories &&
+        prevProps.configuration.defaultRoomCategory === nextProps.configuration.defaultRoomCategory &&
+        prevProps.configuration.defaultCorridorCategory === nextProps.configuration.defaultCorridorCategory &&
+        prevProps.configuration.premade === nextProps.configuration.premade &&
+        prevProps.isSaving === nextProps.isSaving && 
+        prevProps.savePhrase === nextProps.savePhrase &&
+        prevProps.selectedCorridorCategoryIndex == nextProps.selectedCorridorCategoryIndex &&
+        prevProps.selectedRoomCategoryIndex == nextProps.selectedRoomCategoryIndex
 )
 
 
-export default RegionLevelConfiguration;
+export default RegionCategoryModify;

@@ -16,15 +16,13 @@ import { EntranceType } from '../constants/EntranceType';
 import { Monster } from '../models/Monster';
 import { Trap } from '../models/Trap';
 import { Item } from '../models/Item';
+import cloneDeep from 'lodash/cloneDeep';
 
 export class DungeonGenerator {
 	// TODO: Chose actual values
-	private static itemChance: number = 5;
-	private static trapChance: number = 5;
-	private static monsterChance: number = 5;
 	private static defaultSqrtArea = 3;
 	private static additionalExitProb = 0.5;
-	private static startRoomChance = 1;
+	private static startRoomChance = 0.5;
 
 	static generateDungeon(config: Configuration): DungeonMap {
 		var map: DungeonMap = new DungeonMap(config);
@@ -35,7 +33,6 @@ export class DungeonGenerator {
 		start.y = Math.floor(Math.min(Math.max(Math.random() * map.getHeight(), map.getHeight() - map.getHeight()/4), map.getHeight()/4));
 		lastPath.push(start);
 		var done = false;
-
 		var turnChance = config.getTurnChance();
 		var maxLength = config.getMaxLength();
 		var maxRooms = config.getMaxRooms();
@@ -60,7 +57,7 @@ export class DungeonGenerator {
 					numRooms ++;
 					lastPath = [next];
 	
-					var dirToNeighbor = this.getDirectionToNeighbor(next, map, room)!;
+					var dirToNeighbor = map.getDirectionToNeighbor(next, room)!;
 					var neighborPoint = next.getNextLocation(dirToNeighbor);
 					lastEntrance = this.generateEntrance(room, config, neighborPoint, Direction.getOppositeDirection(dirToNeighbor));
 					lastRegion = room;
@@ -70,14 +67,13 @@ export class DungeonGenerator {
 				}
 			}
 		}
-		// TODO: Add option to start from room instead of corridor. Just set lastRegion and lastEntrance acordingly
 
 		while(!done){
 			// Chance to be done increases as room number increases.
 			if (numRooms > minRooms && Math.random() > (maxRooms - numRooms)/maxRooms){
 				// chance to add a corridor to a second exterior exit
 				if (lastPath.length > 0 && Math.random() < this.additionalExitProb){
-					// map.addCorridor(this.generateCorridor(config.corridorCategories.randPickOne(), config.defaultCorridorCategory, lastPath, direction, Direction.getOppositeDirection(lastEntrance.direction), null, lastEntrance.type));
+					map.addCorridor(this.generateCorridor(config.corridorCategories.randPickOne(), config.defaultCorridorCategory, lastPath, direction, Direction.getOppositeDirection(lastEntrance.direction), null, lastEntrance.type));
 				}
 				done = true;
 			}
@@ -96,7 +92,7 @@ export class DungeonGenerator {
 				var region = map.getRegionInstance(next.x, next.y);
 				if(forceMapBranch || region || map.isOutOfBounds(next.x, next.y)){
 					forceMapBranch = false;
-					// Add the last path to map if applicable // Ended up adding too many corridors
+					// Add the last path to map if applicable // <- Removed becauuse this ended up adding too many corridors
 					// if (lastPath && lastPath.length > 0){
 					// 	var endEntranceType = null;
 					// 	if (region){
@@ -118,7 +114,7 @@ export class DungeonGenerator {
 						next = result[0];
 						lastPath = [];
 
-						var dirToNeighbor = this.getDirectionToNeighbor(next, map)!;
+						var dirToNeighbor = map.getDirectionToNeighbor(next)!;
 						var neightborPoint = next.getNextLocation(dirToNeighbor);
 						var neighbor = map.getRegionInstance(neightborPoint.x, neightborPoint.y)!;
 						lastEntrance = this.generateEntrance(neighbor, config, neightborPoint, Direction.getOppositeDirection(dirToNeighbor));
@@ -146,7 +142,7 @@ export class DungeonGenerator {
 							numRooms ++;
 							lastPath = [];
 
-							var dirToNeighbor = this.getDirectionToNeighbor(next, map, room)!;
+							var dirToNeighbor = map.getDirectionToNeighbor(next, room)!;
 							var neighborPoint = next.getNextLocation(dirToNeighbor);
 							lastEntrance = this.generateEntrance(room, config, neighborPoint, Direction.getOppositeDirection(dirToNeighbor));
 							lastRegion = room;
@@ -168,7 +164,7 @@ export class DungeonGenerator {
 		return map;
 	}
 
-	private static generateEntrance(region: RegionInstance, config: Configuration, location: Coordinates, direction: Direction, goalType: EntranceType | null = null): Entrance{
+	static generateEntrance(region: RegionInstance, config: Configuration, location: Coordinates, direction: Direction, goalType: EntranceType | null = null): Entrance{
 		var category;
 		var defaultCategory;
 		if (region.isCorridor){
@@ -192,43 +188,33 @@ export class DungeonGenerator {
 	private static branchFromRegion(region: RegionInstance, map: DungeonMap): [Coordinates, Direction | null]{
 		var next = Probabilities.buildUniform<Coordinates>(map.getRegionBorder(region, true)).randPickOne()!;
 		
-		var direction = this.getAvailableDirection(next, map);
+		var direction = map.getAvailableDirection(next);
 		
 		return [next, direction];
 	}
 
 	private static branchFromMap(map: DungeonMap): [Coordinates, Direction | null]{
 		var next = Probabilities.buildUniform<Coordinates>(map.getMapBorder(true)).randPickOne()!;
-		var direction = this.getAvailableDirection(next, map);
+		var direction = map.getAvailableDirection(next);
 
 		return [next, direction];
 	}
 
-	private static getAvailableDirection(point: Coordinates, map: DungeonMap): Direction | null {
-		if (point){
-			var adjacent = point.getAdjacent();
-			for (var i = 0; i < adjacent.length; i++){
-				var next = adjacent[i];
-				if (!map.getRegionInstance(next.x, next.y) && !map.isOutOfBounds(next.x, next.y)){
-					return point.getDirectionTo(next);
-				}
-			}
+	private static getGoalDirectionProb(map: DungeonMap, currentLocation: Coordinates, currentDir: Direction, goal: Coordinates): Probabilities<Direction> {
+		var probs: Map<Direction, number> = new Map<Direction, number>();
+		if (goal.x < currentLocation.x && currentDir !== Direction.right){
+			probs.set(Direction.left, 0.5);
 		}
-		return null;
-	}
-
-	private static getDirectionToNeighbor(point: Coordinates, map: DungeonMap, neighbor: RegionInstance | null = null): Direction | null{
-		if (point){
-			var adjacent = point.getAdjacent();
-			for (var i = 0; i < adjacent.length; i++){
-				var next = adjacent[i];
-				var region =  map.getRegionInstance(next.x, next.y);
-				if (region && (!neighbor || region === neighbor)){
-					return point.getDirectionTo(next);
-				}
-			}
+		if (goal.x > currentLocation.x && currentDir !== Direction.left){
+			probs.set(Direction.right, 0.5);
 		}
-		return null;
+		if (goal.y > currentLocation.y && currentDir !== Direction.down){
+			probs.set(Direction.up, 0.5);
+		}
+		if (goal.y < currentLocation.y && currentDir !== Direction.up){
+			probs.set(Direction.down, 0.5);
+		}
+		return new Probabilities(probs);;
 	}
 
 	private static getNewDirectionProb(map: DungeonMap, currentPath: Coordinates[], currentDir: Direction): Probabilities<Direction> {
@@ -266,7 +252,7 @@ export class DungeonGenerator {
 		return new Probabilities(probs);
 	}
 
-	private static generateRoom(category: RoomCategory | null, defaultCategory: RoomCategory, start: Coordinates, direction: Direction): RoomInstance {
+	static generateRoom(category: RoomCategory | null, defaultCategory: RoomCategory, start: Coordinates, direction: Direction): RoomInstance {
 		if (!category){
 			category = defaultCategory;
 		}
@@ -284,6 +270,26 @@ export class DungeonGenerator {
 		return room;
 	}
 
+	static regenerateRegion(region: RegionInstance, defaultCategory: RegionCategory, config: Configuration){
+		var category;
+		if (region.isCorridor){
+			category = (region as CorridorInstance).category;
+		}
+		else{
+			category = (region as RoomInstance).category;
+		}
+
+		var newRegion = cloneDeep(region);
+		newRegion.tileSet = category.tileSets ? category.tileSets.randPickOne()! : defaultCategory.tileSets!.randPickOne()!;
+		var entranceTypes = category.entranceTypes ? category.entranceTypes : defaultCategory.entranceTypes!
+		newRegion.entrances.forEach((entrance, index, array) => {
+			array[index].type = entranceTypes.randPickOne()!;
+		})
+		Object.assign(newRegion, this.generateRegionItems(region, config, region.value));
+		Object.assign(newRegion, this.genearteRegionEncounter(region, config, region.difficulty));
+		return newRegion;
+	}
+
 	private static generateCorridor(category: CorridorCategory | null, defaultCategory: CorridorCategory, path: Coordinates[], 
 		endDirection: Direction, startDirection: Direction, endEntranceType: EntranceType | null, startEntranceType: EntranceType | null, 
 		addEndingEntrance: boolean = true): CorridorInstance {
@@ -292,6 +298,7 @@ export class DungeonGenerator {
 		}
 		
 		var corridor: CorridorInstance = new CorridorInstance();
+		corridor.start = path[0];
 		corridor.category = category;
 		corridor.width = category.widths ? category.widths!.randPickOne()! : defaultCategory.widths!.randPickOne()!;
 		corridor.tileSet = category.tileSets ? category.tileSets.randPickOne()! : defaultCategory.tileSets!.randPickOne()!;
@@ -308,39 +315,98 @@ export class DungeonGenerator {
 		return corridor;
 	}
 
-	private static generateEncounters(map: DungeonMap, config: Configuration){
+	static generatePathAndCorridor(start: Coordinates, end: Coordinates, category: CorridorCategory, map: DungeonMap){
+		var path: Coordinates[] = [];
+		var startDirection = map.getAvailableDirection(start) ?? Direction.down;
+		var current = start;
+		var direction = startDirection;
+		while (current.toString() !== end.toString()){
+			path.push(current);
+			direction = this.getGoalDirectionProb(map, current, direction, end)!.randPickOne()!;
+			current = current.getNextLocation(direction);
+		}
+		path.push(current);
+		return this.generateCorridor(category, map.config.defaultCorridorCategory, path, direction, startDirection, null, null, true);
+	}
+
+	static generateEntrancesForNeighbours(region: RegionInstance, map: DungeonMap){
+		var regionCategory = region.isCorridor ? (region as CorridorInstance).category : (region as RoomInstance).category
+		var defaultCategory = region.isCorridor ? map.config.defaultCorridorCategory : map.config.defaultRoomCategory
+		if (region.entrances && region.entrances.length > 0){
+			var visited : RegionInstance[] = [];
+			region.locations.forEach((location, index) => {
+				if (map.getRegionInstance(location.x, location.y) === region){
+					var adjacent = location.getAdjacent();
+					for (var i = 0; i < adjacent.length; i++){
+						var point = adjacent[i];
+						var neighbour = map.getRegionInstance(point.x, point.y);
+						if (neighbour && !visited.find((x) => x.name === neighbour!.name) && !map.isOutOfBounds(point.x, point.y) &&  neighbour && neighbour !== region){
+							visited.push(neighbour);
+							var entranceDirection = location.getDirectionTo(point);
+							if (entranceDirection){
+								if (index == 0 || (region.isCorridor && index == region.locations.length - 1)){
+									region.entrances[index === 0 ? 0 : 1].direction = entranceDirection;
+								}
+								else{
+									region.entrances.push(DungeonGenerator.generateEntrance(region, map.config, location, entranceDirection))
+								}
+									
+							}
+	
+							var neighbourDirection = Direction.getOppositeDirection(entranceDirection);
+							if (!neighbour.entrances){
+								neighbour.entrances = [];
+							}
+							let existing = neighbour.entrances.find((x) => x.location.toString() === point.toString());
+							if (existing && existing.direction === neighbourDirection){
+								region.entrances[region.entrances.length - 1].type = DungeonGenerator.tryMatchEntrances(regionCategory, defaultCategory, existing.type)
+							}
+							else{
+								neighbour.entrances.push(DungeonGenerator.generateEntrance(neighbour, map.config, point, neighbourDirection, region.entrances[region.entrances.length - 1].type));
+							}
+	
+						}
+					}
+				}
+			});
+		}
+	}
+
+	static generateEncounters(map: DungeonMap, config: Configuration){
 		var regionsWithMonstersOrTraps = new Map<number, RegionInstance>();
 		var regionsWithItems = new Map<number, RegionInstance>();
 		var doesDefaultRoomHaveMonsters = config.defaultRoomCategory.monsters && config.defaultRoomCategory.monsters.objects && config.defaultRoomCategory.monsters.objects.length > 0;
 		var doesDefaultRoomHaveTraps = config.defaultRoomCategory.traps && config.defaultRoomCategory.traps.objects && config.defaultRoomCategory.traps.objects.length > 0;
+		var doesDefaultRoomHaveItems = config.defaultRoomCategory.items && config.defaultRoomCategory.items.objects && config.defaultRoomCategory.items.objects.length > 0;
 		map.rooms.forEach((room, index) => {
-			if ((!room.category.monsters && doesDefaultRoomHaveMonsters) || (room.category.monsters && room.category.monsters.objects.length > 0))
+			if ((!room.category.monsters && (doesDefaultRoomHaveMonsters || doesDefaultRoomHaveTraps)) || (room.category.monsters && room.category.monsters.objects.length > 0))
 			{
 				regionsWithMonstersOrTraps.set(index, room);
 			}
-			if ((!room.category.items && doesDefaultRoomHaveTraps) || (room.category.items && room.category.items.objects.length > 0))
+			if ((!room.category.items && doesDefaultRoomHaveItems) || (room.category.items && room.category.items.objects.length > 0))
 			{
-				regionsWithMonstersOrTraps.set(index, room);
+				regionsWithItems.set(index, room);
 			}
 		})
 		var doesDefaultCorridorHaveMonsters = config.defaultCorridorCategory.monsters && config.defaultCorridorCategory.monsters.objects && config.defaultCorridorCategory.monsters.objects.length > 0;
 		var doesDefaultCorridorHaveTraps = config.defaultCorridorCategory.traps && config.defaultCorridorCategory.traps.objects && config.defaultCorridorCategory.traps.objects.length > 0;
+		var doesDefaultCorridorHaveItems = config.defaultCorridorCategory.items && config.defaultCorridorCategory.items.objects && config.defaultCorridorCategory.items.objects.length > 0;
 		map.corridors.forEach((corridor, index) => {
-			if ((!corridor.category.monsters && doesDefaultCorridorHaveMonsters) || (corridor.category.monsters && corridor.category.monsters.objects.length > 0))
+			if ((!corridor.category.monsters && (doesDefaultCorridorHaveMonsters || doesDefaultCorridorHaveTraps)) || (corridor.category.monsters && corridor.category.monsters.objects.length > 0))
 			{
-				regionsWithItems.set(index, corridor);
+				regionsWithMonstersOrTraps.set(-index, corridor);
 			}
-			if ((!corridor.category.items && doesDefaultCorridorHaveTraps) || (corridor.category.items && corridor.category.items.objects.length > 0))
+			if ((!corridor.category.items && doesDefaultCorridorHaveItems) || (corridor.category.items && corridor.category.items.objects.length > 0))
 			{
-				regionsWithItems.set(index, corridor);
+				regionsWithItems.set(-index, corridor);
 			}
 		})
 
 		var difficulties = this.randSplitNumber(config.difficulty, regionsWithMonstersOrTraps.size) 
 		var diffIndex = 0;
 		regionsWithMonstersOrTraps.forEach((region, index) => {
-			if (region.isCorridor){
-				Object.assign(map.corridors[index], this.genearteRegionEncounter(region, config, difficulties[diffIndex]));
+			if (index < 0){
+				Object.assign(map.corridors[-index], this.genearteRegionEncounter(region, config, difficulties[diffIndex]));
 			}
 			else{
 				Object.assign(map.rooms[index], this.genearteRegionEncounter(region, config, difficulties[diffIndex]));
@@ -351,8 +417,8 @@ export class DungeonGenerator {
 		var values = this.randSplitNumber(config.difficulty, regionsWithItems.size) 
 		var valIndex = 0;
 		regionsWithItems.forEach((region, index) => {
-			if (region.isCorridor){
-				Object.assign(map.corridors[index], this.generateRegionItems(region, config, values[valIndex]));
+			if (index < 0){
+				Object.assign(map.corridors[-index], this.generateRegionItems(region, config, values[valIndex]));
 			}
 			else{
 				Object.assign(map.rooms[index], this.generateRegionItems(region, config, values[valIndex]));
@@ -400,6 +466,7 @@ export class DungeonGenerator {
 
 		return {
 			items: items,
+			value: sumVal
 		} as RegionInstance;
 	}
 
@@ -436,7 +503,7 @@ export class DungeonGenerator {
 			if (!trapProbs || !trapProbs.objects || trapProbs.objects.length === 0 || Math.random() < 0.5){
 				var monster = monsterProbs.randPickOne();
 				if (monster){
-					sumDiff += monster.challenge;
+					sumDiff += monster.challenge * diffModifier;
 					monsters.push(monster)
 				}
 			}
@@ -457,7 +524,7 @@ export class DungeonGenerator {
 		} as RegionInstance;
 	}
 
-	private static tryMatchEntrances(category: CorridorCategory, defaultCategory: CorridorCategory, goalEntranceType: EntranceType | null){
+	private static tryMatchEntrances(category: RegionCategory, defaultCategory: RegionCategory, goalEntranceType: EntranceType | null){
 		var entranceType = null;
 		if (goalEntranceType && category.entranceTypes && category.entranceTypes.toMap().has(goalEntranceType)){
 			entranceType = goalEntranceType;
@@ -571,7 +638,7 @@ export class DungeonGenerator {
 	}
 
 	private static getCorridorLocations(path: Coordinates[], lastDirection: Direction, widthModifier: number): Coordinates[] {
-		var locations: Set<Coordinates> = new Set<Coordinates>();
+		var locations: string[]  = [];
 		var widthStart = Math.floor(widthModifier/2);
 		for(var i = 0; i < path.length; i++){
 			var current = path[i];
@@ -583,17 +650,17 @@ export class DungeonGenerator {
 			var j;
 			if (direction === Direction.up || direction === Direction.down) {
 				for(j = 0 - widthStart; j < widthModifier - widthStart; j++){
-					locations.add(new Coordinates(current.x + j, current.y));
+					locations.push(new Coordinates(current.x + j, current.y).toString());
 				}
 			}
 			else if (direction === Direction.right || direction === Direction.left) {
 				for(j = 0 - widthStart; j < widthModifier - widthStart; j++){
-					locations.add(new Coordinates(current.x, current.y + j));
+					locations.push(new Coordinates(current.x, current.y + j).toString());
 				}
 			}
 		}
-
-		return Array.from(locations);
+		locations = locations.filter((item,index) => locations.indexOf(item) === index);
+		return locations.map((location) => Coordinates.fromString(location));
 	}
 
 }

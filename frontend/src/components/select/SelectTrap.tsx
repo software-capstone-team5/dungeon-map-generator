@@ -6,11 +6,11 @@ import DialogContent from '@material-ui/core/DialogContent';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import differenceWith from 'lodash/differenceWith';
 import { useEffect, useState } from 'react';
-import DB from '../DB';
-import { Trap } from '../models/Trap';
-import { compareByID } from '../utils/util';
-import NameList from './common/NameList';
-import TrapEditor from './TrapEditor';
+import DB from '../../DB';
+import { Trap } from '../../models/Trap';
+import { compareByID } from '../../utils/util';
+import NameList from '../common/NameList';
+import TrapEditor from '../TrapEditor';
 
 type Props = {
   open: boolean;

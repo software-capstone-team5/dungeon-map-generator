@@ -4,6 +4,7 @@ import { Configuration } from '../models/Configuration';
 
 type Props = {
     disabled?: boolean;
+    style?: any;
     value: number;
     onChange: (value: number) => void;
 }
@@ -14,7 +15,7 @@ DifficultySlider.defaultProps = {
 
 function DifficultySlider(props: Props) {
     return (
-        <div>
+        <div style={{width: '100%'}}>
             <FormLabel
                 disabled={props.disabled}
                 id="input-slider"

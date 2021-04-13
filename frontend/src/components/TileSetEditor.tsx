@@ -1,5 +1,6 @@
 import { InputLabel, makeStyles, MenuItem, Select, Typography } from '@material-ui/core';
 import Button from '@material-ui/core/Button';
+import CircularProgress from '@material-ui/core/CircularProgress';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
@@ -13,10 +14,11 @@ import HelpOutlineIcon from '@material-ui/icons/HelpOutline';
 import { useState } from "react";
 import ImageUploading, { ImageListType, ImageType } from "react-images-uploading";
 import { TileType } from "../constants/TileType";
+import { DB } from '../DB';
 import { TileSet } from '../models/TileSet';
 
 
-const useStyles = makeStyles((theme) =>  ({
+const useStyles = makeStyles((theme) => ({
   root: {
     margin: 0,
     padding: theme.spacing(2),
@@ -50,7 +52,7 @@ const useStyles = makeStyles((theme) =>  ({
 
 type Props = {
   open: boolean;
-  onCancelClick: ()=>void;
+  onCancelClick: () => void;
 }
 
 TileSetEditor.defaultProps = {
@@ -64,16 +66,17 @@ type Errors = {
 }
 
 export default function TileSetEditor(props: Props) {
-  
+
   const classes = useStyles();
   const [tileSet, setTileSet] = useState(new TileSet("", 48, new Map()));
   const [images, setImages] = useState<ImageListType>([]);
-  const [tileTypes, setTileTypes] = useState<(TileType|"")[]>([]);
+  const [tileTypes, setTileTypes] = useState<(TileType | "")[]>([]);
   const [myErrors, setMyErrors] = useState<Errors>({
     name: false,
     notFullSet: false,
     emptyType: false,
   })
+  const [isPending, setIsPending] = useState(false);
 
   const maxNumber = Object.keys(TileType).length;
 
@@ -84,7 +87,7 @@ export default function TileSetEditor(props: Props) {
         name: false
       })
     }
-    setTileSet(Object.assign(Object.create(Object.getPrototypeOf( tileSet)), tileSet, { "name": value }) );
+    setTileSet(Object.assign(Object.create(Object.getPrototypeOf(tileSet)), tileSet, { "name": value }));
   }
 
   const handleNameBlur = () => {
@@ -97,14 +100,14 @@ export default function TileSetEditor(props: Props) {
   }
 
   const handleSaveBlur = () => {
-      setMyErrors({
-        ...myErrors,
-        notFullSet: false,
-        emptyType: false
-      })
+    setMyErrors({
+      ...myErrors,
+      notFullSet: false,
+      emptyType: false
+    })
   }
 
-  const handleSaveClick = () => {
+  const handleSaveClick = async () => {
     console.log(images);
     if (!tileSet.name) {
       return;
@@ -125,13 +128,27 @@ export default function TileSetEditor(props: Props) {
     }
 
     var imagesCopy = [...images];
+    var fileArray: File[] = []
     imagesCopy.forEach((image: ImageType, index: number) => {
-
+      if (image.file !== undefined) {
+        fileArray.push(image.file)
+      }
     });
-    
-    // TODO: Make call to backend, 'images' contains the images
+
     // Save a TileSet document in the TileSets collection with name/id ONLY set field
     // Backend should error out if name already exists
+    setIsPending(true)
+    var result = await DB.saveTileSets(tileSet.name, fileArray, tileTypes as TileType[])
+    if (result && result.valid) {
+      // var id = result.response;
+      setIsPending(false)
+      window.alert("Tileset upload success"); // TBD do we need to use the Tileset DB ID 
+    } else {
+      if (result) {
+        setIsPending(false)
+        window.alert(result.response);
+      }
+    }
 
     props.onCancelClick();
   }
@@ -143,7 +160,7 @@ export default function TileSetEditor(props: Props) {
     // data for submit
     var amountToAdd = imageList.length - tileTypes.length;
     var typeCopy = [...tileTypes];
-    for (var i=0; i < amountToAdd; i++) {
+    for (var i = 0; i < amountToAdd; i++) {
       typeCopy.push("");
     }
     if (amountToAdd > 0) {
@@ -174,46 +191,51 @@ export default function TileSetEditor(props: Props) {
   return (
     <div>
       <Dialog open={props.open} aria-labelledby="form-dialog-title">
+        {isPending &&
+          <div style={{ textAlign: "center" }}>
+            <CircularProgress />
+          </div>
+        }
         <DialogTitle
           className={classes.root}
           disableTypography
           id="form-dialog-title">
           <Grid container alignItems="center">
             <Typography component={'span'} variant="h6">Upload a Tile Set</Typography>
-              <Tooltip
-                arrow
-                classes={{ tooltip: classes.customWidth }}
-                title={
-                  <>
-                    <Typography align="center" color="inherit"><u>Help</u></Typography>
-                    <Typography variant="body2" color="inherit">Accepted File Types: .png/jpg</Typography>
-                    <Typography variant="body2" color="inherit">Max File Size: 5MB</Typography> 
-                    <Typography variant="body2" color="inherit">Required Resolution: 48px by 48px</Typography>
-                    <br></br>
-                    <Typography variant="body2" color="inherit">Files will be uploaded to your Google Drive, under the "DMG_Tilesets" folder</Typography> 
-                  </>
-                }
-              >
-                <HelpOutlineIcon className={classes.helpIcon} color="primary"></HelpOutlineIcon>
-              </Tooltip>
-            </Grid>
+            <Tooltip
+              arrow
+              classes={{ tooltip: classes.customWidth }}
+              title={
+                <>
+                  <Typography align="center" color="inherit"><u>Help</u></Typography>
+                  <Typography variant="body2" color="inherit">Accepted File Types: .png/jpg</Typography>
+                  <Typography variant="body2" color="inherit">Max File Size: 5MB</Typography>
+                  <Typography variant="body2" color="inherit">Required Resolution: 48px by 48px</Typography>
+                  <br></br>
+                  <Typography variant="body2" color="inherit">Files will be uploaded to your Google Drive, under the "DMG_Tilesets" folder</Typography>
+                </>
+              }
+            >
+              <HelpOutlineIcon className={classes.helpIcon} color="primary"></HelpOutlineIcon>
+            </Tooltip>
+          </Grid>
         </DialogTitle>
         <DialogContent>
           <TextField
-              required
-              error={myErrors.name}
-              onBlur={handleNameBlur}
-              variant="outlined"
-              autoFocus
-              margin="dense"
-              id="name"
-              label="Name"
-              InputLabelProps={{
-                shrink: true,
-              }}
-              fullWidth
-              value={tileSet.name}
-              onChange={(e)=>handleNameChange(e.target.value)}
+            required
+            error={myErrors.name}
+            onBlur={handleNameBlur}
+            variant="outlined"
+            autoFocus
+            margin="dense"
+            id="name"
+            label="Name"
+            InputLabelProps={{
+              shrink: true,
+            }}
+            fullWidth
+            value={tileSet.name}
+            onChange={(e) => handleNameChange(e.target.value)}
           />
           <div>
             <ImageUploading
@@ -221,7 +243,7 @@ export default function TileSetEditor(props: Props) {
               value={images}
               onChange={onChange}
               maxNumber={maxNumber}
-              acceptType={['jpg','png']}
+              acceptType={['jpg', 'png']}
               resolutionType="absolute"
               resolutionWidth={48}
               resolutionHeight={48}
@@ -269,29 +291,29 @@ export default function TileSetEditor(props: Props) {
                   </div>}
                   <div className={classes.aboveGridList}>
                     <GridList cols={4} className={classes.gridList}>
-                    {imageList.map((image, index) => (
-                      <GridListTile key={index}>
-                      <div key={index}>
-                        <img src={image.dataURL} alt="" width="50" height="50" />
-                        <InputLabel id="demo-simple-select-label">Tile Type</InputLabel>
-                        <Select
-                          labelId="demo-simple-select-label"
-                          id="demo-simple-select"
-                          value={tileTypes[index]}
-                          onChange={(e, c)=>handleTypeChange(index, e.target.value as TileType)}
-                        > 
-                          <MenuItem value=""></MenuItem>
-                          {Object.values(TileType).map((type, i) => 
-                            <MenuItem key={index.toString() + "_" + i.toString()} disabled={tileTypes.includes(type)} value={type}>{type}</MenuItem>
-                          )}
-                        </Select>
-                        <div className="image-item__btn-wrapper">
-                          <button onClick={() => onImageUpdate(index)}>Update</button>
-                          <button onClick={() => handleImageRemove(onImageRemove, index)}>Remove</button>
-                        </div>
-                      </div>
-                      </GridListTile>
-                    ))}
+                      {imageList.map((image, index) => (
+                        <GridListTile key={index}>
+                          <div key={index}>
+                            <img src={image.dataURL} alt="" width="50" height="50" />
+                            <InputLabel id="demo-simple-select-label">Tile Type</InputLabel>
+                            <Select
+                              labelId="demo-simple-select-label"
+                              id="demo-simple-select"
+                              value={tileTypes[index]}
+                              onChange={(e, c) => handleTypeChange(index, e.target.value as TileType)}
+                            >
+                              <MenuItem value=""></MenuItem>
+                              {Object.values(TileType).map((type, i) =>
+                                <MenuItem key={index.toString() + "_" + i.toString()} disabled={tileTypes.includes(type)} value={type}>{type}</MenuItem>
+                              )}
+                            </Select>
+                            <div className="image-item__btn-wrapper">
+                              <button onClick={() => onImageUpdate(index)}>Update</button>
+                              <button onClick={() => handleImageRemove(onImageRemove, index)}>Remove</button>
+                            </div>
+                          </div>
+                        </GridListTile>
+                      ))}
                     </GridList>
                   </div>
                 </div>

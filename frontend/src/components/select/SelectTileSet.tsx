@@ -8,9 +8,9 @@ import { useState } from 'react';
 // import differenceWith from 'lodash/differenceWith';
 // import { useEffect, useState } from 'react';
 // import DB from '../DB';
-import { TileSet } from '../models/TileSet';
+import { TileSet } from '../../models/TileSet';
 // import { compareByName } from '../utils/util';
-import NameList from './common/NameList';
+import NameList from '../common/NameList';
 
 type Props = {
   open: boolean;

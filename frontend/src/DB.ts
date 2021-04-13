@@ -4,6 +4,7 @@ import "firebase/firestore";
 import { Authenticator } from './Authenticator';
 import { default as firebaseKey } from "./certs/firebase_key.json";
 import { BACKEND_URL } from './constants/Backend';
+import { TileType } from "./constants/TileType";
 import { Configuration } from './models/Configuration';
 import { CorridorCategory } from "./models/CorridorCategory";
 import { Item } from "./models/Item";
@@ -103,7 +104,7 @@ export class DB {
             if (token === undefined && !premade) {
                 return { valid: false, "response": "Not Logged In" };
             }
-            var fetchString = premade ? `${BACKEND_URL}/config/${id}` : `${BACKEND_URL}/user/${token}/config/${id}` 
+            var fetchString = premade ? `${BACKEND_URL}/config/${id}` : `${BACKEND_URL}/user/${token}/config/${id}`
             const requestOptions = {
                 method: 'GET'
             };
@@ -135,7 +136,7 @@ export class DB {
         try {
             var token = await Authenticator.getIDToken();
             var fetchString = token ? `${BACKEND_URL}/user/${token}/room` : `${BACKEND_URL}/room`
-            
+
             const requestOptions = {
                 method: 'GET'
             };
@@ -262,7 +263,7 @@ export class DB {
         try {
             var token = await Authenticator.getIDToken();
             var fetchString = token ? `${BACKEND_URL}/user/${token}/monster` : `${BACKEND_URL}/monster`
-            
+
             const requestOptions = {
                 method: 'GET'
             };
@@ -352,16 +353,19 @@ export class DB {
         }
     }
 
-    static async saveTileSets(files: File[]) {
+    static async saveTileSets(name: string, files: File[], tileTypes: TileType[]) {
         try {
             var tokens = await Authenticator.getAllTokens();
             if (!tokens || !tokens.accessToken || !tokens.refreshToken || !tokens.idToken) {
                 return { valid: false, "response": "Not Logged In" };
             }
             var formData = new FormData();
-            formData.append('name', 'Temp'); // Replace Temp with Tileset.name or whatever
-            files.forEach(file => formData.append('images', file));
-            console.log(files)
+            formData.append('name', name);
+            files.forEach((file, index) => {
+                var splitName = file.name.split(".");
+                var newName = tileTypes[index] + "." + splitName[splitName.length - 1]
+                formData.append('images', file, newName)
+            });
             const requestOptions = {
                 method: 'POST',
                 body: formData

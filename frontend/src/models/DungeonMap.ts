@@ -1,3 +1,4 @@
+import { Direction } from "../constants/Direction";
 import { Configuration } from "./Configuration";
 import { Coordinates } from "./Coordinates";
 import { CorridorInstance } from "./CorridorInstance";
@@ -9,7 +10,8 @@ export class DungeonMap {
 	private width: number;
 	private height: number;
 	private map: Map<string, RegionInstance[]>;
-	private config: Configuration;
+	private lastRegionNumber = 0;
+	config: Configuration;
 	corridors: CorridorInstance[] = [];
 	rooms: RoomInstance[] = [];
 	tileSize: number = 48;
@@ -78,20 +80,20 @@ export class DungeonMap {
 		this.removeFromArray(this.rooms, room);
 	}
 
-	moveRoom(room: RoomInstance, newStart: Coordinates){
-		var diff = newStart.subtract(room.start);
+	moveRegion(region: RegionInstance, newStart: Coordinates){
+		var diff = newStart.subtract(region.start);
 		if (diff.x !== 0 || diff.y !== 0){
-			room.locations.forEach((location) => {
-				this.removeLocationFromMap(room, location);
-				location = location.add(diff); // TODO: Confirm this modifies location in room
-				this.addLocationToMap(room, location);
+			region.locations.forEach((location, index, array) => {
+				this.removeLocationFromMap(region, location);
+				array[index] = location.add(diff);
+				this.addLocationToMap(region, location.add(diff), true);
 			});
 
-			room.entrances.forEach((entrance) => {
-				entrance.location = entrance.location.add(diff); // TODO: Confirm this modifies location in entrance
+			region.entrances.forEach((entrance, index, array) => {
+				array[index].location = entrance.location.add(diff);
 			});
 		}
-		room.start = newStart;
+		region.start = newStart;
 	}
 
 	addEntrance(entrance: Entrance){
@@ -180,6 +182,33 @@ export class DungeonMap {
 		return next;
 	}
 
+	getAvailableDirection(point: Coordinates): Direction | null {
+		if (point){
+			var adjacent = point.getAdjacent();
+			for (var i = 0; i < adjacent.length; i++){
+				var next = adjacent[i];
+				if (!this.getRegionInstance(next.x, next.y) && !this.isOutOfBounds(next.x, next.y)){
+					return point.getDirectionTo(next);
+				}
+			}
+		}
+		return null;
+	}
+
+	getDirectionToNeighbor(point: Coordinates, neighbor: RegionInstance | null = null): Direction | null{
+		if (point){
+			var adjacent = point.getAdjacent();
+			for (var i = 0; i < adjacent.length; i++){
+				var next = adjacent[i];
+				var region =  this.getRegionInstance(next.x, next.y);
+				if (region && (!neighbor || region === neighbor)){
+					return point.getDirectionTo(next);
+				}
+			}
+		}
+		return null;
+	}
+
 	// Note, if a location is already occupied then it will not be 
 	// changed, which may result is strangely shaped regions. The
 	// location will remain in this region though, and if the overlapping
@@ -187,22 +216,30 @@ export class DungeonMap {
 	// Also, if a location is out of map bounds then the locations will remain
 	// in the region in case it is moved, but won't be added to the map
 	private addRegion(region: RegionInstance) {
+		region.name = (this.lastRegionNumber++).toString();
 		region.locations.forEach((location) => {
 			this.addLocationToMap(region, location);
 		});
 	}
 
 	private removeRegion(region: RegionInstance) {
+		if (region.name === this.lastRegionNumber.toString() && this.lastRegionNumber > 0){
+			this.lastRegionNumber--;
+		}
 		region.locations.forEach((location) => {
 			this.removeLocationFromMap(region, location);
 		});
 	}
 
-	private addLocationToMap(region: RegionInstance, location: Coordinates) {
+	private addLocationToMap(region: RegionInstance, location: Coordinates, bringToFront: boolean = false) {
 		var locationKey = location.toString();
 		if (this.map.has(locationKey)){
-			// TODO: Decide if this should be ordered. Should rooms always get priority over corridors?
-			this.map.get(locationKey)!.push(region); 
+			if (bringToFront){
+				this.map.set(locationKey, [region].concat(this.map.get(locationKey)!)); 
+			}
+			else{
+				this.map.get(locationKey)!.push(region); 
+			}
 		}
 		else{
 			this.map.set(locationKey, [region]);

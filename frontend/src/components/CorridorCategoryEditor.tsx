@@ -34,10 +34,10 @@ import EnumProbabilityText from './common/EnumProbabilityText';
 import ProbabilityNameList from './common/ProbabilityNameList';
 import ItemEditor from './ItemEditor';
 import MonsterEditor from './MonsterEditor';
-import SelectItem from './SelectItem';
-import SelectMonster from './SelectMonster';
-import SelectTileSet from './SelectTileSet';
-import SelectTrap from './SelectTrap';
+import SelectItem from './select/SelectItem';
+import SelectMonster from './select/SelectMonster';
+import SelectTileSet from './select/SelectTileSet';
+import SelectTrap from './select/SelectTrap';
 import TrapEditor from './TrapEditor';
 
 
@@ -69,7 +69,9 @@ const useStyles = makeStyles((theme) => ({
 type Props = {
   open: boolean;
   viewOnly?: boolean;
+  isDefault?: boolean;
   corridorCategory?: CorridorCategory;
+  savePhrase?: string;
   onCancelClick: () => void;
   onSave?: (rc: CorridorCategory) => void;
 }
@@ -79,7 +81,8 @@ type Errors = {
 }
 
 CorridorCategoryEditor.defaultProps = {
-  viewOnly: false
+  viewOnly: false,
+  isDefault: false
 }
 
 export default function CorridorCategoryEditor(props: Props) {
@@ -361,18 +364,20 @@ export default function CorridorCategoryEditor(props: Props) {
               <IconButton disabled={viewMode || !Boolean(corridorCategory.tileSets) || !Authenticator.isLoggedIn()} onClick={handleAddTileSetClick} aria-label="add" color="primary">
                 <AddBoxIcon />
               </IconButton>
-              <FormControlLabel
-                disabled={viewMode || !Authenticator.isLoggedIn()}
-                control={
-                  <Checkbox
-                    checked={!Boolean(corridorCategory.tileSets)}
-                    onChange={handleTileSetDefaultChange}
-                    name="useDefault"
-                    color="default"
-                  />
-                }
-                label="Use Default"
-              />
+              {!props.isDefault && 
+                <FormControlLabel
+                  disabled={viewMode || !Authenticator.isLoggedIn()}
+                  control={
+                    <Checkbox
+                      checked={!Boolean(corridorCategory.tileSets)}
+                      onChange={handleTileSetDefaultChange}
+                      name="useDefault"
+                      color="default"
+                    />
+                  }
+                  label="Use Default"
+                />
+              }
             </div>
             <div className={classes.listLabel}>
               <FormControl disabled={viewMode || !Boolean(corridorCategory.monsters)}>
@@ -381,18 +386,20 @@ export default function CorridorCategoryEditor(props: Props) {
               <IconButton disabled={viewMode || !Boolean(corridorCategory.monsters)} onClick={handleAddMonsterClick} aria-label="add" color="primary">
                 <AddBoxIcon />
               </IconButton>
-              <FormControlLabel
-                disabled={viewMode}
-                control={
-                  <Checkbox
-                    checked={!Boolean(corridorCategory.monsters)}
-                    onChange={handleMonsterDefaultChange}
-                    name="useDefault"
-                    color="default"
-                  />
-                }
-                label="Use Default"
-              />
+              {!props.isDefault && 
+                <FormControlLabel
+                  disabled={viewMode}
+                  control={
+                    <Checkbox
+                      checked={!Boolean(corridorCategory.monsters)}
+                      onChange={handleMonsterDefaultChange}
+                      name="useDefault"
+                      color="default"
+                    />
+                  }
+                  label="Use Default"
+                />
+              }
             </div>
             <ProbabilityNameList
               showProbs
@@ -418,18 +425,20 @@ export default function CorridorCategoryEditor(props: Props) {
               <IconButton disabled={viewMode || !Boolean(corridorCategory.items)} onClick={handleAddItemClick} aria-label="add" color="primary">
                 <AddBoxIcon />
               </IconButton>
-              <FormControlLabel
-                disabled={viewMode}
-                control={
-                  <Checkbox
-                    checked={!Boolean(corridorCategory.items)}
-                    onChange={handleItemDefaultChange}
-                    name="useDefault"
-                    color="default"
-                  />
-                }
-                label="Use Default"
-              />
+              {!props.isDefault && 
+                <FormControlLabel
+                  disabled={viewMode}
+                  control={
+                    <Checkbox
+                      checked={!Boolean(corridorCategory.items)}
+                      onChange={handleItemDefaultChange}
+                      name="useDefault"
+                      color="default"
+                    />
+                  }
+                  label="Use Default"
+                />
+              }
             </div>
             <ProbabilityNameList
               showProbs
@@ -448,18 +457,20 @@ export default function CorridorCategoryEditor(props: Props) {
               <IconButton disabled={viewMode || !Boolean(corridorCategory.traps)} onClick={handleAddTrapClick} aria-label="add" color="primary">
                 <AddBoxIcon />
               </IconButton>
-              <FormControlLabel
-                disabled={viewMode}
-                control={
-                  <Checkbox
-                    checked={!Boolean(corridorCategory.traps)}
-                    onChange={handleTrapDefaultChange}
-                    name="useDefault"
-                    color="default"
-                  />
-                }
-                label="Use Default"
-              />
+              {!props.isDefault && 
+                <FormControlLabel
+                  disabled={viewMode}
+                  control={
+                    <Checkbox
+                      checked={!Boolean(corridorCategory.traps)}
+                      onChange={handleTrapDefaultChange}
+                      name="useDefault"
+                      color="default"
+                    />
+                  }
+                  label="Use Default"
+                />
+              }
             </div>
             <ProbabilityNameList
               showProbs
@@ -486,7 +497,7 @@ export default function CorridorCategoryEditor(props: Props) {
           </Button>
             {!viewMode &&
               <Button onClick={handleSaveClick} variant="contained" color="primary">
-                Save
+                {props.savePhrase ? props.savePhrase : "Save"}
             </Button>
             }
 
