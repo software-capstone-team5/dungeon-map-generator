@@ -6,12 +6,15 @@ import { memo, useState } from 'react';
 import { Probabilities } from '../generator/Probabilities';
 import { Configuration } from '../models/Configuration';
 import { CorridorCategory } from '../models/CorridorCategory';
+import { DungeonMap } from '../models/DungeonMap';
 import { RegionCategory } from '../models/RegionCategory';
 import { RoomCategory } from '../models/RoomCategory';
+import { RoomInstance } from '../models/RoomInstance';
 import { nameOf, valueOf } from '../utils/util';
 import NameList from "./common/NameList";
 import CorridorCategoryEditor from './CorridorCategoryEditor';
 import RoomCategoryEditor from './RoomCategoryEditor';
+import RoomEditor from './RoomEditor';
 import SelectCorridorCategory from './SelectCorridorCategory';
 import SelectRoomCategory from './SelectRoomCategory';
 
@@ -32,16 +35,18 @@ type Props = {
     selectCategory?: (category: RegionCategory) => void;
 }
 
-const RegionLevelModify = memo(
+const RegionCategoryModify = memo(
     (props: Props) => {
         var disabled = props.isSaving;
 
         const classes = useStyles();
         const [addRoomDialogOpen, setAddRoomDialogOpen] = useState(false);
         const [addCorridorDialogOpen, setAddCorridorDialogOpen] = useState(false);
-        const [roomEditorOpen, setRoomEditorOpen] = useState(false);
+        const [roomCategoryEditorOpen, setRoomCategoryEditorOpen] = useState(false);
         const [roomCategoryToEdit, setRoomCategoryToEdit] = useState<RoomCategory>();
-        const [corridorEditorOpen, setCorridorEditorOpen] = useState(false);
+        const [roomEditorOpen, setRoomEditorOpen] = useState(false);
+        const [roomToEdit, setRoomToEdit] = useState<RoomInstance>();
+        const [corridorCategoryEditorOpen, setCorridorEditorOpen] = useState(false);
         const [corridorCategoryToEdit, setCorridorCategoryToEdit] = useState<CorridorCategory>();
         const [editingDefault, setEditingDefault] = useState(false);
         const [selectingDefault, setSelectingDefault] = useState(false);
@@ -78,7 +83,7 @@ const RegionLevelModify = memo(
         const handleRoomDefaultSave = (rc: RoomCategory) => {
             props.onChange(nameOf<Configuration>("defaultRoomCategory"), rc);
             setRoomCategoryToEdit(undefined);
-            setRoomEditorOpen(false);
+            setRoomCategoryEditorOpen(false);
             setEditingDefault(false);
         }
 
@@ -94,7 +99,7 @@ const RegionLevelModify = memo(
                 props.selectCategory(rc);
             }
             setRoomCategoryToEdit(rc);
-            setRoomEditorOpen(true);
+            setRoomCategoryEditorOpen(true);
         }
 
         const handleCorridorClick = (cc: CorridorCategory) => {
@@ -114,7 +119,7 @@ const RegionLevelModify = memo(
                 updatedList.updateObject(corridorCategoryToEdit, rc);
             }
             props.onChange(name, updatedList);
-            setRoomEditorOpen(false);
+            setRoomCategoryEditorOpen(false);
             setCorridorEditorOpen(false);
             setRoomCategoryToEdit(undefined);
             setCorridorCategoryToEdit(undefined);
@@ -169,20 +174,20 @@ const RegionLevelModify = memo(
                         onCancelClick={()=>{setAddCorridorDialogOpen(false); setSelectingDefault(false);}}
                     />
                 }
-                {roomEditorOpen &&
+                {roomCategoryEditorOpen &&
                     <RoomCategoryEditor
                         isDefault={editingDefault}
-                        open={roomEditorOpen}
+                        open={roomCategoryEditorOpen}
                         roomCategory={roomCategoryToEdit}
                         savePhrase={props.savePhrase}
                         onSave={(rc: RoomCategory) => editingDefault ? handleRoomDefaultSave(rc) : handleSave(nameOf<Configuration>("roomCategories"), rc)}
-                        onCancelClick={()=>setRoomEditorOpen(false)}
+                        onCancelClick={()=>setRoomCategoryEditorOpen(false)}
                     />
                 }
-                {corridorEditorOpen &&
+                {corridorCategoryEditorOpen &&
                     <CorridorCategoryEditor
                         isDefault={editingDefault}
-                        open={corridorEditorOpen}
+                        open={corridorCategoryEditorOpen}
                         corridorCategory={corridorCategoryToEdit}
                         savePhrase={props.savePhrase}
                         onSave={(cc: CorridorCategory) => editingDefault ? handleCorridorDefaultSave(cc) : handleSave(nameOf<Configuration>("corridorCategories"), cc)}
@@ -203,4 +208,4 @@ const RegionLevelModify = memo(
 )
 
 
-export default RegionLevelModify;
+export default RegionCategoryModify;

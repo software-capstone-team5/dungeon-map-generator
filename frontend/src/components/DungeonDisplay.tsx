@@ -69,6 +69,7 @@ class DungeonDisplay extends Component {
 		this.onChange = this.onChange.bind(this);
 		this.mouseUpInMap = this.mouseUpInMap.bind(this);
 		this.onSelectCategory = this.onSelectCategory.bind(this);
+		this.onSelectRegion = this.onSelectRegion.bind(this);
 	}
 	
 	private getCanvasStyle(zIndex: number): CSS.Properties {
@@ -396,6 +397,17 @@ class DungeonDisplay extends Component {
 		}
 	}
 
+	private onSelectRegion(region: RegionInstance){
+		var canvas = this.selectionRef.current;
+		if (region != this.state.selectedRegion){
+			this.clearCanvas(canvas);
+			if (region){
+				this.selectRegion(region);
+			}
+			this.setState({selectedCategory: null, selectedRegion: region});
+		}
+	}
+
 	private clearCanvas(canvas: any){
 		var context = canvas.getContext("2d");
 		context.clearRect(0, 0, canvas.width, canvas.height);
@@ -418,7 +430,7 @@ class DungeonDisplay extends Component {
 					</div>
 
 					<div style={this.spacedStyle}>
-						<DungeonEditor map={this.state.map} getSingleImage={this.getSingleImage} getMultipleImages={this.getMultipleImages} onChange={this.onChange} selectCategory={this.onSelectCategory}></DungeonEditor>
+						<DungeonEditor map={this.state.map} getSingleImage={this.getSingleImage} getMultipleImages={this.getMultipleImages} onChange={this.onChange} selectCategory={this.onSelectCategory} selectInstance={this.onSelectRegion}></DungeonEditor>
 					</div>
 			</Grid>
 		</div>

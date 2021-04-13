@@ -18,12 +18,14 @@ import { Configuration } from '../models/Configuration';
 import { nameOf, valueOf } from '../utils/util';
 import { RegionCategory } from '../models/RegionCategory';
 import ConfirmChange from './ConfirmChange';
-import RegionLevelModify from './RegionLevelModify';
+import RegionCategoryModify from './RegionCategoryModify';
 import lodash from 'lodash';
 import { RoomInstance } from '../models/RoomInstance';
 import { RoomCategory } from '../models/RoomCategory';
 import { CorridorInstance } from '../models/CorridorInstance';
 import { Probabilities } from '../generator/Probabilities';
+import RegionInstanceModify from './RegionInstanceModify';
+import { RegionInstance } from '../models/RegionInstance';
 
 const styles = (theme: Theme) => ({
     root: {
@@ -75,6 +77,7 @@ type Props = {
 	getSingleImage: () => Map<string, any>;
 	getMultipleImages: () => Map<string, any>;
 	selectCategory: (category: RegionCategory) => void;
+	selectInstance: (instance: RegionInstance) => void;
 }
 
 function DungeonEditor(props: Props) {
@@ -82,6 +85,9 @@ function DungeonEditor(props: Props) {
 		return {} as any;
 	});
 	const [regionChanges, setRegionChanges] = useState(() => {
+		return {} as any;
+	});
+	const [regionInstanceChanges, setRegionInstanceChanges] = useState(() => {
 		return {} as any;
 	});
     const classes = useStyles();
@@ -93,8 +99,8 @@ function DungeonEditor(props: Props) {
     });
 	const [confirmOpen, setConfirmOpen] = useState(false);
 	const [confirmMessage, setConfirmMessage] = useState("");
-	const [confirmArgs, setConfirmArgs] = useState({name: nameOf<Configuration>("corridorCategories"), index: 0});
-	const [confirmFunction, setConfirmFunction] = useState<(decision: boolean, args: {name: keyof Configuration, index: number}) => void>();
+	const [confirmArgs, setConfirmArgs] = useState({name: "" as any, index: 0});
+	const [confirmFunction, setConfirmFunction] = useState<(decision: boolean, args: {name: any, index: number}) => void>();
     const [isDownloading, setIsDownloading] = useState(false);
     const [map, setMap] = useState<DungeonMap | null>(null);
 
@@ -148,19 +154,55 @@ function DungeonEditor(props: Props) {
 		setRegionChanges(newChanges);
 	}
 
-	const handleRegenerateClick = (name: keyof Configuration, index: number) => {
-		setConfirmFunction(() => confirmRegenerate);
-		setConfirmMessage("Are you sure you would like to regenerate all of the regions with this category?");
-		setConfirmArgs({name: name, index: index})
-		setConfirmOpen(true);
+	const handleRegionInstanceChanges = (name: keyof DungeonMap, value: valueOf<DungeonMap>) => {
+		var newChanges = {} as any;
+		Object.assign(newChanges, regionInstanceChanges,  { [name]: value });
+		setRegionInstanceChanges(newChanges);
 	}
 
-	const confirmRegenerate = (decision: boolean, args: {name: keyof Configuration, index: number}) => {
-		if (decision){
+	const handleRegenerateInstanceClick = (name: keyof DungeonMap, index: number) => {
+		if (name as keyof DungeonMap){
+			setConfirmFunction(() => confirmInstanceRegenerate);
+			setConfirmMessage("Are you sure you would like to regenerate the contents of this region?");
+			setConfirmArgs({name: name, index: index})
+			setConfirmOpen(true);
+		}
+	}
+
+	const handleRegenerateClick = (name: keyof Configuration, index: number) => {
+		if (name as keyof Configuration){
+			setConfirmFunction(() => confirmRegenerate);
+			setConfirmMessage("Are you sure you would like to regenerate the contents of all of the regions with this category?");
+			setConfirmArgs({name: name, index: index})
+			setConfirmOpen(true);
+		}
+	}
+
+	const confirmInstanceRegenerate = (decision: boolean, args: {name: any, index: number}) => {
+		var name = args.name as keyof DungeonMap
+		if (decision && name){
+			var newMap = Object.create(Object.getPrototypeOf(map)) as DungeonMap;
+			Object.assign(newMap, map);
+			if (name === nameOf<DungeonMap>("rooms")){
+				var room = newMap.rooms[args.index];
+				newMap.rooms[args.index] = Object.assign(room, DungeonGenerator.regenerateRegion(room, room.category, newMap.config));
+			}
+			else{
+				var corridor = newMap.corridors[args.index];
+				newMap.corridors[args.index] = Object.assign(corridor, DungeonGenerator.regenerateRegion(corridor, corridor.category, newMap.config));
+			}
+			props.onChange(newMap);
+		}
+		setConfirmOpen(false);
+	}
+
+	const confirmRegenerate = (decision: boolean, args: {name: any, index: number}) => {
+		var name = args.name as keyof Configuration
+		if (decision && name){
 			var newMap = Object.create(Object.getPrototypeOf(map)) as DungeonMap;
 			Object.assign(newMap, map);
 			if (args.name === nameOf<Configuration>("roomCategories")){
-				var category = (newMap.config[args.name] as Probabilities<RoomCategory>).objects[args.index];
+				var category = (newMap.config[name] as Probabilities<RoomCategory>).objects[args.index];
 				newMap.rooms.forEach((room: RoomInstance, index: number) => {
 					if (lodash.isEqual(room.category, category)){
 						newMap.rooms[index] = Object.assign(room, DungeonGenerator.regenerateRegion(room, category, newMap.config));
@@ -168,7 +210,7 @@ function DungeonEditor(props: Props) {
 				});
 			}
 			else{
-				var category = (newMap.config[args.name] as Probabilities<RoomCategory>).objects[args.index];
+				var category = (newMap.config[name] as Probabilities<RoomCategory>).objects[args.index];
 				newMap.corridors.forEach((corridor: CorridorInstance, index: number) => {
 					if (lodash.isEqual(corridor.category, category)){
 						newMap.corridors[index] = Object.assign(corridor, DungeonGenerator.regenerateRegion(corridor, category, newMap.config));
@@ -207,10 +249,20 @@ function DungeonEditor(props: Props) {
 						<AccordionSummary
 							aria-controls="panel2a-content"
 							id="panel2a-header">
-							<Typography>Region Level Options</Typography>
+							<Typography>Region Category Options</Typography>
 						</AccordionSummary>
 						<AccordionDetails>
-							<RegionLevelModify isSaving={isDownloading} configuration={map.config} onChange={handleRegionChanges} onRegenerateClick={handleRegenerateClick} selectCategory={props.selectCategory} savePhrase={"Apply"}/>
+							<RegionCategoryModify isSaving={isDownloading} configuration={map.config} onChange={handleRegionChanges} onRegenerateClick={handleRegenerateClick} selectCategory={props.selectCategory} savePhrase={"Apply"}/>
+						</AccordionDetails>
+					</Accordion>
+					<Accordion expanded={true}>
+						<AccordionSummary
+							aria-controls="panel2a-content"
+							id="panel2a-header">
+							<Typography>Region Instance Options</Typography>
+						</AccordionSummary>
+						<AccordionDetails>
+							<RegionInstanceModify isSaving={isDownloading} map={map} onChange={handleRegionInstanceChanges} onRegenerateClick={handleRegenerateInstanceClick} selectInstance={props.selectInstance} savePhrase={"Apply"}/>
 						</AccordionDetails>
 					</Accordion>
 			   </Paper>

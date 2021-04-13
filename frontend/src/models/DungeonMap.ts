@@ -216,14 +216,14 @@ export class DungeonMap {
 	// Also, if a location is out of map bounds then the locations will remain
 	// in the region in case it is moved, but won't be added to the map
 	private addRegion(region: RegionInstance) {
-		region.regionNumber = this.lastRegionNumber++;
+		region.name = (this.lastRegionNumber++).toString();
 		region.locations.forEach((location) => {
 			this.addLocationToMap(region, location);
 		});
 	}
 
 	private removeRegion(region: RegionInstance) {
-		if (region.regionNumber === this.lastRegionNumber && this.lastRegionNumber > 0){
+		if (region.name === this.lastRegionNumber.toString() && this.lastRegionNumber > 0){
 			this.lastRegionNumber--;
 		}
 		region.locations.forEach((location) => {

@@ -17,5 +17,5 @@ export class RegionInstance {
 	isCorridor = false;
 	difficulty: number = 0;
 	value: number = 0;
-	regionNumber: number = 0;
+	name: string = "0";
 }
