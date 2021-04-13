@@ -21,6 +21,7 @@ import { DungeonGenerator } from './generator/DungeonGenerator';
 import { Probabilities } from './generator/Probabilities';
 import { TileSet } from './models/TileSet';
 
+
 const useStyles = makeStyles((theme) => ({
   menuButton: {
     marginRight: theme.spacing(2),
@@ -206,6 +207,7 @@ function App() {
               </Toolbar>
             </AppBar>
           </div>
+          <img src="https://drive.google.com/file/d/1kvRffpah10900gus8dk18wm7oTyKZxRn/view"></img>
           <Grid
             container
             direction="row"

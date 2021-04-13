@@ -8,6 +8,7 @@ flask = "*"
 python-dotenv = "*"
 firebase-admin = "*"
 flask-cors = "*"
+requests-toolbelt = "*"
 
 [dev-packages]
 

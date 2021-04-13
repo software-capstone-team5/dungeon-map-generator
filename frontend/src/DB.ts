@@ -350,14 +350,45 @@ export class DB {
                 return { valid: false, "response": "Not Logged In" };
             }
             const requestOptions = {
-                method: 'GET'
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ names: ['Test'] })
             };
-            var response = await fetch(`${BACKEND_URL}/user/${tokens.idToken}/tileset?access_token=${tokens.accessToken}&refresh_token=${tokens.refreshToken}`, requestOptions);
-            var data = await response.text();
-            // var data = await response.json();
+            var response = await fetch(`${BACKEND_URL}/user/${tokens.idToken}/tilesets?access_token=${tokens.accessToken}&refresh_token=${tokens.refreshToken}`, requestOptions);
+            // var data = await response.text();
+            var data = await response.body?.getReader();
+            //     new ReadableStream({
+            //         start(controller) {
+            //             return pump();
+            //             function pump() {
+            //                 return reader.read().then(({ done, value }) => {
+            //                     // When no more data needs to be consumed, close the stream
+            //                     if (done) {
+            //                         controller.close();
+            //                         return;
+            //                     }
+            //                     // Enqueue the next data chunk into our target stream
+            //                     controller.enqueue(value);
+            //                     return pump();
+            //                 });
+            //             }
+            //         }
+            //     })
+            // }).then(stream => new Response(stream))
+            //     .then(response => response.blob())
+            //     .then(blob => URL.createObjectURL(blob))
+            //     .then(url => console.log(image.src = url))
+            //     .catch(err => console.error(err));
+            // data?.read().then(function processText({ done, value }) {
+            //     if (done) {
+            //         console.log(value)
+            //         return
+            //     }
+            // })
             // if (!data.valid) {
             //     return data;
             // }
+            console.log(data)
             // var tileSets: TileSet[] = [];
             // data.response.forEach((element: Object) => {
             //     tileSets.push(plainToClass(TileSet, element))

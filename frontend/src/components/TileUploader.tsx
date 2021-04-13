@@ -75,9 +75,10 @@ export default function TileUploader() {
   }
 
   const handleSaveFirstImage = () => {
-    var result: File[] = [];
-    images.forEach(image => result.push(image['file']));
-    DB.saveTileSets(result);
+    // var result: File[] = [];
+    // images.forEach(image => result.push(image['file']));
+    // DB.saveTileSets(result);
+    DB.getAllTileSets();
   }
 
   return (

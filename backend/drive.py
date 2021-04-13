@@ -1,11 +1,14 @@
 import os
+import io
+import base64
 from backend import app
 from util import *
-from flask import request, jsonify
+from flask import request, jsonify, Response
 from googleapiclient.discovery import build
-from googleapiclient.http import MediaFileUpload
+from googleapiclient.http import MediaFileUpload, MediaIoBaseDownload
 from google.oauth2.credentials import Credentials
 from flask_cors import CORS, cross_origin
+from requests_toolbelt import MultipartEncoder
 
 import json
 
@@ -31,9 +34,12 @@ def buildService(access_token, refresh_token):
 	service = build('drive', 'v3', credentials=cred)
 	return service
 
-def findFolder(access_token, refresh_token, folder_name):
+def findFolder(access_token, refresh_token, folder_name, parent):
 	service = buildService(access_token, refresh_token)
-	results = service.files().list(q="mimeType='application/vnd.google-apps.folder' and name='{}' and trashed = false".format(folder_name),
+	query = "mimeType='application/vnd.google-apps.folder' and trashed = false and name='{}'".format(folder_name)
+	if parent is not None:
+		query = query + " and '{}' in parents".format(parent)
+	results = service.files().list(q=query,
                                          spaces='drive',
                                          fields='nextPageToken, files(id, name)').execute()
 	items = results.get('files', [])
@@ -57,28 +63,46 @@ def createFolder(access_token, refresh_token, folder_name, parent_ids):
 	return file
 
 
-@app.route("/user/<idToken>/tileset", methods=['GET'])
-def getTileSet(idToken):
+@app.route("/user/<idToken>/tilesets", methods=['POST'])
+def getTileSets(idToken):
 	try:
-		requestData = request.get_json()
 		user_id = verifyToken(idToken)
-
+		requestData = request.get_json()
+		names = requestData['names']
 		access_token = request.args.get('access_token', '')
 		refresh_token = request.args.get('refresh_token', '')
 		if type(user_id) == str and access_token != '' and refresh_token != '':
 			service = buildService(access_token, refresh_token)
+			dmg_folder = findFolder(access_token, refresh_token, "DMG Tilesets", None)
 
-			# TODO: Get Tile Sets Here
-			results = service.files().list(pageSize=10, fields="nextPageToken, files(id, name)").execute()
-			items = results.get('files', [])
-			response = ""
-			if not items:
-				response += 'No files found.'
-			else:
-				response += 'Files:'
-				for item in items:
-					response += (u'{0} ({1})'.format(item['name'], item['id']))
+			for name in names:
+				tileset_folder = findFolder(access_token, refresh_token, name, dmg_folder[0])
+				# TODO: Get Tile Sets Here
+				results = service.files().list(q="'{}' in parents".format(tileset_folder[0]), fields="nextPageToken, files(id, name)").execute()
+				fields = {}
+				items = results.get('files', [])
+				response = ""
+				if not items:
+					continue
+				else:
+					for item in items:
+						drive_request = service.files().get_media(fileId=item['id'])
+						response += item['id'] + " "
+						fh = io.BytesIO()
+						downloader = MediaIoBaseDownload(fh, drive_request)
+						done = False
+						while done is False:
+							status, done = downloader.next_chunk()
+						fh.seek(0)
+						temp = fh.read()
+						with open(item['name'], 'wb') as f:
+							f.write(temp)
+							f.close()
+						file_bytes = base64.b64encode(temp)
+						fields[item['name']] = (item['name'], file_bytes, 'image/png')
 
+			# mpencoder = MultipartEncoder(fields)
+			# Response(mpencoder.to_string(), mimetype=mpencoder.content_type)
 			return jsonify({"valid": True, "response": response}), 200
 		else:
 			return user_id
@@ -98,13 +122,10 @@ def saveTileSet(idToken):
 			result = saveTileSetDB(user_id, name)
 			if not result['valid']:
 				return jsonify(result), 400
-			dmg_folder = findFolder(access_token, refresh_token, "DMG Tilesets")
+			dmg_folder = findFolder(access_token, refresh_token, "DMG Tilesets", None)
 			# if not dmg_folder:
 			# 	createFolder(access_token, refresh_token, "DMG Tilesets", [])
 			child_folder = createFolder(access_token, refresh_token, name, dmg_folder).get('id')
-			# tileset_folder = findFolder(access_token, refresh_token, "DMG Tilesets/" + name)
-			# if not tileset_folder:
-			# 	return jsonify({ "valid": False, "response": child_folder}), 400
 			for image in images:
 				image.save("temp.jpg")
 				# dmg_folder = findFolder(access_token, refresh_token, "DMG Tilesets")
