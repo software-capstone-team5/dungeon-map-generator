@@ -298,6 +298,7 @@ export class DungeonGenerator {
 		}
 		
 		var corridor: CorridorInstance = new CorridorInstance();
+		corridor.start = path[0];
 		corridor.category = category;
 		corridor.width = category.widths ? category.widths!.randPickOne()! : defaultCategory.widths!.randPickOne()!;
 		corridor.tileSet = category.tileSets ? category.tileSets.randPickOne()! : defaultCategory.tileSets!.randPickOne()!;

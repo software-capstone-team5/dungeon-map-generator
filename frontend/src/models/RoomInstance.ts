@@ -5,7 +5,6 @@ import { RegionInstance } from "./RegionInstance";
 import { RoomCategory } from "./RoomCategory";
 
 export class RoomInstance extends RegionInstance {
-	start: Coordinates;
 	category: RoomCategory;
 	size: Size;
 	shape: RoomShape;

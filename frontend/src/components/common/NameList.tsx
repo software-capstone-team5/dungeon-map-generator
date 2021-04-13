@@ -18,6 +18,7 @@ const useStyles = makeStyles((theme) => ({
     },
     demo: {
         backgroundColor: theme.palette.background.paper,
+        overflow: 'auto'
     },
     title: {
         margin: theme.spacing(4, 0, 2),

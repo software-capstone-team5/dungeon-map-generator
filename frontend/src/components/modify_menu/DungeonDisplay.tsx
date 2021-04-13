@@ -31,8 +31,10 @@ type State = {
 	selectedRegionIndex: number;
 	selectedCategoryIndex: number;
 	isAddingRegion: boolean;
+	isDraggingRegion: boolean;
 	cursor: any;
 	startPoint: Coordinates | null;
+	draggedRegion: RegionInstance | null;
 }
 
 class DungeonDisplay extends Component {
@@ -64,6 +66,10 @@ class DungeonDisplay extends Component {
 		cursor: this.state && this.state.cursor ? this.state.cursor : 'auto',
 	}
 
+	private customWidth: CSS.Properties = {
+        maxWidth: '200',
+    }
+
 	constructor(props: Props) {
 		super(props)
 		this.props = props
@@ -74,8 +80,10 @@ class DungeonDisplay extends Component {
 			selectedRegionIndex: -1,
 			selectedCategoryIndex: -1,
 			isAddingRegion: false,
+			isDraggingRegion: false,
 			cursor: 'crosshair',
 			startPoint: null,
+			draggedRegion: null,
 		};
 		this.backgroundRef = React.createRef();
 		this.mainRef = React.createRef();
@@ -87,6 +95,9 @@ class DungeonDisplay extends Component {
 		this.getMultipleImages = this.getMultipleImages.bind(this);
 		this.onChange = this.onChange.bind(this);
 		this.mouseUpInMap = this.mouseUpInMap.bind(this);
+		this.mouseDownInMap = this.mouseDownInMap.bind(this);
+		this.mouseOutOfMap = this.mouseOutOfMap.bind(this);
+		this.mouseMoveInMap = this.mouseMoveInMap.bind(this);
 		this.onSelectCategory = this.onSelectCategory.bind(this);
 		this.onSelectRegion = this.onSelectRegion.bind(this);
 		this.onAddRegion = this.onAddRegion.bind(this);
@@ -350,66 +361,7 @@ class DungeonDisplay extends Component {
 		return [backgroundCanvas, mainCanvas, hiddenCanvas, combinedCanvas];
 	}
 
-	private mouseUpInMap(event: any) {
-		if (this.state.map){
-			var canvas = this.selectionRef.current;
-			let rect = canvas.getBoundingClientRect();
-			let x = Math.floor((event.clientX - rect.left)/this.state.map.tileSize);
-			let y = Math.floor((canvas.height - (event.clientY - rect.top))/this.state.map.tileSize);
-
-			var region: RegionInstance | null = null;
-			if (!this.state.map.isOutOfBounds(x, y)){
-				if (this.state.isAddingRegion && this.state.selectedCategory){
-					var point = new Coordinates(x, y);
-					if (this.state.selectedCategory.isCorridor){
-						if (this.state.startPoint){
-							var newMap = Object.create(Object.getPrototypeOf(this.state.map)) as DungeonMap;
-							Object.assign(newMap, this.state.map)
-							region = DungeonGenerator.generatePathAndCorridor(this.state.startPoint, point, this.state.selectedCategory as CorridorCategory, newMap);
-							newMap.addCorridor(region as CorridorInstance);
-							DungeonGenerator.generateEntrancesForNeighbours(region, newMap);
-							this.setState({isAddingRegion: false, cursor: 'auto', startPoint: null, map: newMap});
-							this.drawDungeon(newMap);
-						}
-						else{
-							this.setState({startPoint: point});
-						}
-					}
-					else{
-						var direction = this.state.map.getAvailableDirection(point);
-						var center = Math.floor(this.state.map.getWidth() / 2);
-						region = DungeonGenerator.generateRoom(this.state.selectedCategory as RoomCategory, this.state.map.config.defaultRoomCategory, point, direction ? direction : point.getDirectionTo(new Coordinates(center, center)));
-						var newMap = Object.create(Object.getPrototypeOf(this.state.map)) as DungeonMap;
-						Object.assign(newMap, this.state.map)
-						newMap.addRoom(region as RoomInstance);
-						DungeonGenerator.generateEntrancesForNeighbours(region, newMap);
-						this.setState({isAddingRegion: false, cursor: 'auto', map: newMap});
-						this.drawDungeon(newMap);
-					}
-				}
-				else {
-					region = this.state.map.getRegionInstance(x, y);
-				}
-			}
-
-			if (region !== this.state.selectedRegion){
-				this.clearCanvas(canvas);
-				var index = undefined;
-				if (region && this.state.map){
-					if (region.isCorridor){
-						index = this.state.map.corridors.findIndex((x) => lodash.isEqual(x, region));
-					}
-					else{
-						index = this.state.map.rooms.findIndex((x) => lodash.isEqual(x, region));
-					}
-					this.selectRegion(region);
-				}
-				this.setState({selectedCategory: null, selectedRegion: region, selectedRegionIndex: index, selectedCategoryIndex: undefined});
-			}
-		}
-	}
-
-	private selectRegion(region: RegionInstance){
+	private selectRegion(region: RegionInstance, showHidden: boolean = false){
 		if (region && this.state.map){
 			var map = this.state.map as DungeonMap;
 			var canvas = this.selectionRef.current;
@@ -417,7 +369,7 @@ class DungeonDisplay extends Component {
 			region.locations.forEach((location) => {
 				var startx = map.tileSize * (location.x);
 				var starty = canvas.height - map.tileSize * (location.y + 1);
-				if (region && !map.isOutOfBounds(location.x, location.y) && lodash.isEqual(map.getRegionInstance(location.x, location.y), region)){
+				if (region && !map.isOutOfBounds(location.x, location.y) && (showHidden || lodash.isEqual(map.getRegionInstance(location.x, location.y), region))){
 					context.fillStyle = "rgba(255, 255, 255, 0.5)";
 					context.fillRect(startx, starty, map.tileSize, map.tileSize);
 				}
@@ -496,7 +448,152 @@ class DungeonDisplay extends Component {
 		var context = canvas.getContext("2d");
 		context.clearRect(0, 0, canvas.width, canvas.height);
 	}
-	
+
+	private addRoomToMap(point: Coordinates) : RoomInstance | null {
+		var region: RoomInstance | null  = null;
+		if (this.state.map){
+			var direction = this.state.map.getAvailableDirection(point);
+			var center = Math.floor(this.state.map.getWidth() / 2);
+			region = DungeonGenerator.generateRoom(this.state.selectedCategory as RoomCategory, this.state.map.config.defaultRoomCategory, point, direction ? direction : point.getDirectionTo(new Coordinates(center, center)));
+			var newMap = Object.create(Object.getPrototypeOf(this.state.map)) as DungeonMap;
+			Object.assign(newMap, this.state.map)
+			newMap.addRoom(region as RoomInstance);
+			DungeonGenerator.generateEntrancesForNeighbours(region, newMap);
+			this.setState({isAddingRegion: false, cursor: 'auto', map: newMap});
+			this.drawDungeon(newMap);
+		}
+		return region;
+	}
+
+	private addCorridorToMap(point: Coordinates) : CorridorInstance | null {
+		var region: CorridorInstance | null = null;
+		if (this.state.startPoint){
+			var newMap = Object.create(Object.getPrototypeOf(this.state.map)) as DungeonMap;
+			Object.assign(newMap, this.state.map)
+			region = DungeonGenerator.generatePathAndCorridor(this.state.startPoint, point, this.state.selectedCategory as CorridorCategory, newMap);
+			newMap.addCorridor(region as CorridorInstance);
+			DungeonGenerator.generateEntrancesForNeighbours(region, newMap);
+			this.setState({isAddingRegion: false, cursor: 'auto', startPoint: null, map: newMap});
+			this.drawDungeon(newMap);
+		}
+		else{
+			this.setState({startPoint: point});
+		}
+		return region
+	}
+
+	private mouseUpInMap(event: any) {
+		if (this.state.map){
+			var point = this.getPointFromEvent(event);
+			var region: RegionInstance | null = null;
+			if (this.state.isDraggingRegion){
+				point = this.state.map.constrainToMap(point);
+				var newMap = Object.create(Object.getPrototypeOf(this.state.map)) as DungeonMap;
+				Object.assign(newMap, this.state.map)
+				var newSelectedRegion = null;
+				if (this.state.selectedRegion){
+					if (this.state.selectedRegion.isCorridor) {
+						newSelectedRegion = newMap.corridors.find((x: any) => lodash.isEqual(x, this.state.selectedRegion));
+					}
+					else{
+						newSelectedRegion = newMap.rooms.find((x: any) => lodash.isEqual(x, this.state.selectedRegion));
+					}
+				}
+				if (newSelectedRegion){
+					newMap.moveRegion(newSelectedRegion, point);
+				}
+				this.setState({isDraggingRegion: false, startPoint: null, draggedRegion: null, map: newMap, selectedRegion: newSelectedRegion});
+				this.drawDungeon(newMap);
+			}
+			else{
+				if (!this.state.map.isOutOfBounds(point.x, point.y)){
+					if (this.state.isAddingRegion && this.state.selectedCategory){
+						if (this.state.selectedCategory.isCorridor){
+							region = this.addCorridorToMap(point);
+						}
+						else{
+							region = this.addRoomToMap(point);
+						}
+					}
+					else {
+						region = this.state.map.getRegionInstance(point.x, point.y);
+					}
+				}
+			}
+
+			if (region !== this.state.selectedRegion){
+				var canvas = this.selectionRef.current;
+				this.clearCanvas(canvas);
+				var index = undefined;
+				if (region && this.state.map){
+					if (region.isCorridor){
+						index = this.state.map.corridors.findIndex((x) => lodash.isEqual(x, region));
+					}
+					else{
+						index = this.state.map.rooms.findIndex((x) => lodash.isEqual(x, region));
+					}
+					this.selectRegion(region);
+				}
+				this.setState({selectedCategory: null, selectedRegion: region, selectedRegionIndex: index, selectedCategoryIndex: undefined});
+			}
+		}
+	}
+
+	private mouseMoveInMap(event: any) {
+		if (this.state.isDraggingRegion && this.state.startPoint){
+			var point = this.getPointFromEvent(event, true, false);
+			var diff = point.subtract(this.state.startPoint);
+			var newDraggedRegion = lodash.cloneDeep(this.state.draggedRegion);
+			if (newDraggedRegion){
+				newDraggedRegion.move(newDraggedRegion.start.add(diff))
+			}
+
+			this.setState({startPoint: point, draggedRegion: newDraggedRegion});
+			this.clearCanvas(this.selectionRef.current);
+			if (newDraggedRegion){
+				this.selectRegion(newDraggedRegion, true);
+			}
+		}
+	}
+
+	private mouseOutOfMap(event: any) {
+		if (this.state.isDraggingRegion){
+			this.mouseUpInMap(event);
+		}
+	}
+
+	private mouseDownInMap(event: any) {
+		if (this.state.map && this.state.selectedRegion){
+			var mapLocation = this.getPointFromEvent(event);
+			var region = this.state.map.getRegionInstance(mapLocation.x, mapLocation.y)
+			if (region && region.name === this.state.selectedRegion.name){
+				var point = this.getPointFromEvent(event, true, false);
+				this.setState({isDraggingRegion: true, startPoint: point, draggedRegion: this.state.selectedRegion});
+			}
+		}
+	}
+
+	private getPointFromEvent(event: any, useTiles: boolean = true, useFloor: boolean = true): Coordinates {
+		if (this.state.map){
+			var canvas = this.selectionRef.current;
+			let rect = canvas.getBoundingClientRect();
+			let x = (event.clientX - rect.left);
+			let y = (event.clientY - rect.top);
+			
+			if (useTiles){
+				x = x/this.state.map.tileSize;
+				y = (canvas.height - y)/this.state.map.tileSize;
+			}
+
+			if (useFloor){
+				x = Math.floor(x);
+				y = Math.floor(y);
+			}
+			return new Coordinates(x, y);
+		}
+		return new Coordinates(-1, -1);
+	}
+
 	render() {
 		return <div>
 			<Grid 
@@ -504,7 +601,7 @@ class DungeonDisplay extends Component {
 				direction="row"
 				alignItems="center"
 				justify="center">
-					<div onMouseUp={this.mouseUpInMap}>
+					<div onMouseUp={this.mouseUpInMap} onMouseMove={this.mouseMoveInMap} onMouseDown={this.mouseDownInMap} onMouseOut={this.mouseOutOfMap}>
 						<div style={{...this.containerStyle, ...this.spacedStyle}}>
 							<canvas style={this.getCanvasStyle(1)} ref={this.backgroundRef} {...this.props.canvasProps}/>
 							<canvas style={this.getCanvasStyle(2)} ref={this.mainRef} {...this.props.canvasProps}/>
@@ -514,7 +611,7 @@ class DungeonDisplay extends Component {
 						</div>
 					</div>
 
-					<div style={this.spacedStyle}>
+					<div style={{...this.customWidth, ...this.spacedStyle}}>
 						<DungeonEditor 
 							selectedRoomIndex={!this.state.selectedRegion || this.state.selectedRegion.isCorridor ? undefined : this.state.selectedRegionIndex}
 							selectedCorridorIndex={this.state.selectedRegion && this.state.selectedRegion.isCorridor ? this.state.selectedRegionIndex : undefined}

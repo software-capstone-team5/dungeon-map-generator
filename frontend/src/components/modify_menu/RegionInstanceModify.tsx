@@ -72,7 +72,7 @@ const RegionInstanceModify = memo(
         }
 
         return (
-            <div style={{width: '100%'}}>
+            <div style={{width: '100%', maxWidth: '90%'}}>
                 <div className={classes.listLabel}>
                     <FormLabel disabled={disabled}>Rooms</FormLabel>
                 </div>

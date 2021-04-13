@@ -117,16 +117,24 @@ export default function RoomEditor(props: Props) {
 	}
 
 	const handleDeleteClick = (name: keyof RoomInstance, index: number) => {
-		var updatedList = Object.create(Object.getPrototypeOf(room[name]));
-		updatedList = Object.assign(updatedList, room[name]);
-		updatedList.remove(index);
+		var updatedList = (room[name] as any[]).map((x) => x);
+		if (index > -1){
+			if (updatedList.length === 1){
+				updatedList = [];
+			}
+			else{
+				updatedList[index] = updatedList[updatedList.length - 1];
+				updatedList.pop();
+			}
+		}
+		
 		handleChange(name, updatedList);
+		closeSelectDialogs();
 	}
 
 	const handleSelect = (name: keyof RoomInstance, item: any) => {
-		var updatedList = Object.create(Object.getPrototypeOf(room[name]));
-		updatedList = Object.assign(updatedList, room[name]);
-		updatedList.add(item);
+		var updatedList = (room[name] as any[]).map((x) => x);
+		updatedList.push(item);
 		handleChange(name, updatedList);
 		closeSelectDialogs();
 	}
@@ -188,9 +196,11 @@ export default function RoomEditor(props: Props) {
 	}
 
 	const handleTrapSave = (newTrap: Trap) => {
-		var updatedList = Object.create(Object.getPrototypeOf(room.traps) as Trap[]);
-		updatedList = Object.assign(updatedList, room.traps);
-		updatedList.updateObject(trapToEdit!, newTrap);
+		var updatedList = room.traps.map((x) => x);
+		var index = updatedList.indexOf(trapToEdit!);
+		if (index > -1){
+			updatedList[index] = newTrap;
+		}
 		handleChange(nameOf<RoomInstance>("traps"), updatedList);
 		setTrapEditorOpen(false);
 		setTrapToEdit(undefined);

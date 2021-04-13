@@ -278,7 +278,7 @@ function DungeonEditor(props: Props) {
 				   </Alert>
 			   </Snackbar>
 			   <DownloadDungeon open={isDownloading} map={map} getSingleImage={props.getSingleImage} getMultipleImages={props.getMultipleImages} onDownload={handleDownloadComplete} onCancel={() => handleDownloadComplete(true, null)}/>
-			   <Paper>
+			   <Paper style = {{overflow: 'auto'}}>
 					<Accordion expanded={true}>
 						<AccordionSummary
 							aria-controls="panel1a-content"
@@ -286,10 +286,10 @@ function DungeonEditor(props: Props) {
 							<Typography>Map Level Options</Typography>
 						</AccordionSummary>
 						<AccordionDetails>
-								<DifficultySlider
-									disabled={isDownloading}
-									onChange={handleDifficultyChange}
-									value={changes.difficulty ? changes.difficulty : map.config.difficulty}/>
+							<DifficultySlider
+								disabled={isDownloading}
+								onChange={handleDifficultyChange}
+								value={changes.difficulty ? changes.difficulty : map.config.difficulty}/>
 						</AccordionDetails>
 					</Accordion>
 					<Accordion expanded={true}>

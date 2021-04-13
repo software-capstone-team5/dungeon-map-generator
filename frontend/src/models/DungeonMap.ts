@@ -80,20 +80,20 @@ export class DungeonMap {
 		this.removeFromArray(this.rooms, room);
 	}
 
-	moveRoom(room: RoomInstance, newStart: Coordinates){
-		var diff = newStart.subtract(room.start);
+	moveRegion(region: RegionInstance, newStart: Coordinates){
+		var diff = newStart.subtract(region.start);
 		if (diff.x !== 0 || diff.y !== 0){
-			room.locations.forEach((location) => {
-				this.removeLocationFromMap(room, location);
-				location = location.add(diff); // TODO: Confirm this modifies location in room
-				this.addLocationToMap(room, location);
+			region.locations.forEach((location, index, array) => {
+				this.removeLocationFromMap(region, location);
+				array[index] = location.add(diff);
+				this.addLocationToMap(region, location, true);
 			});
 
-			room.entrances.forEach((entrance) => {
-				entrance.location = entrance.location.add(diff); // TODO: Confirm this modifies location in entrance
+			region.entrances.forEach((entrance, index, array) => {
+				array[index].location = entrance.location.add(diff);
 			});
 		}
-		room.start = newStart;
+		region.start = newStart;
 	}
 
 	addEntrance(entrance: Entrance){
@@ -231,11 +231,15 @@ export class DungeonMap {
 		});
 	}
 
-	private addLocationToMap(region: RegionInstance, location: Coordinates) {
+	private addLocationToMap(region: RegionInstance, location: Coordinates, bringToFront: boolean = false) {
 		var locationKey = location.toString();
 		if (this.map.has(locationKey)){
-			// TODO: Decide if this should be ordered. Should rooms always get priority over corridors?
-			this.map.get(locationKey)!.push(region); 
+			if (bringToFront){
+				this.map.set(locationKey, [region].concat(this.map.get(locationKey)!)); 
+			}
+			else{
+				this.map.get(locationKey)!.push(region); 
+			}
 		}
 		else{
 			this.map.set(locationKey, [region]);
