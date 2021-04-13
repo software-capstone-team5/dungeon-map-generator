@@ -264,6 +264,10 @@ export class DungeonGenerator {
 
 		var newRegion = cloneDeep(region);
 		newRegion.tileSet = category.tileSets ? category.tileSets.randPickOne()! : defaultCategory.tileSets!.randPickOne()!;
+		var entranceTypes = category.entranceTypes ? category.entranceTypes : defaultCategory.entranceTypes!
+		newRegion.entrances.forEach((entrance, index, array) => {
+			array[index].type = entranceTypes.randPickOne()!;
+		})
 		Object.assign(newRegion, this.generateRegionItems(region, config, region.value));
 		Object.assign(newRegion, this.genearteRegionEncounter(region, config, region.difficulty));
 		return newRegion;
