@@ -86,7 +86,7 @@ export class DungeonMap {
 			region.locations.forEach((location, index, array) => {
 				this.removeLocationFromMap(region, location);
 				array[index] = location.add(diff);
-				this.addLocationToMap(region, location, true);
+				this.addLocationToMap(region, location.add(diff), true);
 			});
 
 			region.entrances.forEach((entrance, index, array) => {

@@ -486,8 +486,9 @@ class DungeonDisplay extends Component {
 		if (this.state.map){
 			var point = this.getPointFromEvent(event);
 			var region: RegionInstance | null = null;
-			if (this.state.isDraggingRegion){
+			if (this.state.isDraggingRegion && this.state.draggedRegion && this.state.startPoint){
 				point = this.state.map.constrainToMap(point);
+				var diff: Coordinates = point.subtract(this.state.startPoint);
 				var newMap = Object.create(Object.getPrototypeOf(this.state.map)) as DungeonMap;
 				Object.assign(newMap, this.state.map)
 				var newSelectedRegion = null;
@@ -500,7 +501,7 @@ class DungeonDisplay extends Component {
 					}
 				}
 				if (newSelectedRegion){
-					newMap.moveRegion(newSelectedRegion, point);
+					newMap.moveRegion(newSelectedRegion, this.state.draggedRegion.start.add(diff));
 				}
 				this.setState({isDraggingRegion: false, startPoint: null, draggedRegion: null, map: newMap, selectedRegion: newSelectedRegion});
 				this.drawDungeon(newMap);
@@ -541,7 +542,7 @@ class DungeonDisplay extends Component {
 
 	private mouseMoveInMap(event: any) {
 		if (this.state.isDraggingRegion && this.state.startPoint){
-			var point = this.getPointFromEvent(event, true, false);
+			var point = this.getPointFromEvent(event);
 			var diff = point.subtract(this.state.startPoint);
 			var newDraggedRegion = lodash.cloneDeep(this.state.draggedRegion);
 			if (newDraggedRegion){
@@ -567,28 +568,21 @@ class DungeonDisplay extends Component {
 			var mapLocation = this.getPointFromEvent(event);
 			var region = this.state.map.getRegionInstance(mapLocation.x, mapLocation.y)
 			if (region && region.name === this.state.selectedRegion.name){
-				var point = this.getPointFromEvent(event, true, false);
+				var point = this.getPointFromEvent(event);
 				this.setState({isDraggingRegion: true, startPoint: point, draggedRegion: this.state.selectedRegion});
 			}
 		}
 	}
 
-	private getPointFromEvent(event: any, useTiles: boolean = true, useFloor: boolean = true): Coordinates {
+	private getPointFromEvent(event: any): Coordinates {
 		if (this.state.map){
+			// var startx = dungeonMap.tileSize * (x + 1);
+			// 	var starty = canvasHeight - dungeonMap.tileSize * (y + 2);
 			var canvas = this.selectionRef.current;
 			let rect = canvas.getBoundingClientRect();
-			let x = (event.clientX - rect.left);
-			let y = (event.clientY - rect.top);
+			let x = Math.floor((event.clientX - rect.left)/this.state.map.tileSize);
+			let y = Math.floor((canvas.height - (event.clientY - rect.top))/this.state.map.tileSize);
 			
-			if (useTiles){
-				x = x/this.state.map.tileSize;
-				y = (canvas.height - y)/this.state.map.tileSize;
-			}
-
-			if (useFloor){
-				x = Math.floor(x);
-				y = Math.floor(y);
-			}
 			return new Coordinates(x, y);
 		}
 		return new Coordinates(-1, -1);
