@@ -68,6 +68,7 @@ type Props = {
   open: boolean;
   viewOnly?: boolean;
   corridorCategory?: CorridorCategory;
+  savePhrase?: string;
   onCancelClick: () => void;
   onSave?: (rc: CorridorCategory) => void;
 }
@@ -442,7 +443,7 @@ export default function CorridorCategoryEditor(props: Props) {
           </Button>
             {!viewMode &&
               <Button onClick={handleSaveClick} variant="contained" color="primary">
-                Save
+                {props.savePhrase ? props.savePhrase : "Save"}
             </Button>
             }
 

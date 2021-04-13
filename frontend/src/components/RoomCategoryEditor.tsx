@@ -69,6 +69,7 @@ type Props = {
   open: boolean;
   viewOnly?: boolean;
   roomCategory?: RoomCategory;
+  savePhrase?: string;
   onCancelClick: () => void;
   onSave?: (rc: RoomCategory) => void;
 }
@@ -474,7 +475,7 @@ export default function RoomCategoryEditor(props: Props) {
           </Button>
             {!viewMode &&
               <Button onClick={handleSaveClick} variant="contained" color="primary">
-                Save
+                {props.savePhrase ? props.savePhrase : "Save"}
             </Button>
             }
 

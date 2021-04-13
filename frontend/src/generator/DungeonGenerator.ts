@@ -544,7 +544,7 @@ export class DungeonGenerator {
 	}
 
 	private static getCorridorLocations(path: Coordinates[], lastDirection: Direction, widthModifier: number): Coordinates[] {
-		var locations: Set<Coordinates> = new Set<Coordinates>();
+		var locations: string[]  = [];
 		var widthStart = Math.floor(widthModifier/2);
 		for(var i = 0; i < path.length; i++){
 			var current = path[i];
@@ -556,17 +556,17 @@ export class DungeonGenerator {
 			var j;
 			if (direction === Direction.up || direction === Direction.down) {
 				for(j = 0 - widthStart; j < widthModifier - widthStart; j++){
-					locations.add(new Coordinates(current.x + j, current.y));
+					locations.push(new Coordinates(current.x + j, current.y).toString());
 				}
 			}
 			else if (direction === Direction.right || direction === Direction.left) {
 				for(j = 0 - widthStart; j < widthModifier - widthStart; j++){
-					locations.add(new Coordinates(current.x, current.y + j));
+					locations.push(new Coordinates(current.x, current.y + j).toString());
 				}
 			}
 		}
-
-		return Array.from(locations);
+		locations = locations.filter((item,index) => locations.indexOf(item) === index);
+		return locations.map((location) => Coordinates.fromString(location));
 	}
 
 }

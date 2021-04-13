@@ -14,6 +14,12 @@ import DifficultySlider from './DifficultySlider';
 import Typography from '@material-ui/core/Typography';
 import AccordionDetails from '@material-ui/core/AccordionDetails';
 import { DungeonGenerator } from '../generator/DungeonGenerator';
+import RegionLevelConfiguration from './RegionLevelConfiguration';
+import { Configuration } from '../models/Configuration';
+import { valueOf } from '../utils/util';
+import { RegionCategory } from '../models/RegionCategory';
+import ConfirmChange from './ConfirmChange';
+import RegionLevelModify from './RegionLevelModify';
 
 const styles = (theme: Theme) => ({
     root: {
@@ -59,19 +65,19 @@ const useStyles = makeStyles((theme) => ({
     }
 }));
 
-const customWidth = {
-	maxWidth: 200,
-}
-
 type Props = {
     map: DungeonMap | null;
 	onChange: (map: DungeonMap) => void;
 	getSingleImage: () => Map<string, any>;
 	getMultipleImages: () => Map<string, any>;
+	selectCategory: (category: RegionCategory) => void;
 }
 
 function DungeonEditor(props: Props) {
 	const [changes, setChanges] = useState(() => {
+		return {} as any;
+	});
+	const [regionChanges, setRegionChanges] = useState(() => {
 		return {} as any;
 	});
     const classes = useStyles();
@@ -81,6 +87,8 @@ function DungeonEditor(props: Props) {
         severity: "success",
         active: false,
     });
+	const [confirmOpen, setConfirmOpen] = useState(false);
+	const [confirmMessage, setConfirmMessage] = useState("");
     const [isDownloading, setIsDownloading] = useState(false);
     const [viewMode, setViewMode] = useState(() => {
         return false;
@@ -135,11 +143,25 @@ function DungeonEditor(props: Props) {
         setAlert({ ...alert, active: false });
     };
 
-	const onDifficultyChange = (difficulty: number) => {
+	const handleDifficultyChange = (difficulty: number) => {
 		var newChanges = {} as any;
 		Object.assign(newChanges, changes);
 		newChanges.difficulty = difficulty;
 		setChanges(newChanges);
+	}
+
+	const handleRegionChanges = (name: keyof Configuration, value: valueOf<Configuration>) => {
+		var newChanges = {} as any;
+		Object.assign(newChanges, regionChanges,  { [name]: value });
+		setRegionChanges(newChanges);
+	}
+
+	const handleConfirmDecision = (decision: boolean) => {
+		if (decision) {
+			// TODO
+		}
+		
+		setRegionChanges({} as any);
 	}
 
     return (
@@ -161,8 +183,18 @@ function DungeonEditor(props: Props) {
 						<AccordionDetails>
 								<DifficultySlider
 									disabled={isDownloading}
-									onChange={onDifficultyChange}
+									onChange={handleDifficultyChange}
 									value={changes.difficulty ? changes.difficulty : map.config.difficulty}/>
+						</AccordionDetails>
+					</Accordion>
+					<Accordion expanded={true}>
+						<AccordionSummary
+							aria-controls="panel2a-content"
+							id="panel2a-header">
+							<Typography>Region Level Options</Typography>
+						</AccordionSummary>
+						<AccordionDetails>
+							<RegionLevelModify isSaving={isDownloading} configuration={map.config} onChange={handleRegionChanges} selectCategory={props.selectCategory} savePhrase={"Apply"}/>
 						</AccordionDetails>
 					</Accordion>
 			   </Paper>
@@ -175,6 +207,11 @@ function DungeonEditor(props: Props) {
 				   </div>
 			   </Grid>
 		   </div>}
+		   {confirmOpen && 
+				<ConfirmChange
+					open={confirmOpen}
+					message={confirmMessage}
+					onDecision={handleConfirmDecision}/>}
         </div>
     );
 }
