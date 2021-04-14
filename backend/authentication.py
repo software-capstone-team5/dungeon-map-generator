@@ -1,16 +1,12 @@
-from backend import app
-from flask import request, jsonify
+from flask import Blueprint, Flask, current_app, jsonify, request
 from firebase_admin import credentials, firestore, auth, initialize_app  # Initialize Flask App
-from flask_cors import CORS, cross_origin
-from drive import createFolder, findFolder
-from util import *
+from .drive import createFolder, findFolder
+from .util import *
 
-
-cors = CORS(app, resources={r'/*': {'origins': '*'}})
-
+authentication = Blueprint("authentication", __name__)
 
 # REQ-1: Request.Registration - The system will allow the user to register a DMG account through a linked Google Account.
-@app.route("/register", methods=['POST'])
+@authentication.route("/register", methods=['POST'])
 def register():
     try:
         requestData = request.get_json()
@@ -31,10 +27,10 @@ def register():
         else:
             return user_id
     except Exception as e:
-        return f"An Error Occured: {e}"
+        return jsonify({"valid": False, "response": "Failed"}), 400
 
 # REQ-2: Request.Login - The system will compare the provided Google Account login with the database to see if there is a matching registered user.
-@app.route("/login", methods=['POST'])
+@authentication.route("/login", methods=['POST'])
 def login():
     try:
         requestData = request.get_json()

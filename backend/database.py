@@ -1,17 +1,14 @@
 from firebase_admin import auth, credentials, firestore  # Initialize Flask App
-from flask import jsonify, request
-from flask_cors import CORS, cross_origin
+from flask import Blueprint, Flask, current_app, jsonify, request
 from google.auth.transport import requests
 from google.oauth2 import id_token
 
-from authentication import verifyToken
-from backend import app
-from util import *
+from .util import *
 
-cors = CORS(app, resources={r'/*': {'origins': '*'}})
+db = Blueprint("db", __name__)
 
 # REQ-18: Save.MapConfiguration - The system allows logged-in users to save the entire map configuration (both Map Level and Region Level) as a Preset.
-@app.route("/user/<idToken>/config", methods=['POST'])
+@db.route("/user/<idToken>/config", methods=['POST'])
 def saveConfig(idToken):
     try:
         requestData = request.get_json()
@@ -50,7 +47,7 @@ def saveConfig(idToken):
         return f"An Error Occured: {e}"
 
 # REQ-28: Save.RoomCategory - The system should allow the user to save a Room Category that they have created in the database.
-@app.route("/user/<idToken>/room", methods=['POST'])
+@db.route("/user/<idToken>/room", methods=['POST'])
 def saveRoomCategory(idToken):
     try:
         requestData = request.get_json()
@@ -66,7 +63,7 @@ def saveRoomCategory(idToken):
         return f"An Error Occured: {e}"
 
 # REQ-37: Save.CorridorCategory - The system should allow the user to save a Corridor Category that they have created in the database.
-@app.route("/user/<idToken>/corridor", methods=['POST'])
+@db.route("/user/<idToken>/corridor", methods=['POST'])
 def saveCorridorCategory(idToken):
     try:
         requestData = request.get_json()
@@ -83,8 +80,8 @@ def saveCorridorCategory(idToken):
 
 
 # REQ-18: Save.MapConfiguration - The system allows logged-in users to save the entire map configuration (both Map Level and Region Level) as a Preset.
-@app.route('/config', methods=['GET'])
-@app.route("/user/<idToken>/config", methods=['GET'])
+@db.route('/config', methods=['GET'])
+@db.route("/user/<idToken>/config", methods=['GET'])
 def getConfigs(idToken=None):
     try:
         if idToken is None:
@@ -114,13 +111,17 @@ def getConfigs(idToken=None):
     except Exception as e:
         return f"An Error Occured: {e}"
 
-@app.route('/config/<configID>', methods=['GET'])
-@app.route("/user/<idToken>/config/<configID>", methods=['GET'])
+def getConfig(configID):
+    config = users_collection.document(premade_id).collection("Configurations").document(configID).get()
+    result = getConfigReferences(config)
+    return result
+
+@db.route('/config/<configID>', methods=['GET'])
+@db.route("/user/<idToken>/config/<configID>", methods=['GET'])
 def getConfigByID(idToken=None, configID=None):
     try:
         if idToken is None:
-            config = users_collection.document(premade_id).collection("Configurations").document(configID).get()
-            result = getConfigReferences(config)
+            result = getConfig(configID)
 
             return jsonify({"valid": True, "response": result}), 200
         user_id = verifyToken(idToken)
@@ -132,11 +133,11 @@ def getConfigByID(idToken=None, configID=None):
         else:
             return jsonify({"valid": False, "response": "No ID provided"}), 400
     except Exception as e:
-        return f"An Error Occured: {e}"
+        return jsonify({"valid": False, "response": "Failed"}), 400
 
 # REQ-28: Save.RoomCategory - The system should allow the user to save a Room Category that they have created in the database.
-@app.route('/room', methods=['GET'])
-@app.route("/user/<idToken>/room", methods=['GET'])
+@db.route('/room', methods=['GET'])
+@db.route("/user/<idToken>/room", methods=['GET'])
 def getRooms(idToken=None):
     try:
         if idToken is None:
@@ -157,8 +158,8 @@ def getRooms(idToken=None):
         return f"An Error Occured: {e}"
 
 # REQ-37: Save.CorridorCategory - The system should allow the user to save a Corridor Category that they have created in the database.
-@app.route('/corridor', methods=['GET'])
-@app.route("/user/<idToken>/corridor", methods=['GET'])
+@db.route('/corridor', methods=['GET'])
+@db.route("/user/<idToken>/corridor", methods=['GET'])
 def getCorridors(idToken=None):
     try:
         if idToken is None:
@@ -179,7 +180,7 @@ def getCorridors(idToken=None):
         return f"An Error Occured: {e}"
 
 # REQ-10: Add.Monster - The systems shall allow a logged in user to fill out and submit a form to add a new monster to the database.
-@app.route("/user/<idToken>/monster", methods=['POST'])
+@db.route("/user/<idToken>/monster", methods=['POST'])
 def saveMonster(idToken):
     try:
         requestData = request.get_json()
@@ -195,7 +196,7 @@ def saveMonster(idToken):
         return f"An Error Occured: {e}"
 
 # REQ-11: Import.Monsters
-@app.route("/user/<idToken>/monsters", methods=['POST'])
+@db.route("/user/<idToken>/monsters", methods=['POST'])
 def saveMonsters(idToken):
     try:
         requestData = request.get_json()
@@ -214,7 +215,7 @@ def saveMonsters(idToken):
         return f"An Error Occured: {e}"
 
 
-@app.route("/user/<idToken>/item", methods=['POST'])
+@db.route("/user/<idToken>/item", methods=['POST'])
 def saveItem(idToken):
     try:
         requestData = request.get_json()
@@ -229,7 +230,7 @@ def saveItem(idToken):
     except Exception as e:
         return f"An Error Occured: {e}"
 
-@app.route("/user/<idToken>/trap", methods=['POST'])
+@db.route("/user/<idToken>/trap", methods=['POST'])
 def saveTrap(idToken):
     try:
         requestData = request.get_json()
@@ -245,8 +246,8 @@ def saveTrap(idToken):
         return f"An Error Occured: {e}"
 
 # REQ-10: Add.Monster
-@app.route('/monster', methods=['GET'])
-@app.route("/user/<idToken>/monster", methods=['GET'])
+@db.route('/monster', methods=['GET'])
+@db.route("/user/<idToken>/monster", methods=['GET'])
 def getMonsters(idToken=None):
     try:
         if idToken is None:
@@ -265,8 +266,8 @@ def getMonsters(idToken=None):
     except Exception as e:
         return f"An Error Occured: {e}"
 
-@app.route('/item', methods=['GET'])
-@app.route("/user/<idToken>/item", methods=['GET'])
+@db.route('/item', methods=['GET'])
+@db.route("/user/<idToken>/item", methods=['GET'])
 def getItems(idToken=None):
     try:
         if idToken is None:
@@ -285,8 +286,8 @@ def getItems(idToken=None):
     except Exception as e:
         return f"An Error Occured: {e}"
 
-@app.route('/trap', methods=['GET'])
-@app.route("/user/<idToken>/trap", methods=['GET'])
+@db.route('/trap', methods=['GET'])
+@db.route("/user/<idToken>/trap", methods=['GET'])
 def getTraps(idToken=None):
     try:
         if idToken is None:

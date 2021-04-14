@@ -1,23 +1,21 @@
 import os
-from backend import app
-from util import *
-from flask import request, jsonify
+from .util import *
+from flask import Blueprint, Flask, current_app, jsonify, request
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload
 from google.oauth2.credentials import Credentials
 from flask_cors import CORS, cross_origin
+from dotenv import dotenv_values
 
 import json
-
-cors = CORS(app, resources={r'/*': {'origins': '*'}})
+drive = Blueprint("drive", __name__)
 
 scopes = ['https://www.googleapis.com/auth/drive.readonly.metadata', 'https://www.googleapis.com/auth/drive.file']
 
-with open('./certs/google_key.json') as f:
-	keyJson = json.load(f)
-	client_id = keyJson['client_id']
-	token_uri = keyJson['token_uri']
-	client_secret = keyJson['client_secret']
+keyJson = dotenv_values(".env.google_key")
+client_id = keyJson['client_id']
+token_uri = keyJson['token_uri']
+client_secret = keyJson['client_secret']
 
 def buildService(access_token, refresh_token):
 	cred = Credentials(
@@ -57,7 +55,7 @@ def createFolder(access_token, refresh_token, folder_name, parent_ids):
 	return file
 
 
-@app.route("/user/<idToken>/tileset", methods=['GET'])
+@drive.route("/user/<idToken>/tileset", methods=['GET'])
 def getTileSet(idToken):
 	try:
 		requestData = request.get_json()
@@ -85,7 +83,7 @@ def getTileSet(idToken):
 	except Exception as e:
 		return f"An Error Occured: {e}"
 
-@app.route("/user/<idToken>/tileset", methods=['POST'])
+@drive.route("/user/<idToken>/tileset", methods=['POST'])
 def saveTileSet(idToken):
 	try:
 		user_id = verifyToken(idToken)

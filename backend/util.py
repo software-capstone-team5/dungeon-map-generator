@@ -1,7 +1,9 @@
 from firebase_admin import auth, credentials, firestore, initialize_app
 from flask import jsonify
+from dotenv import dotenv_values
 
-cred = credentials.Certificate('./certs/key.json') # change later to either environment var or something else
+key_file = dotenv_values(".env.firebase")
+cred = credentials.Certificate(key_file)
 default_app = initialize_app(cred)
 
 db = firestore.client()
