@@ -5,6 +5,14 @@ from .util import *
 
 authentication = Blueprint("authentication", __name__)
 
+def registerAccount(user_id, requestData):
+    users_collection.document(user_id).set({"temp": True})
+    access_token = requestData['accessToken']
+    refresh_token = requestData['refreshToken']
+    dmg_folder = findFolder(access_token, refresh_token, "DMG Tilesets")
+    if not dmg_folder:
+        createFolder(access_token, refresh_token, "DMG Tilesets", [])
+
 # REQ-1: Request.Registration - The system will allow the user to register a DMG account through a linked Google Account.
 @authentication.route("/register", methods=['POST'])
 def register():
@@ -17,12 +25,7 @@ def register():
             if user.exists:
                 return jsonify({"valid": False, "response": "Account Already Exists"}), 400
             else:
-                users_collection.document(user_id).set({"temp": True})
-                access_token = requestData['accessToken']
-                refresh_token = requestData['refreshToken']
-                dmg_folder = findFolder(access_token, refresh_token, "DMG Tilesets")
-                if not dmg_folder:
-                    createFolder(access_token, refresh_token, "DMG Tilesets", [])
+                registerAccount(user_id, requestData)
                 return jsonify({"valid": True, "response": "Account Created"}), 200
         else:
             return user_id

@@ -47,9 +47,16 @@ class MonsterTests(unittest.TestCase):
 
     #  TEST START: saveMonsters
     @patch.multiple("backend.database",
-                    verifyToken=MagicMock(return_value={}))
+                    verifyToken=MagicMock(return_value="bad"))
     def test_save_invalid_id_monsters(self):
-        response = self.client.post("/user/idTokenEmpty/monsters", content_type='application/json', json={})
+        data = {
+            "challenge": 1,
+            "description": "Testing",
+            "id": "test_id",
+            "name": "Test",
+            "premade": True
+        }
+        response = self.client.post("/user/idTokenEmpty/monsters", content_type='application/json', json=data)
         res_data = json.loads(response.data)
         self.assertEqual(response.status_code, 400)
         self.assertEqual(res_data, {"valid": False, "response": "Failed"})
