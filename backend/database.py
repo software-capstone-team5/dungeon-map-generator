@@ -190,6 +190,12 @@ def getCorridors(idToken=None):
     except Exception as e:
         return jsonify({"valid": False, "response": "Failed"}), 400
 
+def saveMonsterByID(user_id, requestData):
+    monster_collection = users_collection.document(user_id).collection("Monsters")
+    monsterData, dbMonster = getDBID(requestData, monster_collection)
+    dbMonster.set(monsterData)
+    return dbMonster
+
 # REQ-10: Add.Monster - The systems shall allow a logged in user to fill out and submit a form to add a new monster to the database.
 @db.route("/user/<idToken>/monster", methods=['POST'])
 def saveMonster(idToken):
@@ -197,9 +203,7 @@ def saveMonster(idToken):
         requestData = request.get_json()
         user_id = verifyToken(idToken)
         if type(user_id) == str:
-            monster_collection = users_collection.document(user_id).collection("Monsters")
-            monsterData, dbMonster = getDBID(requestData, monster_collection)
-            dbMonster.set(monsterData)
+            dbMonster = saveMonsterByID(user_id, requestData)
             return jsonify({"valid": True, "response": dbMonster.id}), 200
         else:
             return user_id

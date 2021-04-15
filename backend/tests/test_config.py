@@ -82,6 +82,7 @@ class ConfigTests(unittest.TestCase):
             "name": "Sewer Base",
             "premade": True
         })
+        self.assertEqual(len(res_data["response"]), 2)
     # TEST END: getConfigs
 
     # TEST START: saveConfig

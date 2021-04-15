@@ -38,6 +38,7 @@ class CategoryTests(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(res_data["valid"], True)
         self.assertEqual(res_data["response"][0]["name"], "Empty Room, All Equal")
+        self.assertEqual(len(res_data["response"]), 6)
     #  TEST END: getRooms
 
     #  TEST START: getCorridors
@@ -64,6 +65,7 @@ class CategoryTests(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(res_data["valid"], True)
         self.assertEqual(res_data["response"][0]["name"], "Thin Basic Corridor")
+        self.assertEqual(len(res_data["response"]), 2)
 
     #  TEST START: saveRoomCategory WIP
     @patch.multiple("backend.database",
