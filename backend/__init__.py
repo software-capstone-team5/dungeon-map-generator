@@ -5,7 +5,7 @@ from flask_cors import CORS, cross_origin
 from dotenv import dotenv_values
 
 from .database import db
-from .authentication import authentication
+from .auth import authentication
 from .drive import drive
 
 def create_app(env='.env.firebase'):

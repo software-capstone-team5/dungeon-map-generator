@@ -17,7 +17,7 @@ class ItemTests(unittest.TestCase):
     @patch.multiple("backend.database",
                 verifyToken=MagicMock(return_value=""))
     def test_save_invalid_id_item(self):
-        response = self.client.post("/user/idTokenEmpty/item", content_type='application/json', data={})
+        response = self.client.post("/user/idTokenEmpty/item", content_type='application/json', json={})
         res_data = json.loads(response.data)
         self.assertEqual(response.status_code, 400)
         self.assertEqual(res_data, {"valid": False, "response": "Failed"})
@@ -39,7 +39,7 @@ class ItemTests(unittest.TestCase):
             # "premade": True,
             # "value": 200
     #     }
-    #     response = self.client.post("/user/idToken/item", content_type='application/json', data=data)
+    #     response = self.client.post("/user/idToken/item", content_type='application/json', json=data)
     #     res_data = json.loads(response.data)
     #     # self.assertEqual(response.status_code, 200)
     #     # self.assertEqual(res_data['valid'], True)

@@ -71,7 +71,7 @@ class CategoryTests(unittest.TestCase):
     @patch.multiple("backend.database",
                     verifyToken=MagicMock(return_value="bad"))
     def test_save_invalid_corridor_category(self):
-        response = self.client.post("/user/bad/corridor", content_type='application/json', data={'id': "id"})
+        response = self.client.post("/user/bad/corridor", content_type='application/json', json={'id': "id"})
         res_data = json.loads(response.data)
         self.assertEqual(response.status_code, 400)
         self.assertEqual(res_data, {"valid": False, "response": "Failed"})
@@ -81,7 +81,7 @@ class CategoryTests(unittest.TestCase):
     @patch.multiple("backend.database",
                     verifyToken=MagicMock(return_value="bad"))
     def test_save_invalid_room_category(self):
-        response = self.client.post("/user/bad/room", content_type='application/json', data={'id': "id"})
+        response = self.client.post("/user/bad/room", content_type='application/json', json={'id': "id"})
         res_data = json.loads(response.data)
         self.assertEqual(response.status_code, 400)
         self.assertEqual(res_data, {"valid": False, "response": "Failed"})

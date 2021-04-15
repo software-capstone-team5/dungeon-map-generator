@@ -87,7 +87,7 @@ class ConfigTests(unittest.TestCase):
 
     # TEST START: saveConfig
     def test_post_invalid_id_config(self):
-        response = self.client.post("/user/idToken/config", data={})
+        response = self.client.post("/user/idToken/config", json={})
         res_data = json.loads(response.data)
         self.assertEqual(response.status_code, 400)
         self.assertEqual(res_data, {"valid": False, "response": "Invalid ID"})
@@ -95,7 +95,7 @@ class ConfigTests(unittest.TestCase):
     @patch.multiple("backend.database",
                 verifyToken=MagicMock(return_value=""))
     def test_post_empty_id_configs(self):
-        response = self.client.post("/user/idToken/config", data={})
+        response = self.client.post("/user/idToken/config", json={})
         res_data = json.loads(response.data)
         self.assertEqual(response.status_code, 400)
         self.assertEqual(res_data, {"valid": False, "response": "Failed"})
@@ -106,7 +106,7 @@ class ConfigTests(unittest.TestCase):
     #             getDBID=MagicMock(return_value=("prev_id",{'id': "prev_id"})),
     #             saveCategoryReferences=MagicMock(return_value=""))
     # def test_post_prev_id_configs(self):
-    #     response = self.client.post("/user/idToken/config", content_type='application/json', data={'id': 'prev_id'})
+    #     response = self.client.post("/user/idToken/config", content_type='application/json', json={'id': 'prev_id'})
     #     res_data = json.loads(response.data)
     #     self.assertEqual(response.status_code, 200)
     #     # self.assertEqual(res_data, {"valid": True, "response": "prev_id"})
@@ -116,7 +116,7 @@ class ConfigTests(unittest.TestCase):
     #             getDBID=MagicMock(return_value=("prev_id",{'id': "new_id"})),
     #             saveCategoryReferences=MagicMock(return_value=""))
     # def test_post_prev_id_configs(self):
-    #     response = self.client.post("/user/idToken/config", content_type='application/json', data={'id': ''})
+    #     response = self.client.post("/user/idToken/config", content_type='application/json', json={'id': ''})
     #     res_data = json.loads(response.data)
     #     self.assertEqual(response.status_code, 200)
     #     # self.assertEqual(res_data, {"valid": True, "response": "new_id"})

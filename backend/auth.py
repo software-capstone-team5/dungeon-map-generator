@@ -45,4 +45,4 @@ def login():
         else:
             return user_id
     except Exception as e:
-        return f"An Error Occured: {e}"
+        return jsonify({"valid": False, "response": "Failed"}), 400

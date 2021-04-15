@@ -17,7 +17,7 @@ class MonsterTests(unittest.TestCase):
     @patch.multiple("backend.database",
                 verifyToken=MagicMock(return_value=""))
     def test_save_invalid_id_monster(self):
-        response = self.client.post("/user/idTokenEmpty/monster", content_type='application/json', data={})
+        response = self.client.post("/user/idTokenEmpty/monster", content_type='application/json', json={})
         res_data = json.loads(response.data)
         self.assertEqual(response.status_code, 400)
         self.assertEqual(res_data, {"valid": False, "response": "Failed"})
@@ -39,7 +39,7 @@ class MonsterTests(unittest.TestCase):
     #         "name": "Test",
     #         "premade": True
     #     }
-    #     response = self.client.post("/user/idToken/monster", content_type='application/json', data=data)
+    #     response = self.client.post("/user/idToken/monster", content_type='application/json', json=data)
     #     res_data = json.loads(response.data)
     #     # self.assertEqual(response.status_code, 200)
     #     # self.assertEqual(res_data['valid'], True)
@@ -49,7 +49,7 @@ class MonsterTests(unittest.TestCase):
     @patch.multiple("backend.database",
                     verifyToken=MagicMock(return_value={}))
     def test_save_invalid_id_monsters(self):
-        response = self.client.post("/user/idTokenEmpty/monsters", content_type='application/json', data={})
+        response = self.client.post("/user/idTokenEmpty/monsters", content_type='application/json', json={})
         res_data = json.loads(response.data)
         self.assertEqual(response.status_code, 400)
         self.assertEqual(res_data, {"valid": False, "response": "Failed"})
@@ -71,7 +71,7 @@ class MonsterTests(unittest.TestCase):
     #         "name": "Test",
     #         "premade": True
     #     }
-    #     response = self.client.post("/user/idToken/monsters", content_type='application/json', data=data)
+    #     response = self.client.post("/user/idToken/monsters", content_type='application/json', json=data)
     #     res_data = json.loads(response.data)
     #     # self.assertEqual(response.status_code, 200)
     #     # self.assertEqual(res_data['valid'], True)
