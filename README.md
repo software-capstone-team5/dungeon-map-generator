@@ -34,8 +34,12 @@ Dependencies:
 In the `backend` directory, run `pipenv install` to install the project dependencies.
 
 ### Firebase Certificates
-Download `key.json` and `google_key.json` from Team Google Drive.\
-In the `backend` directory, create a directory named `certs` and add both keys to this folder.
+Download `.env.firebase` and `.env.google_key` from Team Google Drive.\
+In the `backend` directory, add both files to this folder.
+
+### Running backend Tests
+In the `backend` directory, run `pipenv install` to ensure the necessary libraries are installed.\
+Then run `pipenv run pytest -v` to execute the tests
 
 To start the server, run
 
