@@ -249,15 +249,19 @@ def saveItem(idToken):
     except Exception as e:
         return jsonify({"valid": False, "response": "Failed"}), 400
 
+def saveTrapByID(user_id, requestData):
+    trap_collection = users_collection.document(user_id).collection("Traps")
+    trapData, dbTrap = getDBID(requestData, trap_collection)
+    dbTrap.set(trapData)
+    return dbTrap
+
 @db.route("/user/<idToken>/trap", methods=['POST'])
 def saveTrap(idToken):
     try:
         requestData = request.get_json()
         user_id = verifyToken(idToken)
         if type(user_id) == str:
-            trap_collection = users_collection.document(user_id).collection("Traps")
-            trapData, dbTrap = getDBID(requestData, trap_collection)
-            dbTrap.set(trapData)
+            dbTrap = saveTrapByID(user_id, requestData)
             return jsonify({"valid": True, "response": dbTrap.id}), 200
         else:
             return user_id
