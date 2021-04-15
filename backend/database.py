@@ -230,15 +230,19 @@ def saveMonsters(idToken):
         return jsonify({"valid": False, "response": "Failed"}), 400
 
 
+def saveItemByID(user_id, requestData):
+    item_collection = users_collection.document(user_id).collection("Items")
+    itemData, dbItem = getDBID(requestData, item_collection)
+    dbItem.set(itemData)
+    return dbItem
+
 @db.route("/user/<idToken>/item", methods=['POST'])
 def saveItem(idToken):
     try:
         requestData = request.get_json()
         user_id = verifyToken(idToken)
         if type(user_id) == str:
-            item_collection = users_collection.document(user_id).collection("Items")
-            itemData, dbItem = getDBID(requestData, item_collection)
-            dbItem.set(itemData)
+            dbItem = saveItemByID(user_id, requestData)
             return jsonify({"valid": True, "response": dbItem.id}), 200
         else:
             return user_id
