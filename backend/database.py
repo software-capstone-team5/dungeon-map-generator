@@ -47,6 +47,11 @@ def saveConfig(idToken):
     except Exception as e:
         return jsonify({"valid": False, "response": "Failed"}), 400
 
+def saveRoomCategoryToDB(user_id, requestData):
+    roomCat_collection = users_collection.document(user_id).collection("RoomCategories")
+    category = saveCategory(requestData, roomCat_collection, users_collection, user_id)
+    return category
+
 # REQ-28: Save.RoomCategory - The system should allow the user to save a Room Category that they have created in the database.
 @db.route("/user/<idToken>/room", methods=['POST'])
 def saveRoomCategory(idToken):
@@ -55,8 +60,8 @@ def saveRoomCategory(idToken):
         user_id = verifyToken(idToken)
         if type(user_id) == str:
             # Save room category in RoomCategories collection in DB
-            roomCat_collection = users_collection.document(user_id).collection("RoomCategories")
-            category = saveCategory(requestData, roomCat_collection, users_collection, user_id)
+            category = saveRoomCategoryToDB(user_id, requestData)
+            print("here")
             return jsonify({"valid": True, "response": category.id}), 200
         else:
             return user_id
@@ -131,6 +136,15 @@ def getConfigByID(idToken=None, configID=None):
     except Exception as e:
         return jsonify({"valid": False, "response": "Failed"}), 400
 
+def getRoomsByUID(user_id):
+    result = []
+    rooms = users_collection.document(user_id).collection("RoomCategories")
+    for room in rooms.stream():
+        roomDict = room.to_dict()
+        roomCategory = getCategoryReferences(roomDict)
+        result.append(roomCategory)
+    return result
+
 # REQ-28: Save.RoomCategory - The system should allow the user to save a Room Category that they have created in the database.
 @db.route('/room', methods=['GET'])
 @db.route("/user/<idToken>/room", methods=['GET'])
@@ -142,16 +156,21 @@ def getRooms(idToken=None):
         user_id = verifyToken(idToken)
         if user_id:
             result = getPremadeRegions("RoomCategories")
-            rooms = users_collection.document(user_id).collection("RoomCategories")
-            for room in rooms.stream():
-                roomDict = room.to_dict()
-                roomCategory = getCategoryReferences(roomDict)
-                result.append(roomCategory)
+            result = result + getRoomsByUID(user_id)
             return jsonify({"valid": True, "response": result}), 200
         else:
             return jsonify({"valid": False, "response": "No ID provided"}), 400
     except Exception as e:
         return jsonify({"valid": False, "response": "Failed"}), 400
+
+def getCorridorsByID(user_id):
+    result = []
+    corridors = users_collection.document(user_id).collection("CorridorCategories")
+    for corridor in corridors.stream():
+        corridorDict = corridor.to_dict()
+        corridorCategory = getCategoryReferences(corridorDict)
+        result.append(corridorCategory)
+    return result
 
 # REQ-37: Save.CorridorCategory - The system should allow the user to save a Corridor Category that they have created in the database.
 @db.route('/corridor', methods=['GET'])
@@ -164,11 +183,7 @@ def getCorridors(idToken=None):
         user_id = verifyToken(idToken)
         if user_id:
             result = getPremades("CorridorCategories")
-            corridors = users_collection.document(user_id).collection("CorridorCategories")
-            for corridor in corridors.stream():
-                corridorDict = corridor.to_dict()
-                corridorCategory = getCategoryReferences(corridorDict)
-                result.append(corridorCategory)
+            result += getCorridorsByID(user_id)
             return jsonify({"valid": True, "response": result}), 200
         else:
             return jsonify({"valid": False, "response": "No ID provided"}), 400

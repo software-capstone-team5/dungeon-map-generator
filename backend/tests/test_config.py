@@ -105,7 +105,7 @@ class ConfigTests(unittest.TestCase):
     #             getDBID=MagicMock(return_value=("prev_id",{'id': "prev_id"})),
     #             saveCategoryReferences=MagicMock(return_value=""))
     # def test_post_prev_id_configs(self):
-    #     response = self.client.post("/user/idToken/config", data={'id': 'prev_id'})
+    #     response = self.client.post("/user/idToken/config", content_type='application/json', data={'id': 'prev_id'})
     #     res_data = json.loads(response.data)
     #     self.assertEqual(response.status_code, 200)
     #     # self.assertEqual(res_data, {"valid": True, "response": "prev_id"})
@@ -115,7 +115,7 @@ class ConfigTests(unittest.TestCase):
     #             getDBID=MagicMock(return_value=("prev_id",{'id': "new_id"})),
     #             saveCategoryReferences=MagicMock(return_value=""))
     # def test_post_prev_id_configs(self):
-    #     response = self.client.post("/user/idToken/config", data={'id': ''})
+    #     response = self.client.post("/user/idToken/config", content_type='application/json', data={'id': ''})
     #     res_data = json.loads(response.data)
     #     self.assertEqual(response.status_code, 200)
     #     # self.assertEqual(res_data, {"valid": True, "response": "new_id"})
