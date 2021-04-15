@@ -115,7 +115,7 @@ class ConfigTests(unittest.TestCase):
     #             verifyToken=MagicMock(return_value=premade_uid),
     #             getDBID=MagicMock(return_value=("prev_id",{'id': "new_id"})),
     #             saveCategoryReferences=MagicMock(return_value=""))
-    # def test_post_prev_id_configs(self):
+    # def test_post_new_id_configs(self):
     #     response = self.client.post("/user/idToken/config", content_type='application/json', json={'id': ''})
     #     res_data = json.loads(response.data)
     #     self.assertEqual(response.status_code, 200)

@@ -25,7 +25,7 @@ class TrapTests(unittest.TestCase):
     # @patch.multiple("backend.database",
     #                 verifyToken=MagicMock(return_value=premade_uid),
     #                 saveTrapByID=MagicMock(return_value={}))
-    # def test_save_valid_item(self, **mock):
+    # def test_save_valid_trap(self, **mock):
     #     data = {
     #     "description": "Description.",
     #     "difficulty": 15,
@@ -33,10 +33,11 @@ class TrapTests(unittest.TestCase):
     #     "name": "Test",
     #     "premade": True
     #     }
-    #     response = self.client.post("/user/idToken/item", content_type='application/json', json=data)
+    #     response = self.client.post("/user/idToken/trap", content_type='application/json', json=data)
     #     res_data = json.loads(response.data)
     #     self.assertEqual(response.status_code, 200)
     #     self.assertEqual(res_data['valid'], True)
+    #     self.assertEqual(res_data['response'], "Testing")
     #  TEST END: saveTrap
 
     #  TEST START: getTraps
