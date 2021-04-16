@@ -441,7 +441,13 @@ function DungeonEditor(props: Props) {
 			var newMap = Object.create(Object.getPrototypeOf(map)) as DungeonMap;
 			Object.assign(newMap, map);
 			if (name === nameOf<DungeonMap>("rooms")){
-				newMap.removeRoom(newMap.rooms[args.index]);
+				var room = newMap.rooms[args.index] as RoomInstance;
+				newMap.removeRoom(room);
+				if (room.entrances.length > 1){
+					var corridor = DungeonGenerator.generatePathAndCorridor(room.start, room.entrances[room.entrances.length - 1].location, newMap.config.corridorCategories!.randPickOne()!, newMap);
+					newMap.addCorridor(corridor as CorridorInstance);
+					DungeonGenerator.generateEntrancesForNeighbours(corridor, newMap);
+				}
 			}
 			else{
 				newMap.removeCorridor(newMap.corridors[args.index]);
