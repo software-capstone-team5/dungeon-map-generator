@@ -19,6 +19,8 @@ export default function DownloadDungeon(props: Props) {
 	const handleSingleDownload = async () => {
 		if (props.map){
 			var namesToFiles = props.getSingleImage();
+			var json = props.map.getContentJSON();
+			namesToFiles.set('DungeonMap.json', new Blob([json], {type: 'application/json'}))
 			await zipAndDownload(namesToFiles);
 		}
 		else{
@@ -29,6 +31,8 @@ export default function DownloadDungeon(props: Props) {
 	const handleLayerDownloads = async () => {
 		if (props.map){
 			var namesToFiles = props.getMultipleImages();
+			var json = props.map.getContentJSON();
+			namesToFiles.set('DungeonMap.json', new Blob([json], {type: 'application/json'}))
 			await zipAndDownload(namesToFiles);
 		}
 		else{
@@ -51,7 +55,12 @@ export default function DownloadDungeon(props: Props) {
 		var zip = new JSZip();
 
 		namesToFiles.forEach((url, fileName) => {
-			zip.file(fileName, url.substr(url.indexOf(',')+1), {base64: true});
+			if (fileName.endsWith(".json")){
+				zip.file(fileName, url);
+			}
+			else{
+				zip.file(fileName, url.substr(url.indexOf(',')+1), {base64: true});
+			}
 		});
 		var content = await zip.generateAsync({type:"blob"})
 		

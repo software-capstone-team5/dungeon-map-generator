@@ -203,21 +203,28 @@ class DungeonDisplay extends Component {
 			context.drawImage(canvas, 0, 0);
 		})
 
-		// TODO: add encounter data
 		var namesToFiles = new Map<string, string>();
 		namesToFiles.set("DungeonMap.png", combinedCanvas.toDataURL("image/png"));
 		return namesToFiles;
 	}
 
 	getMultipleImages(): Map<string, any>{
-		var urls = this.getCanvases().map((canvas) => canvas.toDataURL("image/png"));
+		const canvases = this.getCanvases();
+
+		var combinedCanvas = this.combinedRef.current;
+		var context = combinedCanvas.getContext('2d');
+
+		canvases.forEach((canvas) => {
+			context.drawImage(canvas, 0, 0);
+		})
+
+		var urls = canvases.map((canvas) => canvas.toDataURL("image/png"));
 		var namesToFiles = new Map<string, string>();
 		namesToFiles.set("DungeonMap_Background.png", urls[0]);
 		namesToFiles.set("DungeonMap_Main.png", urls[1]);
 		namesToFiles.set("DungeonMap_Hidden.png", urls[2]);
 		namesToFiles.set("DungeonMap.png", urls[3]);
 
-		// TODO: add encounter data
 		return namesToFiles;
 	}
 

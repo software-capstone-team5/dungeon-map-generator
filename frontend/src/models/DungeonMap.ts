@@ -3,6 +3,8 @@ import { Configuration } from "./Configuration";
 import { Coordinates } from "./Coordinates";
 import { CorridorInstance } from "./CorridorInstance";
 import { Entrance } from "./Entrance";
+import { MapContents } from "./MapContents";
+import { RegionContent } from "./RegionContent";
 import { RegionInstance } from "./RegionInstance";
 import { RoomInstance } from "./RoomInstance";
 
@@ -47,6 +49,17 @@ export class DungeonMap {
 	getJSON(): string {
 		// TODO: Consider condensing this file and reducing redundancy.
 		return JSON.stringify(this);
+	}
+
+	getContentJSON(): string {
+		var content = new MapContents();
+		this.rooms.forEach((room) => {
+			content.rooms.push(new RegionContent(room));
+		})
+		this.rooms.forEach((corridor) => {
+			content.corridors.push(new RegionContent(corridor));
+		})
+		return JSON.stringify(content);
 	}
 
 	addCorridor(corridor: CorridorInstance){
