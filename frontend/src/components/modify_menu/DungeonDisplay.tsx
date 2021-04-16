@@ -1,3 +1,9 @@
+// REQ-4: Display.Dungeon - The system will convert the generated dungeon into a format for the user to see in the UI. This will include replacing the map representation with tilesets, door images, etc. 
+// REQ-41: - Modify.AddRoom: The system will generate a room based on the category selected by the user and place the generated room in the corridor location the user selected.
+// REQ-42: - Modify.AddCorridor: The system will add a corridor to the location provided by the user.
+// REQ-43: - Modify.MoveRoom: The system will move the selected room to the destination corridor and replace the original room location with a corridor.
+// REQ-52: Modify.AddDoor - A door can be added to any room or corridor at any location on a wall which does not already have a door.
+
 import React, { Component } from 'react'
 import { Direction } from '../../constants/Direction';
 import { EntranceType } from '../../constants/EntranceType';
@@ -473,6 +479,7 @@ class DungeonDisplay extends Component {
 		context.clearRect(0, 0, canvas.width, canvas.height);
 	}
 
+	// REQ-41: - Modify.AddRoom: The system will generate a room based on the category selected by the user and place the generated room in the corridor location the user selected.
 	private addRoomToMap(point: Coordinates) : RoomInstance | null {
 		var region: RoomInstance | null  = null;
 		if (this.state.map){
@@ -489,6 +496,7 @@ class DungeonDisplay extends Component {
 		return region;
 	}
 
+	// REQ-42: - Modify.AddCorridor: The system will add a corridor to the location provided by the user.
 	private addCorridorToMap(point: Coordinates) : CorridorInstance | null {
 		var region: CorridorInstance | null = null;
 		if (this.state.startPoint){
@@ -506,6 +514,7 @@ class DungeonDisplay extends Component {
 		return region
 	}
 
+	// REQ-52: Modify.AddDoor - A door can be added to any room or corridor at any location on a wall which does not already have a door.
 	private addEntranceToMap(point: Coordinates, direction: Direction) {
 		if (this.state.map){
 			var newMap = Object.create(Object.getPrototypeOf(this.state.map)) as DungeonMap;
@@ -532,6 +541,7 @@ class DungeonDisplay extends Component {
 		}
 	}
 
+	// REQ-43: - Modify.MoveRoom: The system will move the selected room to the destination corridor and replace the original room location with a corridor.
 	private mouseUpInMap(event: any) {
 		if (this.state.map){
 			var point = this.getPointFromEvent(event);

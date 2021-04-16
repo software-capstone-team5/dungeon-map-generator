@@ -1,3 +1,15 @@
+// REQ-38: - Modify.MapDifficultyLevel: The user can change the difficulty level configuration and will be shown in the GUI how the dungeon is affected without regenerating.
+// REQ-39: - Modify.RemoveRoom: The system will replace the user selected room with a corridor connecting the former room’s entrance and exit if they exist.
+// REQ-40: - Modify.RemoveCorridor: The system will remove the entire user-selected corridor from the dungeon.
+// REQ-44: Regenerate.RoomCategory - Regenerate all rooms within a specific room category using the current configuration for that room category. The location of the rooms on the path will not be changed.
+// REQ-45: Regenerate.CorridorCategory - Regenerate all corridors within a specific corridor category using the current configuration for that corridor category. The path the corridors follow will not be changed.
+// REQ-46: Regenerate.SingleRoom - Regenerate a single room using its current configuration.
+// REQ-47: Regenerate.SingleCorridor - Regenerate a single corridor using its current configuration.
+// REQ-48: Modify.RoomCategory - Any property in a room category can be edited, which will modify all rooms with that category to match the new configuration. The user will be prompted if any aspects of any room(s) would need to be regenerated.
+// REQ-49: Modify.CorridorCategory - Any property in a corridor category can be edited, which will modify all corridors with that category. The user will be 
+// REQ-50: Modify.SingleRoom - Any property in an individual room can be changed, or the room can be assigned to a different category. The user will be prompted if any aspects of the room would need to be regenerated.
+// REQ-51: Modify.SingleCorridor - Any property in an individual corridor can be changed, or the corridor can be assigned to a different category. The user will be prompted if any aspects of the corridor would need to be regenerated.
+
 import MuiAccordion from '@material-ui/core/Accordion';
 import MuiAccordionSummary from '@material-ui/core/AccordionSummary';
 import Button from '@material-ui/core/Button';
@@ -15,7 +27,7 @@ import Typography from '@material-ui/core/Typography';
 import AccordionDetails from '@material-ui/core/AccordionDetails';
 import { DungeonGenerator } from '../../generator/DungeonGenerator';
 import { Configuration } from '../../models/Configuration';
-import { nameOf, valueOf } from '../../utils/util';
+import { nameOf } from '../../utils/util';
 import { RegionCategory } from '../../models/RegionCategory';
 import ConfirmChange from './ConfirmChange';
 import RegionCategoryModify from './RegionCategoryModify';
@@ -169,6 +181,10 @@ function DungeonEditor(props: Props) {
 		setChanges(newChanges);
 	}
 
+	// REQ-44: Regenerate.RoomCategory - Regenerate all rooms within a specific room category using the current configuration for that room category. The location of the rooms on the path will not be changed.
+	// REQ-45: Regenerate.CorridorCategory - Regenerate all corridors within a specific corridor category using the current configuration for that corridor category. The path the corridors follow will not be changed.
+	// REQ-48: Modify.RoomCategory - Any property in a room category can be edited, which will modify all rooms with that category to match the new configuration. The user will be prompted if any aspects of any room(s) would need to be regenerated.
+	// REQ-49: Modify.CorridorCategory - Any property in a corridor category can be edited, which will modify all corridors with that category. The user will be 
 	const handleRegionCatChanges = (name: keyof Configuration, index:number, value: RegionCategory) => {
 		if (map){
 			var regionsToRegen: string[] = [];
@@ -342,6 +358,8 @@ function DungeonEditor(props: Props) {
 		setConfirmOpen(false);
 	}
 
+	// REQ-50: Modify.SingleRoom - Any property in an individual room can be changed, or the room can be assigned to a different category. The user will be prompted if any aspects of the room would need to be regenerated.
+	// REQ-51: Modify.SingleCorridor - Any property in an individual corridor can be changed, or the corridor can be assigned to a different category. The user will be prompted if any aspects of the corridor would need to be regenerated.
 	const handleRegionInstanceChanges = (name: keyof DungeonMap, index:number, value: RegionInstance) => {
 		if (map){
 			var original = name === nameOf<DungeonMap>("rooms") ? map.rooms[index] : map.corridors[index];
@@ -469,6 +487,8 @@ function DungeonEditor(props: Props) {
 		setConfirmOpen(false);
 	}
 
+	// REQ-46: Regenerate.SingleRoom - Regenerate a single room using its current configuration.
+	// REQ-47: Regenerate.SingleCorridor - Regenerate a single corridor using its current configuration.
 	const confirmInstanceRegenerate = (decision: boolean, args: {name: any, index: number}) => {
 		var name = args.name as keyof DungeonMap
 		if (decision && name){
@@ -491,6 +511,7 @@ function DungeonEditor(props: Props) {
 		setConfirmOpen(false);
 	}
 
+	
 	const confirmRegenerate = (decision: boolean, args: {name: any, index: number}) => {
 		var name = args.name as keyof Configuration
 		if (decision && name){

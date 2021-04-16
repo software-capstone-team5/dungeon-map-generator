@@ -1,3 +1,6 @@
+// REQ-46: Regenerate.SingleRoom - Regenerate a single room using its current configuration.
+// REQ-53: Modify.RemoveDoor - An existing door can be removed from any room or corridor.
+
 import { makeStyles } from '@material-ui/core';
 import Button from '@material-ui/core/Button';
 import Dialog from '@material-ui/core/Dialog';
