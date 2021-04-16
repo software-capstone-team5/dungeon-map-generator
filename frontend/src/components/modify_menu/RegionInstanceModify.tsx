@@ -1,14 +1,17 @@
+// REQ-50: Modify.SingleRoom - Any property in an individual room can be changed, or the room can be assigned to a different category. The user will be prompted if any aspects of the room would need to be regenerated.
+// REQ-51: Modify.SingleCorridor - Any property in an individual corridor can be changed, or the corridor can be assigned to a different category. The user will be prompted if any aspects of the corridor would need to be regenerated.
+
 import { makeStyles } from '@material-ui/core';
 import FormLabel from '@material-ui/core/FormLabel';
 import { memo, useState } from 'react';
+import { CorridorInstance } from '../../models/CorridorInstance';
 import { DungeonMap } from '../../models/DungeonMap';
 import { RegionInstance } from '../../models/RegionInstance';
 import { RoomInstance } from '../../models/RoomInstance';
-import { nameOf, valueOf } from '../../utils/util';
+import { nameOf } from '../../utils/util';
 import NameList from "../common/NameList";
-import RoomEditor from './RoomEditor';
-import { CorridorInstance } from '../../models/CorridorInstance';
 import CorridorEditor from './CorridorEditor';
+import RoomEditor from './RoomEditor';
 
 const useStyles = makeStyles({
     listLabel: {

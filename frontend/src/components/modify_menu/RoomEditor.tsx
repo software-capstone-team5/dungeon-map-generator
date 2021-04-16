@@ -21,6 +21,7 @@ import { MonsterState } from '../../constants/MonsterState';
 import { RoomShape } from '../../constants/RoomShape';
 import { Size } from "../../constants/Size";
 import { Probabilities } from '../../generator/Probabilities';
+import { Entrance } from '../../models/Entrance';
 import { Item } from '../../models/Item';
 import { Monster } from '../../models/Monster';
 import { RoomInstance } from '../../models/RoomInstance';
@@ -29,15 +30,13 @@ import { Trap } from '../../models/Trap';
 import { nameOf, valueOf } from '../../utils/util';
 import EnumRadio from '../common/EnumRadio';
 import NameList from '../common/NameList';
+import EntranceEditor from '../content_editors/EntranceEditor';
 import ItemEditor from '../content_editors/ItemEditor';
 import MonsterEditor from '../content_editors/MonsterEditor';
+import TrapEditor from '../content_editors/TrapEditor';
 import SelectItem from '../select/SelectItem';
 import SelectMonster from '../select/SelectMonster';
-import SelectTileSet from '../select/SelectTileSet';
 import SelectTrap from '../select/SelectTrap';
-import TrapEditor from '../content_editors/TrapEditor';
-import { Entrance } from '../../models/Entrance';
-import EntranceEditor from '../content_editors/EntranceEditor';
 
 
 const useStyles = makeStyles((theme) => ({
@@ -118,7 +117,7 @@ export default function RoomEditor(props: Props) {
 	const [entranceToEdit, setEntranceToEdit] = useState<Entrance>()
 	const [entranceEditorOpen, setEntranceEditorOpen] = useState<boolean>(false);
 
-	const [selectTileSetDialogOpen, setSelectTileSetDialogOpen] = useState<boolean>(false);
+	// const [selectTileSetDialogOpen, setSelectTileSetDialogOpen] = useState<boolean>(false);
 
 	const handleChange = (name: keyof RoomInstance, value: valueOf<RoomInstance>) => {
 		setRoom(Object.assign(Object.create(Object.getPrototypeOf(room)), room, { [name]: value }));
@@ -234,9 +233,9 @@ export default function RoomEditor(props: Props) {
 		setEntranceToEdit(undefined);
 	}
 
-	const handleAddTileSetClick = () => {
-		setSelectTileSetDialogOpen(true);
-	}
+	// const handleAddTileSetClick = () => {
+	// 	setSelectTileSetDialogOpen(true);
+	// }
 
 	const handleSaveClick = async () => {
 		if (!room.name) {
@@ -303,14 +302,14 @@ export default function RoomEditor(props: Props) {
 							value={room.shape}
 							onChange={(value: RoomShape) => handleChange(nameOf<RoomInstance>("shape"), value)}
 						/>
-						<div className={classes.listLabel}>
+						{/* <div className={classes.listLabel}>
 							<FormControl disabled={viewMode || !Boolean(room.tileSet) || !Authenticator.isLoggedIn()}>
 								<FormLabel>Tile Set</FormLabel>
 							</FormControl>
 							<IconButton disabled={viewMode || !Boolean(room.tileSet) || !Authenticator.isLoggedIn()} onClick={handleAddTileSetClick} aria-label="add" color="primary">
 								<AddBoxIcon />
 							</IconButton>
-						</div>
+						</div> */}
 						<div className={classes.listLabel}>
 							<FormControl disabled={viewMode || !Boolean(room.monsters)}>
 								<FormLabel>Monsters</FormLabel>
@@ -452,14 +451,14 @@ export default function RoomEditor(props: Props) {
 					onCancelClick={() => setEntranceEditorOpen(false)}
 				/>
 			}
-			{selectTileSetDialogOpen &&
+			{/* {selectTileSetDialogOpen &&
 				<SelectTileSet
 					open={selectTileSetDialogOpen}
 					exclude={[room.tileSet]}
 					onSelect={(i) => handleSelect(nameOf<RoomInstance>("tileSet"), i)}
 					onCancelClick={() => setSelectTileSetDialogOpen(false)}
 				/>
-			}
+			} */}
 		</div>
 	);
 }
