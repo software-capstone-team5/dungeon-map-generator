@@ -28,3 +28,5 @@ google_key.json
 key.json
 firebase_key.json
 temp.jpg
+.env.firebase
+.env.google_key
