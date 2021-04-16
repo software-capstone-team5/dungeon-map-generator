@@ -33,4 +33,8 @@ export class RegionInstance {
 		}
 		this.start = newStart;
 	}
+
+	findEntrance(point: Coordinates){
+		return this.entrances.find((x) => x.location.toString() === point.toString());
+	}
 }

@@ -1,11 +1,13 @@
 import { CorridorWidth } from "../constants/CorridorWidth";
+import { Coordinates } from "./Coordinates";
 import { CorridorCategory } from "./CorridorCategory";
 import { RegionInstance } from "./RegionInstance";
 
 export class CorridorInstance extends RegionInstance {
 	category: CorridorCategory;
 	width: CorridorWidth;
-	isCorridor = true;
+	isCorridor = true; 
+	path: Coordinates[];
 
 	getWidthModifier(): number{
 		var widthModifier = 0;

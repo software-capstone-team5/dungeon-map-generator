@@ -17,7 +17,7 @@ import ConfigurationEditor from "./components/ConfigurationEditor";
 import ImportMonsters from './components/ImportMonsters';
 import DungeonDisplay from './components/modify_menu/DungeonDisplay';
 import SelectConfiguration from "./components/select/SelectConfiguration";
-import TileSetEditor from './components/TileSetEditor';
+import TileSetEditor from './components/content_editors/TileSetEditor';
 import { TileType } from './constants/TileType';
 import DB from './DB';
 import { DungeonGenerator } from './generator/DungeonGenerator';

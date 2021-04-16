@@ -25,7 +25,7 @@ const useStyles = makeStyles((theme) => ({
     },
 }));
 
-interface hasName {
+export interface hasName {
   name: string;
 }
 

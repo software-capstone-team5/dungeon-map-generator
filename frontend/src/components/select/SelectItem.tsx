@@ -13,7 +13,7 @@ import DB from '../../DB';
 import { Item } from '../../models/Item';
 import { compareByID } from '../../utils/util';
 import NameList from '../common/NameList';
-import ItemEditor from '../ItemEditor';
+import ItemEditor from '../content_editors/ItemEditor';
 
 type Props = {
   open: boolean;

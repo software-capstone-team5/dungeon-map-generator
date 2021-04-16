@@ -202,7 +202,7 @@ function ConfigurationEditor(props: Props) {
 
     const handleGenerate = () => {
         if (validConfigCheck()) {
-            var configToGenerate = Object.assign(Object.create(Object.getPrototypeOf(configuration)), configuration);
+            var configToGenerate = cloneDeep(configuration);
             configToGenerate.roomCategories.normalize();
             configToGenerate.corridorCategories.normalize();
             props.onGenerateClick(configToGenerate);

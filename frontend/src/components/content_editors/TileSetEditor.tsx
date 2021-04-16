@@ -16,9 +16,9 @@ import Tooltip from '@material-ui/core/Tooltip';
 import HelpOutlineIcon from '@material-ui/icons/HelpOutline';
 import { useState } from "react";
 import ImageUploading, { ImageListType, ImageType } from "react-images-uploading";
-import { TileType } from "../constants/TileType";
-import { DB } from '../DB';
-import { TileSet } from '../models/TileSet';
+import { TileType } from "../../constants/TileType";
+import { DB } from '../../DB';
+import { TileSet } from '../../models/TileSet';
 
 
 const useStyles = makeStyles((theme) => ({

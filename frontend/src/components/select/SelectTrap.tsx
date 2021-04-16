@@ -13,7 +13,7 @@ import DB from '../../DB';
 import { Trap } from '../../models/Trap';
 import { compareByID } from '../../utils/util';
 import NameList from '../common/NameList';
-import TrapEditor from '../TrapEditor';
+import TrapEditor from '../content_editors/TrapEditor';
 
 type Props = {
   open: boolean;

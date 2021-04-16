@@ -10,10 +10,10 @@ import TextField from '@material-ui/core/TextField';
 import EditIcon from '@material-ui/icons/Edit';
 import cloneDeep from 'lodash/cloneDeep';
 import { useState } from 'react';
-import { Authenticator } from '../Authenticator';
-import { DB } from '../DB';
-import { Monster } from '../models/Monster';
-import { nameOf, valueOf } from '../utils/util';
+import { Authenticator } from '../../Authenticator';
+import { DB } from '../../DB';
+import { Monster } from '../../models/Monster';
+import { nameOf, valueOf } from '../../utils/util';
 
 
 const useStyles = makeStyles((theme) => ({

@@ -75,6 +75,18 @@ export class Probabilities<T> {
 		}
 	}
 
+	getProb(object: T){
+		var index = this.objects.indexOf(object);
+		var prob = -1;
+		if (index > 0){
+			prob = this.probSum[index] - this.probSum[index - 1];
+		}
+		else if (index > -1){
+			prob = this.probSum[0];
+		}
+		return prob;
+	}
+
 	updateObject(object: T, newObject: T) {
 		var index = this.objects.indexOf(object);
 		this.objects[index] = newObject;
@@ -142,13 +154,13 @@ export class Probabilities<T> {
 			this.probSum[length - 1] = 1;
 		}
 		else if (length > 1 && Math.abs(this.probSum[length - 1] - 1) > this.epsilon){
-			var factor = 1/this.probSum[length - 1];
-			var probs = [this.probSum[0]];
-			for (var i = 1; i < length; i++) {
+			let factor = 1/this.probSum[length - 1];
+			let probs = [this.probSum[0]];
+			for (let i = 1; i < length; i++) {
 				probs.push((this.probSum[i] - this.probSum[i - 1]));
 			}
 			this.probSum[0] = probs[0] * factor;
-			for (var i = 1; i < length; i++) {
+			for (let i = 1; i < length; i++) {
 				this.probSum[i] = (probs[i] * factor) + this.probSum[i - 1];
 			}
 		}

@@ -1,6 +1,6 @@
 import { makeStyles } from '@material-ui/core';
 import FormLabel from '@material-ui/core/FormLabel';
-import { memo, useEffect, useState } from 'react';
+import { memo, useState } from 'react';
 import { DungeonMap } from '../../models/DungeonMap';
 import { RegionInstance } from '../../models/RegionInstance';
 import { RoomInstance } from '../../models/RoomInstance';
@@ -9,7 +9,6 @@ import NameList from "../common/NameList";
 import RoomEditor from './RoomEditor';
 import { CorridorInstance } from '../../models/CorridorInstance';
 import CorridorEditor from './CorridorEditor';
-import lodash from 'lodash';
 
 const useStyles = makeStyles({
     listLabel: {
@@ -25,9 +24,10 @@ type Props = {
     savePhrase?: string;
     selectedRoomIndex?: number;
     selectedCorridorIndex?: number;
-    onChange: (name: keyof DungeonMap, value: valueOf<DungeonMap>)=>void;
+    onChange: (name: keyof DungeonMap, index:number, value: RegionInstance) => void;
     onRegenerateClick: (name: keyof DungeonMap, index: number) => void;
     onDeleteClick: (name: keyof DungeonMap, index: number) => void;
+    onAddEntranceClick: (name: keyof DungeonMap, index: number) => void;
     selectInstance?: (category: RegionInstance) => void;
 }
 
@@ -52,23 +52,31 @@ const RegionInstanceModify = memo(
         }
 
         const handleSave = (name: keyof DungeonMap, ri: RegionInstance) => {
-            var updatedList = (props.map[name] as any[]).map((x) => x);
 			var index = -1;
             if (roomToEdit !== undefined) {
-				index = updatedList.indexOf(roomToEdit);
+				index = (props.map[name] as RoomInstance[]).indexOf(roomToEdit);
             } else if (corridorToEdit !== undefined) {
-				index = updatedList.indexOf(corridorToEdit);
+				index = (props.map[name] as CorridorInstance[]).indexOf(corridorToEdit);
             }
-
-			if (index > -1){
-				updatedList[index] = ri;
-			}
-
-            props.onChange(name, updatedList);
+            
+            props.onChange(name, index, ri);
             setRoomEditorOpen(false);
             setCorridorEditorOpen(false);
             setRoomToEdit(undefined);
             setCorridorToEdit(undefined);
+        }
+
+        const handleAddEntrance = (name: keyof DungeonMap) => {
+			var index = -1;
+            if (name === nameOf<DungeonMap>("rooms") && roomToEdit) {
+				index = (props.map[name] as RoomInstance[]).indexOf(roomToEdit);
+            } else if (corridorToEdit !== undefined) {
+				index = (props.map[name] as CorridorInstance[]).indexOf(corridorToEdit);
+            }
+
+            props.onAddEntranceClick(name, index);
+            setRoomEditorOpen(false);
+            setCorridorEditorOpen(false);
         }
 
         return (
@@ -115,6 +123,7 @@ const RegionInstanceModify = memo(
                         savePhrase={props.savePhrase}
                         onSave={(ri: RoomInstance) => handleSave(nameOf<DungeonMap>("rooms"), ri)}
                         onCancelClick={()=>setRoomEditorOpen(false)}
+                        onAddEntranceClick={()=>handleAddEntrance(nameOf<DungeonMap>("rooms"))}
                     />
                 }
                 {corridorEditorOpen &&
@@ -124,6 +133,7 @@ const RegionInstanceModify = memo(
                         savePhrase={props.savePhrase}
                         onSave={(ci: CorridorInstance) => handleSave(nameOf<DungeonMap>("corridors"), ci)}
                         onCancelClick={()=>setCorridorEditorOpen(false)}
+                        onAddEntranceClick={()=>handleAddEntrance(nameOf<DungeonMap>("corridors"))}
                     />
                 }
             </div>
@@ -134,8 +144,8 @@ const RegionInstanceModify = memo(
         prevProps.map.corridors === nextProps.map.corridors &&
         prevProps.isSaving === nextProps.isSaving && 
         prevProps.savePhrase === nextProps.savePhrase && 
-        prevProps.selectedCorridorIndex == nextProps.selectedCorridorIndex &&
-        prevProps.selectedRoomIndex == nextProps.selectedRoomIndex
+        prevProps.selectedCorridorIndex === nextProps.selectedCorridorIndex &&
+        prevProps.selectedRoomIndex === nextProps.selectedRoomIndex
 )
 
 

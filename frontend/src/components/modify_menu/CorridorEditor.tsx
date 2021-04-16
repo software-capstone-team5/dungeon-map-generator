@@ -1,3 +1,6 @@
+// REQ-47: Regenerate.SingleCorridor - Regenerate a single corridor using its current configuration.
+// REQ-53: Modify.RemoveDoor - An existing door can be removed from any room or corridor.
+
 import { makeStyles } from '@material-ui/core';
 import Button from '@material-ui/core/Button';
 import Dialog from '@material-ui/core/Dialog';
@@ -24,14 +27,16 @@ import { Trap } from '../../models/Trap';
 import { nameOf, valueOf } from '../../utils/util';
 import EnumRadio from '../common/EnumRadio';
 import NameList from '../common/NameList';
-import ItemEditor from '../ItemEditor';
-import MonsterEditor from '../MonsterEditor';
+import ItemEditor from '../content_editors/ItemEditor';
+import MonsterEditor from '../content_editors/MonsterEditor';
 import SelectItem from '../select/SelectItem';
 import SelectMonster from '../select/SelectMonster';
 import SelectTileSet from '../select/SelectTileSet';
 import SelectTrap from '../select/SelectTrap';
-import TrapEditor from '../TrapEditor';
+import TrapEditor from '../content_editors/TrapEditor';
 import { CorridorWidth } from '../../constants/CorridorWidth';
+import { Entrance } from '../../models/Entrance';
+import EntranceEditor from '../content_editors/EntranceEditor';
 
 
 const useStyles = makeStyles((theme) => ({
@@ -66,6 +71,7 @@ type Props = {
 	savePhrase?: string;
 	onCancelClick: () => void;
 	onSave?: (corridor: CorridorInstance) => void;
+	onAddEntranceClick?: () => void;
 }
 
 type Errors = {
@@ -77,7 +83,6 @@ CorridorEditor.defaultProps = {
 }
 
 export default function CorridorEditor(props: Props) {
-	const editMode: boolean = true;
 	const classes = useStyles();
 
 	const [corridor, setCorridor] = useState(() => {
@@ -108,6 +113,9 @@ export default function CorridorEditor(props: Props) {
 	const [trapToEdit, setTrapToEdit] = useState<Trap>()
 	const [trapEditorOpen, setTrapEditorOpen] = useState<boolean>(false);
 	const [selectTrapDialogOpen, setSelectTrapDialogOpen] = useState<boolean>(false);
+
+	const [entranceToEdit, setEntranceToEdit] = useState<Entrance>()
+	const [entranceEditorOpen, setEntranceEditorOpen] = useState<boolean>(false);
 
 	const [selectTileSetDialogOpen, setSelectTileSetDialogOpen] = useState<boolean>(false);
 
@@ -195,12 +203,29 @@ export default function CorridorEditor(props: Props) {
 		setTrapToEdit(undefined);
 	}
 
-	const handleAddTileSetClick = () => {
-		setSelectTileSetDialogOpen(true);
+	const handleEntranceClick = (entrance: Entrance) => {
+		setEntranceToEdit(entrance);
+		setEntranceEditorOpen(true);
 	}
 
-	const handleEditClick = () => {
-		setViewMode(false);
+	const handleEntranceSave = (newEntrance: Entrance) => {
+		var updatedList = corridor.entrances.map((x) => x);
+		if (entranceToEdit){
+			var index = updatedList.indexOf(entranceToEdit!);
+			if (index > -1){
+				updatedList[index] = newEntrance;
+			}
+		}
+		else{
+			updatedList.push(newEntrance)
+		}
+		handleChange(nameOf<CorridorInstance>("entrances"), updatedList);
+		setEntranceEditorOpen(false);
+		setEntranceToEdit(undefined);
+	}
+
+	const handleAddTileSetClick = () => {
+		setSelectTileSetDialogOpen(true);
 	}
 
 	const handleSaveClick = async () => {
@@ -321,8 +346,21 @@ export default function CorridorEditor(props: Props) {
 							onClick={handleTrapClick}
 							onDeleteClick={(index) => handleDeleteClick(nameOf<CorridorInstance>("traps"), index)}
 						/>
-						// TODO: Entrances Here
-						{/*<EntranceEditor />*/}
+						<div className={classes.listLabel}>
+							<FormControl disabled={viewMode || !Boolean(corridor.entrances)}>
+								<FormLabel>Entrances</FormLabel>
+							</FormControl>
+							<IconButton disabled={viewMode || !Boolean(corridor.entrances)} onClick={props.onAddEntranceClick} aria-label="add" color="primary">
+								<AddBoxIcon />
+							</IconButton>
+						</div>
+						<NameList
+							showDelete={!viewMode}
+							disabled={viewMode}
+							list={corridor.entrances.map((x, index) => {x.name = index.toString(); return x})}
+							onClick={handleEntranceClick}
+							onDeleteClick={(index: number) => handleDeleteClick(nameOf<CorridorInstance>("entrances"), index)}
+						/>
 					</DialogContent>
 
 					<DialogActions>
@@ -387,6 +425,15 @@ export default function CorridorEditor(props: Props) {
 					trap={trapToEdit}
 					onSave={(i: Trap) => handleTrapSave(i)}
 					onCancelClick={() => setTrapEditorOpen(false)}
+				/>
+			}
+			{entranceEditorOpen &&
+				<EntranceEditor
+					viewOnly
+					open={entranceEditorOpen}
+					entrance={entranceToEdit}
+					onSave={(i: Entrance) => handleEntranceSave(i)}
+					onCancelClick={() => setEntranceEditorOpen(false)}
 				/>
 			}
 			{selectTileSetDialogOpen &&

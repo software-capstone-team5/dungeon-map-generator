@@ -3,8 +3,11 @@ import { Configuration } from "./Configuration";
 import { Coordinates } from "./Coordinates";
 import { CorridorInstance } from "./CorridorInstance";
 import { Entrance } from "./Entrance";
+import { MapContents } from "./MapContents";
+import { RegionContent } from "./RegionContent";
 import { RegionInstance } from "./RegionInstance";
 import { RoomInstance } from "./RoomInstance";
+import lodash from 'lodash';
 
 export class DungeonMap {
 	private width: number;
@@ -44,17 +47,20 @@ export class DungeonMap {
 		return null;
 	}
 
-	getSingleImage() {
-		// TODO
-	}
-
-	getMultiImages() {
-		// TODO
-	}
-
 	getJSON(): string {
 		// TODO: Consider condensing this file and reducing redundancy.
 		return JSON.stringify(this);
+	}
+
+	getContentJSON(): string {
+		var content = new MapContents();
+		this.rooms.forEach((room) => {
+			content.rooms.push(new RegionContent(room));
+		})
+		this.rooms.forEach((corridor) => {
+			content.corridors.push(new RegionContent(corridor));
+		})
+		return JSON.stringify(content);
 	}
 
 	addCorridor(corridor: CorridorInstance){
@@ -67,6 +73,12 @@ export class DungeonMap {
 		this.removeRegion(corridor);
 		this.removeFromArray(this.corridors, corridor);
 	}
+	
+	updateCorridor(index: number, newRegion: CorridorInstance){
+		var original = this.corridors[index];
+		this.updateRegion(original, newRegion);
+		this.corridors[index] = newRegion;
+	}
 
 	addRoom(room: RoomInstance) {
 		room.isCorridor = false;
@@ -78,6 +90,22 @@ export class DungeonMap {
 	removeRoom(room: RoomInstance) {
 		this.removeRegion(room);
 		this.removeFromArray(this.rooms, room);
+	}
+	
+	updateRoom(index: number, newRegion: RoomInstance){
+		var original = this.rooms[index];
+		this.updateRegion(original, newRegion);
+		this.rooms[index] = newRegion;
+	}
+
+	updateRegion(original: RegionInstance, newRegion: RegionInstance){
+		original.locations.forEach((location, index, array) => {
+			this.removeLocationFromMap(original, location);
+		});
+
+		newRegion.locations.forEach((location) => {
+			this.addLocationToMap(newRegion, location);
+		});
 	}
 
 	moveRegion(region: RegionInstance, newStart: Coordinates){
@@ -209,6 +237,20 @@ export class DungeonMap {
 		return null;
 	}
 
+	getDifficulty(){
+		var diffSum = 0;
+
+		this.rooms.forEach((room) => {
+			diffSum += room.difficulty
+		})
+
+		this.corridors.forEach((corridor) => {
+			diffSum += corridor.difficulty
+		})
+		
+		return diffSum;
+	}
+
 	// Note, if a location is already occupied then it will not be 
 	// changed, which may result is strangely shaped regions. The
 	// location will remain in this region though, and if the overlapping
@@ -250,7 +292,7 @@ export class DungeonMap {
 		var locationKey = location.toString();
 		if (this.map.has(locationKey)){
 			var regions = this.map.get(locationKey)!;
-			var index = regions.indexOf(region);
+			var index = regions.findIndex((x) => lodash.isEqual(region, x));
 			if (index > -1){
 				if (regions.length === 1){
 					this.map.delete(locationKey);
