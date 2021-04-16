@@ -1,3 +1,14 @@
+// REQ-19: Edit.RoomCategory.Size - The system should allow the user to edit the possible sizes of a room category and their probabilities. The available options are Small, Medium, and Large.
+// REQ-20: Edit.RoomCategory.Shape - The system should allow the user to edit the possible shapes of a room category and their probabilities. The available shapes will be from a predetermined list.
+// REQ-21: Edit.RoomCategory.TileAssets - The system should allow the user to edit the image assets that will be used when displaying the room.
+// REQ-22: Edit.RoomCategory.Monsters - The system should allow the user to edit the monsters/enemies that can appear in the room, along with their probabilities.
+// REQ-23: Edit.RoomCategory.MonsterStates - The system should allow the user to edit the possible states that the monsters/enemies can be in, and their probabilities. The states are from a predefined list.
+// REQ-24: Edit.RoomCategory.Items - The system should allow the user to edit the possible items that can appear in the room, and their probabilities.
+// REQ-25: Edit.RoomCategory.Entrances - The system should allow the user to edit the types of entrances that are possible in a room, and their probabilities. The possible entrances are Regular, Locked, and Secret.
+// REQ-26: Edit.RoomCategory.Traps- The system should allow the user to edit the types of traps that are possible in a room, and their probabilities. The types of traps available will be from a predefined list.
+// REQ-28: Save.RoomCategory - The system should allow the user to save a Room Category that they have created in the database. The user should be able to access the saved Room Category in other Presets and in future log-ins.
+
+
 import { makeStyles } from '@material-ui/core';
 import Button from '@material-ui/core/Button';
 import Checkbox from '@material-ui/core/Checkbox';
