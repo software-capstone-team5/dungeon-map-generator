@@ -36,21 +36,24 @@ Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
 ## Backend Setup
 
 Dependencies:
-- `python3` (v3.9)
+- `python3` (v3.9 is in the Pipfile. v3.8 works but you will get a warning when running the backend. It will still run fine.)
 - `pipenv`
    - Run `sudo apt install pipenv` on Ubuntu to install
 
 In the `backend` directory, run `pipenv install` to install the project dependencies.
 
 ### Firebase Certificates
-Download `.env.firebase` and `.env.google_key` from Team Google Drive.\
+Download `.env.firebase` and `.env.google_key` from Team Google Drive.
 In the `backend` directory, add both files to this folder.
+
+Be careful, as sometimes Google Drive will rename the file when downloading. Make sure it has the exact
+name shown above.
 
 ### Running backend Tests
 In the `backend` directory, run `pipenv install` to ensure the necessary libraries are installed.\
 Then run `pipenv run pytest -v` to execute the tests
 
-### Running the frontend
+### Running the backend
 
 To start the server, run
 
