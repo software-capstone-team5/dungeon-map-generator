@@ -5,6 +5,7 @@ To use this application, both the frontend and the backend need to be running on
 ### Note about Google Drive Auth
 
 Upon registration, our application asks for your permission to access your Google Drive. Because of this, you will see this warning.
+
 <img src="https://user-images.githubusercontent.com/32472572/115068061-fa8d6280-9eae-11eb-95c1-5e70d56e15ba.png" width="300">
 
 Getting an application authorized by Google is a longer process that takes months. We could not complete this process in time.
