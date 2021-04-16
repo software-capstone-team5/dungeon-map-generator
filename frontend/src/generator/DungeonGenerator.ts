@@ -406,7 +406,7 @@ export class DungeonGenerator {
 							visited.push(neighbour);
 							var entranceDirection = location.getDirectionTo(point);
 							if (entranceDirection){
-								if (index === 0 || (region.isCorridor && index === region.locations.length - 1)){
+								if (index === 0 || (region.isCorridor && index === region.locations.length - 1 && region.entrances.length > 1)){
 									region.entrances[index === 0 ? 0 : 1].direction = entranceDirection;
 								}
 								else{

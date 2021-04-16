@@ -7,6 +7,7 @@ import { MapContents } from "./MapContents";
 import { RegionContent } from "./RegionContent";
 import { RegionInstance } from "./RegionInstance";
 import { RoomInstance } from "./RoomInstance";
+import lodash from 'lodash';
 
 export class DungeonMap {
 	private width: number;
@@ -291,7 +292,7 @@ export class DungeonMap {
 		var locationKey = location.toString();
 		if (this.map.has(locationKey)){
 			var regions = this.map.get(locationKey)!;
-			var index = regions.indexOf(region);
+			var index = regions.findIndex((x) => lodash.isEqual(region, x));
 			if (index > -1){
 				if (regions.length === 1){
 					this.map.delete(locationKey);

@@ -8,7 +8,6 @@ import { RegionInstance } from '../../models/RegionInstance';
 import CSS from 'csstype';
 import DungeonEditor from './DungeonEditor';
 import { Grid } from '@material-ui/core';
-import cloneDeep from 'lodash/cloneDeep';
 import { RegionCategory } from '../../models/RegionCategory';
 import { TileSet } from '../../models/TileSet';
 import lodash from 'lodash';

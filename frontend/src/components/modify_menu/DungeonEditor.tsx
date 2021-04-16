@@ -91,12 +91,6 @@ function DungeonEditor(props: Props) {
 	const [changes, setChanges] = useState(() => {
 		return {} as any;
 	});
-	const [regionCatChanges, setRegionChanges] = useState(() => {
-		return {} as any;
-	});
-	const [regionInstanceChanges, setRegionInstanceChanges] = useState(() => {
-		return {} as any;
-	});
     const classes = useStyles();
 
     const [alert, setAlert] = useState({
@@ -482,13 +476,13 @@ function DungeonEditor(props: Props) {
 			Object.assign(newMap, map);
 			if (name === nameOf<DungeonMap>("rooms")){
 				var room = newMap.rooms[args.index];
-				Object.assign(room, DungeonGenerator.regenerateRegion(room, room.category, newMap.config));
+				room = DungeonGenerator.regenerateRegion(room, room.category, newMap.config) as RoomInstance;
 				newMap.updateRoom(args.index, room); 
 				DungeonGenerator.generateEntrancesForNeighbours(room, newMap);
 			}
 			else{
 				var corridor = newMap.corridors[args.index];
-				Object.assign(corridor, DungeonGenerator.regenerateRegion(corridor, corridor.category, newMap.config));
+				corridor = DungeonGenerator.regenerateRegion(corridor, corridor.category, newMap.config) as CorridorInstance;
 				newMap.updateCorridor(args.index, corridor); 
 				DungeonGenerator.generateEntrancesForNeighbours(corridor, newMap);
 			}
