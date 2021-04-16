@@ -590,7 +590,7 @@ export class DungeonGenerator {
 		} as RegionInstance;
 	}
 
-	private static tryMatchEntrances(category: RegionCategory, defaultCategory: RegionCategory, goalEntranceType: EntranceType | null){
+	static tryMatchEntrances(category: RegionCategory, defaultCategory: RegionCategory, goalEntranceType: EntranceType | null){
 		var entranceType = null;
 		if (goalEntranceType && category.entranceTypes && category.entranceTypes.toMap().has(goalEntranceType)){
 			entranceType = goalEntranceType;

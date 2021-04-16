@@ -18,6 +18,7 @@ import { CorridorCategory } from '../../models/CorridorCategory';
 import { DungeonGenerator } from '../../generator/DungeonGenerator';
 import { RoomInstance } from '../../models/RoomInstance';
 import { CorridorInstance } from '../../models/CorridorInstance';
+import { Entrance } from '../../models/Entrance';
 
 type Props = {
     map: DungeonMap | null;
@@ -35,6 +36,7 @@ type State = {
 	cursor: any;
 	startPoint: Coordinates | null;
 	draggedRegion: RegionInstance | null;
+	isAddingEntrance: boolean;
 }
 
 class DungeonDisplay extends Component {
@@ -84,6 +86,7 @@ class DungeonDisplay extends Component {
 			cursor: 'crosshair',
 			startPoint: null,
 			draggedRegion: null,
+			isAddingEntrance: false,
 		};
 		this.backgroundRef = React.createRef();
 		this.mainRef = React.createRef();
@@ -101,6 +104,7 @@ class DungeonDisplay extends Component {
 		this.onSelectCategory = this.onSelectCategory.bind(this);
 		this.onSelectRegion = this.onSelectRegion.bind(this);
 		this.onAddRegion = this.onAddRegion.bind(this);
+		this.onAddEntrance = this.onAddEntrance.bind(this);
 	}
 	
 	private getCanvasStyle(zIndex: number): CSS.Properties {
@@ -443,6 +447,20 @@ class DungeonDisplay extends Component {
 		this.setState({isAddingRegion: true, cursor: 'crosshair', selectedCategory: category, selectedRegion: null, selectedRegionIndex: undefined, selectedCategoryIndex: index});
 	}
 
+	private onAddEntrance(instance: RegionInstance){
+		var index = undefined;
+		if (instance && this.state.map){
+			if (instance.isCorridor){
+				index = this.state.map.corridors.findIndex((x) => lodash.isEqual(x, instance));
+			}
+			else{
+				index = this.state.map.rooms.findIndex((x) => lodash.isEqual(x, instance));
+			}
+		}
+		this.setState({isAddingEntrance: true, isAddingRegion: false, cursor: 'crosshair', selectedCategory: undefined, selectedRegion: instance, selectedRegionIndex: index, selectedCategoryIndex: undefined});
+
+	}
+
 	private clearCanvas(canvas: any){
 		var context = canvas.getContext("2d");
 		context.clearRect(0, 0, canvas.width, canvas.height);
@@ -481,11 +499,54 @@ class DungeonDisplay extends Component {
 		return region
 	}
 
+	private addEntranceToMap(point: Coordinates, direction: Direction) {
+		if (this.state.map){
+			var newMap = Object.create(Object.getPrototypeOf(this.state.map)) as DungeonMap;
+			Object.assign(newMap, this.state.map)
+
+			var region = newMap.getRegionInstance(point.x, point.y);
+			if (region){
+				var category = region.isCorridor ? (region as CorridorInstance).category : (region as RoomInstance).category;
+				var defaultCategory = region.isCorridor ? newMap.config.defaultCorridorCategory : newMap.config.defaultRoomCategory;
+				var entranceTypes = category.entranceTypes ? category.entranceTypes : defaultCategory.entranceTypes!;
+				var entranceType = entranceTypes.randPickOne()!;
+				region.entrances.push(new Entrance(entranceType, point, direction))
+				var neighbourPoint = point.getNextLocation(direction);
+				var neighbour = newMap.getRegionInstance(neighbourPoint.x, neighbourPoint.y);
+				if (neighbour){
+					category = neighbour.isCorridor ? (neighbour as CorridorInstance).category : (neighbour as RoomInstance).category;
+					defaultCategory = neighbour.isCorridor ? newMap.config.defaultCorridorCategory : newMap.config.defaultRoomCategory;
+					neighbour.entrances.push(new Entrance(DungeonGenerator.tryMatchEntrances(category, defaultCategory, entranceType), neighbourPoint, Direction.getOppositeDirection(direction)));
+				}
+				
+				this.setState({isAddingRegion: false, cursor: 'auto', map: newMap, isDraggingRegion: false});
+				this.drawDungeon(newMap);
+			}
+		}
+	}
+
 	private mouseUpInMap(event: any) {
 		if (this.state.map){
 			var point = this.getPointFromEvent(event);
 			var region: RegionInstance | null = null;
-			if (this.state.isDraggingRegion && this.state.draggedRegion && this.state.startPoint){
+			var isOutOfBounds = this.state.map.isOutOfBounds(point.x, point.y);
+			if (this.state.isAddingRegion && this.state.selectedCategory && !isOutOfBounds){
+				if (this.state.selectedCategory.isCorridor){
+					region = this.addCorridorToMap(point);
+				}
+				else{
+					region = this.addRoomToMap(point);
+				}
+			}
+			else if (this.state.isAddingEntrance && this.state.selectedRegion && lodash.isEqual(this.state.map.getRegionInstance(point.x, point.y), this.state.selectedRegion) && !isOutOfBounds){
+				let precisePoint = this.getPointFromEvent(event, false);
+				var direction = this.getDirectionToNearestWall(point, precisePoint, this.state.selectedRegion);
+				if (direction){
+					this.addEntranceToMap(point, direction);
+				}
+				region = this.state.selectedRegion;
+			}
+			else if (this.state.isDraggingRegion && this.state.draggedRegion && this.state.startPoint){
 				point = this.state.map.constrainToMap(point);
 				var diff: Coordinates = point.subtract(this.state.startPoint);
 				var newMap = Object.create(Object.getPrototypeOf(this.state.map)) as DungeonMap;
@@ -505,20 +566,8 @@ class DungeonDisplay extends Component {
 				this.setState({isDraggingRegion: false, startPoint: null, draggedRegion: null, map: newMap, selectedRegion: newSelectedRegion});
 				this.drawDungeon(newMap);
 			}
-			else{
-				if (!this.state.map.isOutOfBounds(point.x, point.y)){
-					if (this.state.isAddingRegion && this.state.selectedCategory){
-						if (this.state.selectedCategory.isCorridor){
-							region = this.addCorridorToMap(point);
-						}
-						else{
-							region = this.addRoomToMap(point);
-						}
-					}
-					else {
-						region = this.state.map.getRegionInstance(point.x, point.y);
-					}
-				}
+			else if (!isOutOfBounds){
+				region = this.state.map.getRegionInstance(point.x, point.y);
 			}
 
 			if (region !== this.state.selectedRegion){
@@ -534,9 +583,45 @@ class DungeonDisplay extends Component {
 					}
 					this.selectRegion(region);
 				}
-				this.setState({selectedCategory: null, selectedRegion: region, selectedRegionIndex: index, selectedCategoryIndex: undefined});
+				this.setState({selectedCategory: null, selectedRegion: region, selectedRegionIndex: index, selectedCategoryIndex: undefined, isAddingRegion: false});
 			}
 		}
+	}
+
+	private getDirectionToNearestWall(floorPoint: Coordinates, precisePoint: Coordinates, region: RegionInstance): Direction | null{
+		var smallestDirection = null;
+		if (this.state.map){
+			var diff = precisePoint.subtract(floorPoint);
+	
+			var smallestDist = 2;
+			floorPoint.getAdjacent().forEach((adjacent) => {
+				if (!lodash.isEqual(this.state.map!.getRegionInstance(adjacent.x, adjacent.y), region)) {
+					let dist = 2;
+					let direction =  Direction.right;
+					if (adjacent.x < floorPoint.x){
+						direction = Direction.left;
+						dist = diff.x;
+					}
+					else if (adjacent.x > floorPoint.x){
+						direction = Direction.right;
+						dist = 1 - diff.x;
+					}
+					else if (adjacent.y < floorPoint.y){
+						direction = Direction.down;
+						dist = diff.y;
+					}
+					else if (adjacent.y > floorPoint.y){
+						direction = Direction.up;
+						dist = 1 - diff.y;
+					}
+
+					if (dist < smallestDist){
+						smallestDirection = direction;
+					}
+				}
+			});
+		}
+		return smallestDirection
 	}
 
 	private mouseMoveInMap(event: any) {
@@ -573,15 +658,20 @@ class DungeonDisplay extends Component {
 		}
 	}
 
-	private getPointFromEvent(event: any): Coordinates {
+	private getPointFromEvent(event: any, floor: boolean = true): Coordinates {
 		if (this.state.map){
 			// var startx = dungeonMap.tileSize * (x + 1);
 			// 	var starty = canvasHeight - dungeonMap.tileSize * (y + 2);
 			var canvas = this.selectionRef.current;
 			let rect = canvas.getBoundingClientRect();
-			let x = Math.floor((event.clientX - rect.left)/this.state.map.tileSize);
-			let y = Math.floor((canvas.height - (event.clientY - rect.top))/this.state.map.tileSize);
+			let x = (event.clientX - rect.left)/this.state.map.tileSize;
+			let y = (canvas.height - (event.clientY - rect.top))/this.state.map.tileSize;
 			
+			if (floor) {
+				x = Math.floor(x);
+				y = Math.floor(y);
+			}
+
 			return new Coordinates(x, y);
 		}
 		return new Coordinates(-1, -1);
@@ -615,6 +705,7 @@ class DungeonDisplay extends Component {
 							getMultipleImages={this.getMultipleImages} 
 							onChange={this.onChange}
 							onAddRegion={this.onAddRegion}
+							onAddEntrance={this.onAddEntrance}
 							selectCategory={this.onSelectCategory} 
 							selectInstance={this.onSelectRegion}/>
 					</div>

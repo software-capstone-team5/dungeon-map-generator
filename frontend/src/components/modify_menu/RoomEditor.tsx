@@ -70,7 +70,6 @@ type Props = {
 	onCancelClick: () => void;
 	onSave?: (room: RoomInstance) => void;
 	onAddEntranceClick?: () => void;
-	onDeleteEntranceClick?: (index: number) => void;
 }
 
 type Errors = {

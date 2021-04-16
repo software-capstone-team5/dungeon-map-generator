@@ -32,6 +32,8 @@ import SelectTileSet from '../select/SelectTileSet';
 import SelectTrap from '../select/SelectTrap';
 import TrapEditor from '../content_editors/TrapEditor';
 import { CorridorWidth } from '../../constants/CorridorWidth';
+import { Entrance } from '../../models/Entrance';
+import EntranceEditor from '../content_editors/EntranceEditor';
 
 
 const useStyles = makeStyles((theme) => ({
@@ -66,6 +68,7 @@ type Props = {
 	savePhrase?: string;
 	onCancelClick: () => void;
 	onSave?: (corridor: CorridorInstance) => void;
+	onAddEntranceClick?: () => void;
 }
 
 type Errors = {
@@ -107,6 +110,9 @@ export default function CorridorEditor(props: Props) {
 	const [trapToEdit, setTrapToEdit] = useState<Trap>()
 	const [trapEditorOpen, setTrapEditorOpen] = useState<boolean>(false);
 	const [selectTrapDialogOpen, setSelectTrapDialogOpen] = useState<boolean>(false);
+
+	const [entranceToEdit, setEntranceToEdit] = useState<Entrance>()
+	const [entranceEditorOpen, setEntranceEditorOpen] = useState<boolean>(false);
 
 	const [selectTileSetDialogOpen, setSelectTileSetDialogOpen] = useState<boolean>(false);
 
@@ -192,6 +198,27 @@ export default function CorridorEditor(props: Props) {
 		handleChange(nameOf<CorridorInstance>("traps"), updatedList);
 		setTrapEditorOpen(false);
 		setTrapToEdit(undefined);
+	}
+
+	const handleEntranceClick = (entrance: Entrance) => {
+		setEntranceToEdit(entrance);
+		setEntranceEditorOpen(true);
+	}
+
+	const handleEntranceSave = (newEntrance: Entrance) => {
+		var updatedList = corridor.entrances.map((x) => x);
+		if (entranceToEdit){
+			var index = updatedList.indexOf(entranceToEdit!);
+			if (index > -1){
+				updatedList[index] = newEntrance;
+			}
+		}
+		else{
+			updatedList.push(newEntrance)
+		}
+		handleChange(nameOf<CorridorInstance>("entrances"), updatedList);
+		setEntranceEditorOpen(false);
+		setEntranceToEdit(undefined);
 	}
 
 	const handleAddTileSetClick = () => {
@@ -316,8 +343,21 @@ export default function CorridorEditor(props: Props) {
 							onClick={handleTrapClick}
 							onDeleteClick={(index) => handleDeleteClick(nameOf<CorridorInstance>("traps"), index)}
 						/>
-						// TODO: Entrances Here
-						{/*<EntranceEditor />*/}
+						<div className={classes.listLabel}>
+							<FormControl disabled={viewMode || !Boolean(corridor.entrances)}>
+								<FormLabel>Entrances</FormLabel>
+							</FormControl>
+							<IconButton disabled={viewMode || !Boolean(corridor.entrances)} onClick={props.onAddEntranceClick} aria-label="add" color="primary">
+								<AddBoxIcon />
+							</IconButton>
+						</div>
+						<NameList
+							showDelete={!viewMode}
+							disabled={viewMode}
+							list={corridor.entrances.map((x, index) => {x.name = index.toString(); return x})}
+							onClick={handleEntranceClick}
+							onDeleteClick={(index: number) => handleDeleteClick(nameOf<CorridorInstance>("entrances"), index)}
+						/>
 					</DialogContent>
 
 					<DialogActions>
@@ -382,6 +422,15 @@ export default function CorridorEditor(props: Props) {
 					trap={trapToEdit}
 					onSave={(i: Trap) => handleTrapSave(i)}
 					onCancelClick={() => setTrapEditorOpen(false)}
+				/>
+			}
+			{entranceEditorOpen &&
+				<EntranceEditor
+					viewOnly
+					open={entranceEditorOpen}
+					entrance={entranceToEdit}
+					onSave={(i: Entrance) => handleEntranceSave(i)}
+					onCancelClick={() => setEntranceEditorOpen(false)}
 				/>
 			}
 			{selectTileSetDialogOpen &&

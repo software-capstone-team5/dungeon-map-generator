@@ -80,6 +80,7 @@ type Props = {
 	selectedCorridorCategoryIndex?: number;
 	onChange: (map: DungeonMap) => void;
 	onAddRegion: (category: RegionCategory) => void;
+	onAddEntrance: (region: RegionInstance) => void;
 	getSingleImage: () => Map<string, any>;
 	getMultipleImages: () => Map<string, any>;
 	selectCategory: (category: RegionCategory) => void;
@@ -394,7 +395,7 @@ function DungeonEditor(props: Props) {
 	}
 
 	const handleAddRegionClick = (name: keyof Configuration, index: number) => {
-		if (name as keyof Configuration && map){
+		if (map){
 			var category = null;
 			if (name === nameOf<Configuration>("roomCategories")){
 				setAlert({ message: "Click anywhere on the map to add a room. There will be an entrance at the clicked location.", active: true, severity: "success" });
@@ -411,14 +412,27 @@ function DungeonEditor(props: Props) {
 		}
 	}
 
-	const handleRegionInstanceDelete = (name: keyof DungeonMap, index: number) => {
-		if (name as keyof DungeonMap){
-			setConfirmFunction(() => confirmInstanceDelete);
-			setConfirmMessage("Are you sure you would like to delete this region?");
-			setConfirmPrompt("Delete");
-			setConfirmArgs({name: name, index: index})
-			setConfirmOpen(true);
+	const handleAddEntranceClick = (name: keyof DungeonMap, index: number) => {
+		if (map){
+			var region;
+			if (name === nameOf<DungeonMap>("rooms")){
+				region = map.rooms[index];
+			}
+			else{
+				region = map.corridors[index];
+			}
+			setAlert({ message: "Click anywhere on a wall in the highlighted region to add an entrance.", active: true, severity: "success" });
+
+			props.onAddEntrance(region)
 		}
+	}
+
+	const handleRegionInstanceDelete = (name: keyof DungeonMap, index: number) => {
+		setConfirmFunction(() => confirmInstanceDelete);
+		setConfirmMessage("Are you sure you would like to delete this region?");
+		setConfirmPrompt("Delete");
+		setConfirmArgs({name: name, index: index})
+		setConfirmOpen(true);
 	}
 
 	const confirmInstanceDelete = (decision: boolean, args: {name: any, index: number}) => {
@@ -547,6 +561,7 @@ function DungeonEditor(props: Props) {
 								onChange={handleRegionInstanceChanges}
 								onRegenerateClick={handleRegenerateInstanceClick} 
 								onDeleteClick={handleRegionInstanceDelete}
+								onAddEntranceClick={handleAddEntranceClick}
 								selectInstance={props.selectInstance}/>
 						</AccordionDetails>
 					</Accordion>

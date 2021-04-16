@@ -27,6 +27,7 @@ type Props = {
     onChange: (name: keyof DungeonMap, index:number, value: RegionInstance) => void;
     onRegenerateClick: (name: keyof DungeonMap, index: number) => void;
     onDeleteClick: (name: keyof DungeonMap, index: number) => void;
+    onAddEntranceClick: (name: keyof DungeonMap, index: number) => void;
     selectInstance?: (category: RegionInstance) => void;
 }
 
@@ -63,6 +64,19 @@ const RegionInstanceModify = memo(
             setCorridorEditorOpen(false);
             setRoomToEdit(undefined);
             setCorridorToEdit(undefined);
+        }
+
+        const handleAddEntrance = (name: keyof DungeonMap) => {
+			var index = -1;
+            if (name === nameOf<DungeonMap>("rooms") && roomToEdit) {
+				index = (props.map[name] as RoomInstance[]).indexOf(roomToEdit);
+            } else if (corridorToEdit !== undefined) {
+				index = (props.map[name] as CorridorInstance[]).indexOf(corridorToEdit);
+            }
+
+            props.onAddEntranceClick(name, index);
+            setRoomEditorOpen(false);
+            setCorridorEditorOpen(false);
         }
 
         return (
@@ -109,6 +123,7 @@ const RegionInstanceModify = memo(
                         savePhrase={props.savePhrase}
                         onSave={(ri: RoomInstance) => handleSave(nameOf<DungeonMap>("rooms"), ri)}
                         onCancelClick={()=>setRoomEditorOpen(false)}
+                        onAddEntranceClick={()=>handleAddEntrance(nameOf<DungeonMap>("rooms"))}
                     />
                 }
                 {corridorEditorOpen &&
@@ -118,6 +133,7 @@ const RegionInstanceModify = memo(
                         savePhrase={props.savePhrase}
                         onSave={(ci: CorridorInstance) => handleSave(nameOf<DungeonMap>("corridors"), ci)}
                         onCancelClick={()=>setCorridorEditorOpen(false)}
+                        onAddEntranceClick={()=>handleAddEntrance(nameOf<DungeonMap>("corridors"))}
                     />
                 }
             </div>
