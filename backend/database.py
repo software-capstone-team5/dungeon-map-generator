@@ -7,6 +7,7 @@ from .util import *
 
 db = Blueprint("db", __name__)
 
+# REQ-18: Save.MapConfiguration
 def saveCategoryReferences(requestData, user_id, config):
     # Save corridor category references in CorridorCategories collection in DB
     corridorCategories = requestData['corridorCategories']
@@ -47,6 +48,7 @@ def saveConfig(idToken):
     except Exception as e:
         return jsonify({"valid": False, "response": "Failed"}), 400
 
+# REQ-28: Save.RoomCategory
 def saveRoomCategoryToDB(user_id, requestData):
     roomCat_collection = users_collection.document(user_id).collection("RoomCategories")
     category = saveCategory(requestData, roomCat_collection, users_collection, user_id)
@@ -61,7 +63,6 @@ def saveRoomCategory(idToken):
         if type(user_id) == str:
             # Save room category in RoomCategories collection in DB
             category = saveRoomCategoryToDB(user_id, requestData)
-            print("here")
             return jsonify({"valid": True, "response": category.id}), 200
         else:
             return user_id
@@ -84,7 +85,7 @@ def saveCorridorCategory(idToken):
     except Exception as e:
         return jsonify({"valid": False, "response": "Failed"}), 400
 
-
+# REQ-18: Save.MapConfiguration
 def getConfigsByUID(user_id):
     result = []
     configsPremade = users_collection.document(user_id).collection("Configurations")
@@ -113,11 +114,13 @@ def getConfigs(idToken=None):
     except Exception as e:
         return jsonify({"valid": False, "response": "Failed"}), 400
 
+# REQ-18: Save.MapConfiguration
 def getConfig(configID, userID):
     config = users_collection.document(userID).collection("Configurations").document(configID).get()
     result = getConfigReferences(config)
     return result
 
+# REQ-18: Save.MapConfiguration
 @db.route('/config/<configID>', methods=['GET'])
 @db.route("/user/<idToken>/config/<configID>", methods=['GET'])
 def getConfigByID(idToken=None, configID=None):
@@ -136,6 +139,7 @@ def getConfigByID(idToken=None, configID=None):
     except Exception as e:
         return jsonify({"valid": False, "response": "Failed"}), 400
 
+# REQ-28: Save.RoomCategory
 def getRoomsByUID(user_id):
     result = []
     rooms = users_collection.document(user_id).collection("RoomCategories")
@@ -163,6 +167,7 @@ def getRooms(idToken=None):
     except Exception as e:
         return jsonify({"valid": False, "response": "Failed"}), 400
 
+# REQ-37: Save.CorridorCategory
 def getCorridorsByID(user_id):
     result = []
     corridors = users_collection.document(user_id).collection("CorridorCategories")
@@ -190,6 +195,7 @@ def getCorridors(idToken=None):
     except Exception as e:
         return jsonify({"valid": False, "response": "Failed"}), 400
 
+# REQ-10: Add.Monster
 def saveMonsterByID(user_id, requestData):
     monster_collection = users_collection.document(user_id).collection("Monsters")
     monsterData, dbMonster = getDBID(requestData, monster_collection)
@@ -229,7 +235,7 @@ def saveMonsters(idToken):
     except Exception as e:
         return jsonify({"valid": False, "response": "Failed"}), 400
 
-
+# NOTE: There are no official REQ-# related to saving the Items/Traps to the Database
 def saveItemByID(user_id, requestData):
     item_collection = users_collection.document(user_id).collection("Items")
     itemData, dbItem = getDBID(requestData, item_collection)

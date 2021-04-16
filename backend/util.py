@@ -11,6 +11,7 @@ users_collection = db.collection('Users')
 
 premade_id = "6E0pmXEtSmZLWeWt8mDXInGlOJF3"
 
+# REQ-8: Upload.Tiles
 def saveTileSetDB(user_id, tileset_name):
     tileset_collection = users_collection.document(user_id).collection("Tileset")
     docs = tileset_collection.where('name', '==', tileset_name).get()
@@ -23,6 +24,7 @@ def saveTileSetDB(user_id, tileset_name):
         doc.set({'id': doc_id, 'name': tileset_name})
         return {"valid": True, "response": doc_id}
 
+# REQ-2: Request.Login
 def verifyToken(idToken):
     try:
         decoded_token = auth.verify_id_token(idToken, check_revoked=True)
@@ -46,6 +48,7 @@ def getDBID(data, collection_ref):
         data['id'] = document.id
     return data, document
 
+# REQ-18: Save.MapConfiguration
 def getConfigReferences(config):
     configDict = config.to_dict()
     corridorRefs = configDict['corridorCategories']['objects']
@@ -62,6 +65,7 @@ def getConfigReferences(config):
 
     return configDict
 
+# REQ-18: Save.MapConfiguration
 def getSubReferences(references):
     result = []
     for reference in references:
@@ -69,6 +73,8 @@ def getSubReferences(references):
         result.append(getCategoryReferences(category))
     return result
 
+# REQ-28: Save.RoomCategory
+# REQ-37: Save.CorridorCategory
 def getCategoryReferences(dbData):
     # Get Monster, Trap, Item ref TODO once merged
     monsterRefs = dbData['monsters']['objects']
@@ -81,6 +87,8 @@ def getCategoryReferences(dbData):
     dbData['traps']['objects'] = getReferences(trapRefs)
     return dbData
 
+# REQ-28: Save.RoomCategory
+# REQ-37: Save.CorridorCategory
 def getReferences(references):
     result = []
     for reference in references:
@@ -88,6 +96,8 @@ def getReferences(references):
         result.append(doc.to_dict())
     return result
 
+# REQ-28: Save.RoomCategory
+# REQ-37: Save.CorridorCategory
 def saveReferences(data, collection_ref, premade_collection_ref):
     references = []
     for i in range(len(data['objects'])):
@@ -100,6 +110,8 @@ def saveReferences(data, collection_ref, premade_collection_ref):
         references.append(db_reference)
     return references
 
+# REQ-28: Save.RoomCategory
+# REQ-37: Save.CorridorCategory
 def saveReference(data, collection_ref, premade_collection_ref):
     ref_id = data['id']
     if data['premade']:
@@ -136,6 +148,9 @@ def saveCategory(categoryData, collection_ref, users_collection, user_id):
     dbCategory.set(categoryData) # TODO remove episilon including child nodes that have them
     return dbCategory
 
+
+# REQ-28: Save.RoomCategory
+# REQ-37: Save.CorridorCategory
 def getPremades(collection_id):
     result = []
     premadeCollection = users_collection.document(premade_id).collection(collection_id)
@@ -144,6 +159,8 @@ def getPremades(collection_id):
         result.append(premadeDict)
     return result
 
+# REQ-28: Save.RoomCategory
+# REQ-37: Save.CorridorCategory
 def getPremadeRegions(collection_id):
     result = []
     regions = users_collection.document(premade_id).collection(collection_id)

@@ -83,6 +83,7 @@ def getTileSet(idToken):
 	except Exception as e:
 		return f"An Error Occured: {e}"
 
+# REQ-8: Upload.Tiles - The system shall allow a logged in user to upload tiles to be saved in their Google Drive in correct DMG format.
 @drive.route("/user/<idToken>/tileset", methods=['POST'])
 def saveTileSet(idToken):
 	try:

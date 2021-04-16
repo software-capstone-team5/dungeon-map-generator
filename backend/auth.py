@@ -5,6 +5,7 @@ from .util import *
 
 authentication = Blueprint("authentication", __name__)
 
+# REQ-1: Request.Registration
 def registerAccount(user_id, requestData):
     users_collection.document(user_id).set({"temp": True})
     access_token = requestData['accessToken']
