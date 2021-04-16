@@ -38,7 +38,6 @@ import { Probabilities } from '../generator/Probabilities';
 import { CorridorCategory } from '../models/CorridorCategory';
 import { Item } from '../models/Item';
 import { Monster } from '../models/Monster';
-import { TileSet } from '../models/TileSet';
 import { Trap } from '../models/Trap';
 import { nameOf, valueOf } from '../utils/util';
 import EnumProbabilityText from './common/EnumProbabilityText';
@@ -105,11 +104,7 @@ export default function CorridorCategoryEditor(props: Props) {
     if (props.corridorCategory !== undefined) {
       return cloneDeep(props.corridorCategory);
     } else {
-      var corridorCat = new CorridorCategory();
-      if (!Authenticator.isLoggedIn()) {
-        corridorCat.tileSets = Probabilities.buildUniform([TileSet.getDefault()]);
-      }
-      return corridorCat;
+      return new CorridorCategory();
     }
   });
 

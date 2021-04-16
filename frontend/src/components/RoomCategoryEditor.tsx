@@ -39,7 +39,6 @@ import { Probabilities } from '../generator/Probabilities';
 import { Item } from '../models/Item';
 import { Monster } from '../models/Monster';
 import { RoomCategory } from '../models/RoomCategory';
-import { TileSet } from '../models/TileSet';
 import { Trap } from '../models/Trap';
 import { nameOf, valueOf } from '../utils/util';
 import EnumProbabilityText from './common/EnumProbabilityText';
@@ -106,11 +105,7 @@ export default function RoomCategoryEditor(props: Props) {
     if (props.roomCategory !== undefined) {
       return cloneDeep(props.roomCategory);
     } else {
-      var roomCat = new RoomCategory();
-      if (!Authenticator.isLoggedIn()) {
-        roomCat.tileSets = Probabilities.buildUniform([TileSet.getDefault()]);
-      }
-      return roomCat;
+      return new RoomCategory();
     }
   });
 
