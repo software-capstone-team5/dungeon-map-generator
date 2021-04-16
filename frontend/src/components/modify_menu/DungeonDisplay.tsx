@@ -228,6 +228,7 @@ class DungeonDisplay extends Component {
 		return namesToFiles;
 	}
 
+	// REQ-4: Display.Dungeon - The system will convert the generated dungeon into a format for the user to see in the UI. This will include replacing the map representation with tilesets, door images, etc. 
 	drawDungeon(dungeonMap: DungeonMap) {
 		var canvases = this.getCanvases();
 		var contexts = canvases.map((canvas) => canvas.getContext('2d'));

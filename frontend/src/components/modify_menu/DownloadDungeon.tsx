@@ -16,6 +16,7 @@ type Props = {
 }
 
 export default function DownloadDungeon(props: Props) {  
+	// REQ-5: Download.DungeonImage - The system shall allow a user to download the image of a generated dungeon
 	const handleSingleDownload = async () => {
 		if (props.map){
 			var namesToFiles = props.getSingleImage();
@@ -28,6 +29,7 @@ export default function DownloadDungeon(props: Props) {
 		}
 	}
 
+	// REQ-6: Download.DungeonLayerImages - The system shall allow a user to download the image of each layer of a generated dungeon.
 	const handleLayerDownloads = async () => {
 		if (props.map){
 			var namesToFiles = props.getMultipleImages();
@@ -40,6 +42,7 @@ export default function DownloadDungeon(props: Props) {
 		}
 	}
 
+	// REQ-7: Download.DungeonJson - The system shall allow a user to download the json representation of a generated dungeon.
 	const handleJsonDownload = async () => {
 		if (props.map){
 			var json = props.map.getJSON();

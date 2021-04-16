@@ -19,11 +19,11 @@ import { Item } from '../models/Item';
 import cloneDeep from 'lodash/cloneDeep';
 
 export class DungeonGenerator {
-	// TODO: Chose actual values
 	private static defaultSqrtArea = 3;
 	private static additionalExitProb = 0.5;
 	private static startRoomChance = 0.5;
 
+	// REQ-3: Generate.Dungeon - The system will use the configurations provided by the user to procedurally generate a new dungeon per request.
 	static generateDungeon(config: Configuration): DungeonMap {
 		var map: DungeonMap = new DungeonMap(config);
 		var lastPath: Coordinates[] = [];

@@ -130,17 +130,35 @@ function DungeonEditor(props: Props) {
 
 	const handleApplyClick = () => {
 		if (map && map.config){
-			var newMap = Object.create(Object.getPrototypeOf(map));
-			Object.assign(newMap, map);
-
 			if (changes.difficulty !== map.config.difficulty) {
-				//TODO: Prompt user for generation
-				DungeonGenerator.generateEncounters(newMap, newMap.config);
+				setConfirmFunction(() => confirmApplyClick);
+				setConfirmMessage("Changing the difficulty requires regenerating the contents of each region. Would you like to regenerate these encounters, or revert your changes?");
+				setConfirmPrompt("Regenerate");
+				setConfirmArgs({} as any);
+				setConfirmOpen(true);
 			}
-
-			setMap(newMap);
-			props.onChange(newMap);
 		}
+	}
+
+	const confirmApplyClick = (decision: boolean, args: any) => {
+		if (map){
+			if (decision){
+				var newMap = Object.create(Object.getPrototypeOf(map));
+				Object.assign(newMap, map);
+	
+				if (changes.difficulty !== map.config.difficulty) {
+					newMap.config.difficulty = changes.difficulty;
+					DungeonGenerator.generateEncounters(newMap, newMap.config);
+				}
+	
+				setMap(newMap);
+				props.onChange(newMap);
+			}
+			else{
+				changes.difficulty = map.config.difficulty
+			}
+		}
+		setConfirmOpen(false);
 	}
 	
     const handleAlertClose = (event?: React.SyntheticEvent, reason?: string) => {
