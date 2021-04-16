@@ -74,7 +74,7 @@ class DungeonDisplay extends Component {
 		super(props)
 		this.props = props
 		this.state = {
-			map: cloneDeep(props.map),
+			map: props.map,
 			selectedRegion: null,
 			selectedCategory: null,
 			selectedRegionIndex: -1,
@@ -232,7 +232,6 @@ class DungeonDisplay extends Component {
 		this.selectionRef.current.width = (width) * dungeonMap.tileSize;
 		this.selectionRef.current.height = (height) * dungeonMap.tileSize;
 
-		// TODO: Use background image;
 		contexts[0].fillStyle = '#E0D3AF';
 		contexts[0].fillRect(0, 0, canvasWidth, canvasHeight);
 
@@ -269,11 +268,11 @@ class DungeonDisplay extends Component {
 			var currentIsOut = dungeonMap.isOutOfBounds(x, y);
 			var nextIsOut = dungeonMap.isOutOfBounds(nextPoint.x, nextPoint.y);
 			if (region && ((currentIsOut && !nextIsOut && nextRegion) || (!currentIsOut && (nextRegion !== region || nextIsOut)))){
-				var tileSet = region.tileSet ? region.tileSet : region.isCorridor ? dungeonMap.config.defaultCorridorCategory.tileSets!.randPickOne() : dungeonMap.config.defaultRoomCategory.tileSets!.randPickOne();
+				let tileSet = region.tileSet ? region.tileSet : region.isCorridor ? dungeonMap.config.defaultCorridorCategory.tileSets!.randPickOne() : dungeonMap.config.defaultRoomCategory.tileSets!.randPickOne();
 				context.drawImage(tileSet!.get(tileType), startx, starty);
 			}
 			else if (nextRegion && !nextIsOut && nextRegion !== region){
-				var tileSet = nextRegion.tileSet ? nextRegion.tileSet : nextRegion.isCorridor ? dungeonMap.config.defaultCorridorCategory.tileSets!.randPickOne() : dungeonMap.config.defaultRoomCategory.tileSets!.randPickOne()
+				let tileSet = nextRegion.tileSet ? nextRegion.tileSet : nextRegion.isCorridor ? dungeonMap.config.defaultCorridorCategory.tileSets!.randPickOne() : dungeonMap.config.defaultRoomCategory.tileSets!.randPickOne()
 				context.drawImage(tileSet!.get(tileType), startx, starty);
 			}
 		}
@@ -395,7 +394,7 @@ class DungeonDisplay extends Component {
 	}
 
 	private onSelectCategory(category: RegionCategory){
-		if (category != this.state.selectedCategory){
+		if (category !== this.state.selectedCategory){
 			var canvas = this.selectionRef.current;
 			this.clearCanvas(canvas);
 			var index = undefined;
@@ -414,7 +413,7 @@ class DungeonDisplay extends Component {
 
 	private onSelectRegion(region: RegionInstance){
 		var canvas = this.selectionRef.current;
-		if (region != this.state.selectedRegion){
+		if (region !== this.state.selectedRegion){
 			this.clearCanvas(canvas);
 			var index = undefined;
 			if (region && this.state.map){
@@ -430,7 +429,7 @@ class DungeonDisplay extends Component {
 		}
 	}
 
-	private onAddRegion(category: RegionCategory){var index = undefined;
+	private onAddRegion(category: RegionCategory){
 		var index = undefined;
 		if (category && this.state.map && this.state.map.config){
 			if (category.isCorridor){
@@ -597,7 +596,7 @@ class DungeonDisplay extends Component {
 				justify="center">
 					<div onMouseUp={this.mouseUpInMap} onMouseMove={this.mouseMoveInMap} onMouseDown={this.mouseDownInMap} onMouseOut={this.mouseOutOfMap}>
 						<div style={{...this.containerStyle, ...this.spacedStyle}}>
-							<canvas style={this.getCanvasStyle(1)} ref={this.backgroundRef} {...this.props.canvasProps}/>
+							<canvas style={this.getCanvasStyle(-1)} ref={this.backgroundRef} {...this.props.canvasProps}/>
 							<canvas style={this.getCanvasStyle(2)} ref={this.mainRef} {...this.props.canvasProps}/>
 							<canvas style={this.getCanvasStyle(3)} ref={this.hiddenRef} {...this.props.canvasProps}/>
 							<canvas style={this.selectedStyle} ref={this.selectionRef} {...this.props.canvasProps}/>

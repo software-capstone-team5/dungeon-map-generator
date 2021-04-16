@@ -73,6 +73,7 @@ type Props = {
   isDefault?: boolean;
   roomCategory?: RoomCategory;
   savePhrase?: string;
+  saveToDB?: boolean;
   onCancelClick: () => void;
   onSave?: (rc: RoomCategory) => void;
 }
@@ -83,7 +84,8 @@ type Errors = {
 
 RoomCategoryEditor.defaultProps = {
   viewOnly: false,
-  isDefault: false
+  isDefault: false,
+  saveToDB: true,
 }
 
 export default function RoomCategoryEditor(props: Props) {
@@ -277,7 +279,7 @@ export default function RoomCategoryEditor(props: Props) {
       roomCategory.monsters.normalize();
     }
 
-    if (Authenticator.isLoggedIn()) {
+    if (props.saveToDB && Authenticator.isLoggedIn()) {
       var result = await DB.saveRoomCategory(roomCategory);
       if (result && result.valid) {
         var id = result.response;

@@ -45,11 +45,11 @@ export class DungeonGenerator {
 		var forceMapBranch: boolean = false;
 
 		if (Math.random() < this.startRoomChance){
-			var room = this.generateRoom(config.roomCategories.randPickOne(), config.defaultRoomCategory, start, direction);
+			let room = this.generateRoom(config.roomCategories.randPickOne(), config.defaultRoomCategory, start, direction);
 			if (room.locations && room.locations && room.locations.length > 1){
 				map.addRoom(room);
-				var result = this.branchFromRegion(room, map);
-				var next = result[0];
+				let result = this.branchFromRegion(room, map);
+				let next = result[0];
 				if (next) {
 					if (result[1]) {
 						direction = result[1];
@@ -57,8 +57,8 @@ export class DungeonGenerator {
 					numRooms ++;
 					lastPath = [next];
 	
-					var dirToNeighbor = map.getDirectionToNeighbor(next, room)!;
-					var neighborPoint = next.getNextLocation(dirToNeighbor);
+					let dirToNeighbor = map.getDirectionToNeighbor(next, room)!;
+					let neighborPoint = next.getNextLocation(dirToNeighbor);
 					lastEntrance = this.generateEntrance(room, config, neighborPoint, Direction.getOppositeDirection(dirToNeighbor));
 					lastRegion = room;
 				}
@@ -78,35 +78,35 @@ export class DungeonGenerator {
 				done = true;
 			}
 			else{
-				var last = lastPath.slice(-1)[0];
+				let last = lastPath.slice(-1)[0];
 
 				// turn
 				if (last.x <= 0 || last.x >= map.getWidth() || last.y <= 0 || last.y >= map.getHeight() || Math.random() < turnChance){
-					var directions = this.getNewDirectionProb(map, lastPath, direction);
+					let directions = this.getNewDirectionProb(map, lastPath, direction);
 					direction = directions.randPickOne()!;
 				}
 
-				var next = last.getNextLocation(direction);
+				let next = last.getNextLocation(direction);
 
 				// Don't path into existing regions
-				var region = map.getRegionInstance(next.x, next.y);
+				let region = map.getRegionInstance(next.x, next.y);
 				if(forceMapBranch || region || map.isOutOfBounds(next.x, next.y)){
 					forceMapBranch = false;
 					// Add the last path to map if applicable // <- Removed becauuse this ended up adding too many corridors
 					// if (lastPath && lastPath.length > 0){
-					// 	var endEntranceType = null;
+					// 	let endEntranceType = null;
 					// 	if (region){
 					// 		lastEntrance = this.generateEntrance(region, config, next, Direction.getOppositeDirection(direction));
 					// 		lastRegion = region;
 					// 	}
-					// 	var corridor = this.generateCorridor(config.corridorCategories.randPickOne(), config.defaultCorridorCategory, lastPath, direction, Direction.getOppositeDirection(lastEntrance.direction), endEntranceType, lastEntrance.type);	
+					// 	let corridor = this.generateCorridor(config.corridorCategories.randPickOne(), config.defaultCorridorCategory, lastPath, direction, Direction.getOppositeDirection(lastEntrance.direction), endEntranceType, lastEntrance.type);	
 					// 	map.addCorridor(corridor);
 					// 	if (lastRegion){
 					// 		lastRegion.entrances.push(lastEntrance);
 					// 	}
 					// }
 					// Pick a border on a region and start path there
-					var result = this.branchFromMap(map);
+					let result = this.branchFromMap(map);
 					if (result[0]){
 						if (result[1]) {
 							direction = result[1];
@@ -114,9 +114,9 @@ export class DungeonGenerator {
 						next = result[0];
 						lastPath = [];
 
-						var dirToNeighbor = map.getDirectionToNeighbor(next)!;
-						var neightborPoint = next.getNextLocation(dirToNeighbor);
-						var neighbor = map.getRegionInstance(neightborPoint.x, neightborPoint.y)!;
+						let dirToNeighbor = map.getDirectionToNeighbor(next)!;
+						let neightborPoint = next.getNextLocation(dirToNeighbor);
+						let neighbor = map.getRegionInstance(neightborPoint.x, neightborPoint.y)!;
 						lastEntrance = this.generateEntrance(neighbor, config, neightborPoint, Direction.getOppositeDirection(dirToNeighbor));
 						lastRegion = neighbor;
 					}
@@ -124,13 +124,13 @@ export class DungeonGenerator {
 
 				// Chance to finish corridor and add room increases as length of corridor increases
 				if ( Math.random() > (maxLength - lastPath.length)/maxLength){
-					var room = this.generateRoom(config.roomCategories.randPickOne(), config.defaultRoomCategory, next, direction);
+					let room = this.generateRoom(config.roomCategories.randPickOne(), config.defaultRoomCategory, next, direction);
 					if (room.locations && room.locations && room.locations.length > 1){
 						map.addRoom(room);
-						var result = this.branchFromRegion(room, map);
+						let result = this.branchFromRegion(room, map);
 
 						if (result[0]) {
-							var corridor = this.generateCorridor(config.corridorCategories.randPickOne(), config.defaultCorridorCategory, lastPath, direction, Direction.getOppositeDirection(lastEntrance.direction), room.entrances[0].type, lastEntrance.type);
+							let corridor = this.generateCorridor(config.corridorCategories.randPickOne(), config.defaultCorridorCategory, lastPath, direction, Direction.getOppositeDirection(lastEntrance.direction), room.entrances[0].type, lastEntrance.type);
 							map.addCorridor(corridor);
 							if (lastRegion && lastEntrance){
 								lastRegion.entrances.push(lastEntrance);
@@ -142,8 +142,8 @@ export class DungeonGenerator {
 							numRooms ++;
 							lastPath = [];
 
-							var dirToNeighbor = map.getDirectionToNeighbor(next, room)!;
-							var neighborPoint = next.getNextLocation(dirToNeighbor);
+							let dirToNeighbor = map.getDirectionToNeighbor(next, room)!;
+							let neighborPoint = next.getNextLocation(dirToNeighbor);
 							lastEntrance = this.generateEntrance(room, config, neighborPoint, Direction.getOppositeDirection(dirToNeighbor));
 							lastRegion = room;
 						}
@@ -290,6 +290,39 @@ export class DungeonGenerator {
 		return newRegion;
 	}
 
+	static regenerateRoomShape(region: RoomInstance, defaultCategory: RoomCategory){
+		var category = region.category;
+		
+		var newRegion = cloneDeep(region);
+		newRegion.size = category.sizes ? category.sizes!.randPickOne()! : defaultCategory.sizes!.randPickOne()!;
+		newRegion.shape = category.shapes ? category.shapes!.randPickOne()! : defaultCategory.shapes!.randPickOne()!;
+		if (newRegion.entrances.length > 0){
+			newRegion.entrances = [newRegion.entrances[0]];
+		}
+		var sizeModifier = newRegion.getRoomSizeModifier();
+		newRegion.locations = this.getRoomLocations(newRegion.shape, newRegion.start, sizeModifier, region.locations.length > 1 ? region.start.getDirectionTo(region.locations[1]) : Direction.right);
+
+		return newRegion
+	}
+
+	static regenerateCorridorShape(region: CorridorInstance, defaultCategory: CorridorCategory){
+		var category = region.category;
+		
+		var newRegion = cloneDeep(region);
+		newRegion.width = category.widths ? category.widths!.randPickOne()! : defaultCategory.widths!.randPickOne()!;
+		if (newRegion.entrances.length > 0){
+			newRegion.entrances = [newRegion.entrances[0]];
+		}
+		if (newRegion.entrances.length > 1){
+			newRegion.entrances.push(newRegion.entrances[1]);
+		}
+
+		var endDirection = newRegion.path.length >= 2 ? newRegion.path[newRegion.path.length - 2].getDirectionTo(newRegion.path[newRegion.path.length - 1]) : Direction.right;
+		var widthModifier = newRegion.getWidthModifier();
+		newRegion.locations = this.getCorridorLocations(newRegion.path, endDirection, widthModifier);
+		return newRegion
+	}
+
 	private static generateCorridor(category: CorridorCategory | null, defaultCategory: CorridorCategory, path: Coordinates[], 
 		endDirection: Direction, startDirection: Direction, endEntranceType: EntranceType | null, startEntranceType: EntranceType | null, 
 		addEndingEntrance: boolean = true): CorridorInstance {
@@ -299,6 +332,7 @@ export class DungeonGenerator {
 		
 		var corridor: CorridorInstance = new CorridorInstance();
 		corridor.start = path[0];
+		corridor.path = path;
 		corridor.category = category;
 		corridor.width = category.widths ? category.widths!.randPickOne()! : defaultCategory.widths!.randPickOne()!;
 		corridor.tileSet = category.tileSets ? category.tileSets.randPickOne()! : defaultCategory.tileSets!.randPickOne()!;
@@ -340,11 +374,11 @@ export class DungeonGenerator {
 					for (var i = 0; i < adjacent.length; i++){
 						var point = adjacent[i];
 						var neighbour = map.getRegionInstance(point.x, point.y);
-						if (neighbour && !visited.find((x) => x.name === neighbour!.name) && !map.isOutOfBounds(point.x, point.y) &&  neighbour && neighbour !== region){
+						if (neighbour && neighbour !== region && !DungeonGenerator.findRegionByName(visited, neighbour.name) && !map.isOutOfBounds(point.x, point.y)){
 							visited.push(neighbour);
 							var entranceDirection = location.getDirectionTo(point);
 							if (entranceDirection){
-								if (index == 0 || (region.isCorridor && index == region.locations.length - 1)){
+								if (index === 0 || (region.isCorridor && index === region.locations.length - 1)){
 									region.entrances[index === 0 ? 0 : 1].direction = entranceDirection;
 								}
 								else{
@@ -357,7 +391,7 @@ export class DungeonGenerator {
 							if (!neighbour.entrances){
 								neighbour.entrances = [];
 							}
-							let existing = neighbour.entrances.find((x) => x.location.toString() === point.toString());
+							let existing = neighbour.findEntrance(point);
 							if (existing && existing.direction === neighbourDirection){
 								region.entrances[region.entrances.length - 1].type = DungeonGenerator.tryMatchEntrances(regionCategory, defaultCategory, existing.type)
 							}
@@ -370,6 +404,10 @@ export class DungeonGenerator {
 				}
 			});
 		}
+	}
+
+	private static findRegionByName(regions: RegionInstance[], name: string){
+		return regions.find((x) => x.name === name)
 	}
 
 	static generateEncounters(map: DungeonMap, config: Configuration){
@@ -439,7 +477,7 @@ export class DungeonGenerator {
 		return parts.sort(() => Math.random() - 0.5);
 	}
 
-	private static generateRegionItems(region: RegionInstance, config: Configuration, goalValue: number){
+	static generateRegionItems(region: RegionInstance, config: Configuration, goalValue: number){
 		var category: RegionCategory;
 		var defaultCategory: RegionCategory
 		if (region.isCorridor){
@@ -470,7 +508,7 @@ export class DungeonGenerator {
 		} as RegionInstance;
 	}
 
-	private static genearteRegionEncounter(region: RegionInstance, config: Configuration, goalDifficulty: number): RegionInstance {
+	static genearteRegionEncounter(region: RegionInstance, config: Configuration, goalDifficulty: number): RegionInstance {
 		var category: RegionCategory;
 		var defaultCategory: RegionCategory
 		if (region.isCorridor){

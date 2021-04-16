@@ -70,6 +70,7 @@ type Props = {
   open: boolean;
   viewOnly?: boolean;
   isDefault?: boolean;
+  saveToDB?: boolean;
   corridorCategory?: CorridorCategory;
   savePhrase?: string;
   onCancelClick: () => void;
@@ -82,7 +83,8 @@ type Errors = {
 
 CorridorCategoryEditor.defaultProps = {
   viewOnly: false,
-  isDefault: false
+  isDefault: false,
+  saveToDB: true,
 }
 
 export default function CorridorCategoryEditor(props: Props) {
@@ -273,7 +275,7 @@ export default function CorridorCategoryEditor(props: Props) {
       corridorCategory.monsters.normalize();
     }
 
-    if (Authenticator.isLoggedIn()) {
+    if (props.saveToDB && Authenticator.isLoggedIn()) {
       var result = await DB.saveCorridorCategory(corridorCategory);
       if (result && result.valid) {
         var id = result.response;

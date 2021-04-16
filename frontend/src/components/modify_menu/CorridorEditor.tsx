@@ -77,7 +77,6 @@ CorridorEditor.defaultProps = {
 }
 
 export default function CorridorEditor(props: Props) {
-	const editMode: boolean = true;
 	const classes = useStyles();
 
 	const [corridor, setCorridor] = useState(() => {
@@ -197,10 +196,6 @@ export default function CorridorEditor(props: Props) {
 
 	const handleAddTileSetClick = () => {
 		setSelectTileSetDialogOpen(true);
-	}
-
-	const handleEditClick = () => {
-		setViewMode(false);
 	}
 
 	const handleSaveClick = async () => {

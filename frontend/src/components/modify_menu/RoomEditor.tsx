@@ -78,7 +78,6 @@ RoomEditor.defaultProps = {
 }
 
 export default function RoomEditor(props: Props) {
-	const editMode: boolean = true;
 	const classes = useStyles();
 
 	const [room, setRoom] = useState(() => {
@@ -208,10 +207,6 @@ export default function RoomEditor(props: Props) {
 
 	const handleAddTileSetClick = () => {
 		setSelectTileSetDialogOpen(true);
-	}
-
-	const handleEditClick = () => {
-		setViewMode(false);
 	}
 
 	const handleSaveClick = async () => {

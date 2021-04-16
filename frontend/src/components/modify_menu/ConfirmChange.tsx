@@ -16,6 +16,8 @@ type Props = {
 	open: boolean;
 	message: string;
 	args: any;
+	confirmPrompt: string;
+	cancelPrompt: string;
   	onDecision?: (confirm: boolean, args: any) => void;
 }
 
@@ -34,10 +36,10 @@ function ConfirmChange(props: Props) {
 				</DialogContent>
 				<DialogActions>
 					<Button onClick={() => props.onDecision ? props.onDecision(false, props.args) : {}} color="primary">
-						Cancel
+						{props.cancelPrompt}
 					</Button>
 					<Button onClick={() => props.onDecision ? props.onDecision(true, props.args) : {}} variant="outlined" color="primary">
-						Confirm
+						{props.confirmPrompt}
 					</Button>
 				</DialogActions>
 			</Dialog>
