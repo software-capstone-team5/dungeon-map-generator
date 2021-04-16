@@ -150,7 +150,6 @@ export default function RoomEditor(props: Props) {
 		setSelectTrapDialogOpen(false);
 	}
 
-
 	const handleMonsterClick = (m: Monster) => {
 		setMonsterToEdit(m);
 		setMonsterEditorOpen(true);
