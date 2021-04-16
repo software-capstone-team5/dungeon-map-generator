@@ -24,7 +24,7 @@ type Props = {
     savePhrase?: string;
     selectedRoomIndex?: number;
     selectedCorridorIndex?: number;
-    onChange: (name: keyof DungeonMap, value: valueOf<DungeonMap>)=>void;
+    onChange: (name: keyof DungeonMap, index:number, value: RegionInstance) => void;
     onRegenerateClick: (name: keyof DungeonMap, index: number) => void;
     onDeleteClick: (name: keyof DungeonMap, index: number) => void;
     selectInstance?: (category: RegionInstance) => void;
@@ -51,19 +51,14 @@ const RegionInstanceModify = memo(
         }
 
         const handleSave = (name: keyof DungeonMap, ri: RegionInstance) => {
-            var updatedList = (props.map[name] as any[]).map((x) => x);
 			var index = -1;
             if (roomToEdit !== undefined) {
-				index = updatedList.indexOf(roomToEdit);
+				index = (props.map[name] as RoomInstance[]).indexOf(roomToEdit);
             } else if (corridorToEdit !== undefined) {
-				index = updatedList.indexOf(corridorToEdit);
+				index = (props.map[name] as CorridorInstance[]).indexOf(corridorToEdit);
             }
-
-			if (index > -1){
-				updatedList[index] = ri;
-			}
-
-            props.onChange(name, updatedList);
+            
+            props.onChange(name, index, ri);
             setRoomEditorOpen(false);
             setCorridorEditorOpen(false);
             setRoomToEdit(undefined);
@@ -128,13 +123,13 @@ const RegionInstanceModify = memo(
             </div>
         );
     },
-    // (prevProps, nextProps) =>
-    //     prevProps.map.rooms === nextProps.map.rooms &&
-    //     prevProps.map.corridors === nextProps.map.corridors &&
-    //     prevProps.isSaving === nextProps.isSaving && 
-    //     prevProps.savePhrase === nextProps.savePhrase && 
-    //     prevProps.selectedCorridorIndex === nextProps.selectedCorridorIndex &&
-    //     prevProps.selectedRoomIndex === nextProps.selectedRoomIndex
+    (prevProps, nextProps) =>
+        prevProps.map.rooms === nextProps.map.rooms &&
+        prevProps.map.corridors === nextProps.map.corridors &&
+        prevProps.isSaving === nextProps.isSaving && 
+        prevProps.savePhrase === nextProps.savePhrase && 
+        prevProps.selectedCorridorIndex === nextProps.selectedCorridorIndex &&
+        prevProps.selectedRoomIndex === nextProps.selectedRoomIndex
 )
 
 

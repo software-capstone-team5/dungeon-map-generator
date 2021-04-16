@@ -270,7 +270,7 @@ function DungeonEditor(props: Props) {
 						if (room.category === args.value){
 							if ((sizesChanged && (!newCat.sizes || newCat.sizes.getProb(room.size) <= 0)) 
 							|| (shapesChanged && (!newCat.shapes || newCat.shapes.getProb(room.shape) <= 0))){
-								room = DungeonGenerator.regenerateRoomShape(room, newMap.config.defaultRoomCategory);
+								room = DungeonGenerator.regenerateRoomShapeFromCategory(room, newMap.config.defaultRoomCategory);
 								DungeonGenerator.generateEntrancesForNeighbours(room, newMap);
 							}
 							newMap.updateRoom(index, room);
@@ -287,7 +287,7 @@ function DungeonEditor(props: Props) {
 					newMap.corridors.forEach((corridor: CorridorInstance, index: number, array: CorridorInstance[]) => {
 						if (corridor.category === args.value){
 							if ((widthsChanged && (!newCat.widths || newCat.widths.getProb(corridor.width) <= 0))){
-								corridor = DungeonGenerator.regenerateCorridorShape(corridor, newMap.config.defaultRoomCategory);
+								corridor = DungeonGenerator.regenerateCorridorShapeFromCategory(corridor, newMap.config.defaultRoomCategory);
 								DungeonGenerator.generateEntrancesForNeighbours(corridor, newMap);
 							}
 							newMap.updateCorridor(index, corridor);
@@ -302,10 +302,75 @@ function DungeonEditor(props: Props) {
 		setConfirmOpen(false);
 	}
 
-	const handleRegionInstanceChanges = (name: keyof DungeonMap, value: valueOf<DungeonMap>) => {
-		var newChanges = {} as any;
-		Object.assign(newChanges, regionInstanceChanges,  { [name]: value });
-		setRegionInstanceChanges(newChanges);
+	const confirmRegionInstanceChanges = (decision: boolean, args: {name: keyof DungeonMap, index:number, value: RegionInstance}) => {
+		var newMap = Object.create(Object.getPrototypeOf(map));
+		Object.assign(newMap, map);
+
+		if (args.name === nameOf<DungeonMap>("rooms")){
+			let original = newMap.rooms[args.index];
+			var newRoom = (args.value as RoomInstance);
+			if (!lodash.isEqual(original.shape, newRoom.shape) || !lodash.isEqual(original.size, newRoom.size)){
+				newRoom = DungeonGenerator.regenerateRoomShape(newRoom);
+				DungeonGenerator.generateEntrancesForNeighbours(newRoom, newMap);
+			}
+			newMap.updateRoom(args.index, newRoom);
+		}
+		else {
+			let original = newMap.corridors[args.index];
+			var newCorridor = (args.value as CorridorInstance);
+			if (!lodash.isEqual(original.width, (args.value as CorridorInstance).width)){
+				newCorridor = DungeonGenerator.regenerateCorridorShape(newCorridor);
+				DungeonGenerator.generateEntrancesForNeighbours(newCorridor, newMap);
+			}
+			newMap.updateCorridor(args.index, newCorridor);
+		}
+		setMap(newMap);
+		props.onChange(newMap);
+		setConfirmOpen(false);
+	}
+
+	const handleRegionInstanceChanges = (name: keyof DungeonMap, index:number, value: RegionInstance) => {
+		if (map){
+			var original = name === nameOf<DungeonMap>("rooms") ? map.rooms[index] : map.corridors[index];
+
+			var reloadRequired = !lodash.isEqual(original.tileSet, value.tileSet);
+			if (!reloadRequired){
+				if (name === nameOf<DungeonMap>("rooms")){
+					let originalInst = original as RoomInstance;
+					var newRoom = (value as RoomInstance);
+					if (!lodash.isEqual(originalInst.shape, newRoom.shape) || !lodash.isEqual(originalInst.size, newRoom.size)){
+						reloadRequired = true;
+					}
+					else{
+						var newMap = Object.create(Object.getPrototypeOf(map));
+						Object.assign(newMap, map);
+						newMap.updateRoom(index, value);
+						setMap(newMap);
+						props.onChange(newMap);
+					}
+				}
+				else {
+					if (!lodash.isEqual((original as CorridorInstance).width, (value as CorridorInstance).width)){
+						reloadRequired = true;
+					}
+					else{
+						var newMap = Object.create(Object.getPrototypeOf(map));
+						Object.assign(newMap, map);
+						newMap.updateCorridor(index, value);
+						setMap(newMap);
+						props.onChange(newMap);
+					}
+				}
+			}
+
+			if (reloadRequired){
+				setConfirmFunction(() => confirmRegionInstanceChanges);
+				setConfirmMessage("Some of your changes will require regenerating the way this room appears on the map. Would you like to regenerate this room, or revert your changes?");
+				setConfirmPrompt("Regenerate");
+				setConfirmArgs({name: name, index: index, value: value});
+				setConfirmOpen(true);
+			}
+		}
 	}
 
 	const handleRegenerateInstanceClick = (name: keyof DungeonMap, index: number) => {
@@ -379,11 +444,15 @@ function DungeonEditor(props: Props) {
 			Object.assign(newMap, map);
 			if (name === nameOf<DungeonMap>("rooms")){
 				var room = newMap.rooms[args.index];
-				newMap.rooms[args.index] = Object.assign(room, DungeonGenerator.regenerateRegion(room, room.category, newMap.config));
+				Object.assign(room, DungeonGenerator.regenerateRegion(room, room.category, newMap.config));
+				newMap.updateRoom(args.index, room); 
+				DungeonGenerator.generateEntrancesForNeighbours(room, newMap);
 			}
 			else{
 				var corridor = newMap.corridors[args.index];
-				newMap.corridors[args.index] = Object.assign(corridor, DungeonGenerator.regenerateRegion(corridor, corridor.category, newMap.config));
+				Object.assign(corridor, DungeonGenerator.regenerateRegion(corridor, corridor.category, newMap.config));
+				newMap.updateCorridor(args.index, corridor); 
+				DungeonGenerator.generateEntrancesForNeighbours(corridor, newMap);
 			}
 			props.onChange(newMap);
 		}
@@ -399,7 +468,9 @@ function DungeonEditor(props: Props) {
 				let category = (newMap.config[name] as Probabilities<RoomCategory>).objects[args.index];
 				newMap.rooms.forEach((room: RoomInstance, index: number) => {
 					if (lodash.isEqual(room.category, category)){
-						newMap.rooms[index] = Object.assign(room, DungeonGenerator.regenerateRegion(room, category, newMap.config));
+						Object.assign(room, DungeonGenerator.regenerateRegion(room, category, newMap.config));
+						newMap.updateRoom(index, room); 
+						DungeonGenerator.generateEntrancesForNeighbours(room, newMap);
 					}
 				});
 			}
@@ -407,7 +478,9 @@ function DungeonEditor(props: Props) {
 				let category = (newMap.config[name] as Probabilities<RoomCategory>).objects[args.index];
 				newMap.corridors.forEach((corridor: CorridorInstance, index: number) => {
 					if (lodash.isEqual(corridor.category, category)){
-						newMap.corridors[index] = Object.assign(corridor, DungeonGenerator.regenerateRegion(corridor, category, newMap.config));
+						Object.assign(corridor, DungeonGenerator.regenerateRegion(corridor, category, newMap.config));
+						newMap.updateCorridor(index, corridor); 
+						DungeonGenerator.generateEntrancesForNeighbours(corridor, newMap);
 					}
 				});
 			}

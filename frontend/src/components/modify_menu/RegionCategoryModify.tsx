@@ -136,16 +136,16 @@ const RegionCategoryModify = memo(
             </div>
         );
     },
-    // (prevProps, nextProps) =>
-    //     prevProps.configuration.roomCategories === nextProps.configuration.roomCategories &&
-    //     prevProps.configuration.corridorCategories === nextProps.configuration.corridorCategories &&
-    //     prevProps.configuration.defaultRoomCategory === nextProps.configuration.defaultRoomCategory &&
-    //     prevProps.configuration.defaultCorridorCategory === nextProps.configuration.defaultCorridorCategory &&
-    //     prevProps.configuration.premade === nextProps.configuration.premade &&
-    //     prevProps.isSaving === nextProps.isSaving && 
-    //     prevProps.savePhrase === nextProps.savePhrase &&
-    //     prevProps.selectedCorridorCategoryIndex === nextProps.selectedCorridorCategoryIndex &&
-    //     prevProps.selectedRoomCategoryIndex === nextProps.selectedRoomCategoryIndex
+    (prevProps, nextProps) =>
+        prevProps.configuration.roomCategories === nextProps.configuration.roomCategories &&
+        prevProps.configuration.corridorCategories === nextProps.configuration.corridorCategories &&
+        prevProps.configuration.defaultRoomCategory === nextProps.configuration.defaultRoomCategory &&
+        prevProps.configuration.defaultCorridorCategory === nextProps.configuration.defaultCorridorCategory &&
+        prevProps.configuration.premade === nextProps.configuration.premade &&
+        prevProps.isSaving === nextProps.isSaving && 
+        prevProps.savePhrase === nextProps.savePhrase &&
+        prevProps.selectedCorridorCategoryIndex === nextProps.selectedCorridorCategoryIndex &&
+        prevProps.selectedRoomCategoryIndex === nextProps.selectedRoomCategoryIndex
 )
 
 

@@ -272,14 +272,16 @@ export class DungeonGenerator {
 
 	static regenerateRegion(region: RegionInstance, defaultCategory: RegionCategory, config: Configuration){
 		var category;
+		var newRegion;
 		if (region.isCorridor){
 			category = (region as CorridorInstance).category;
+			newRegion = this.regenerateCorridorShapeFromCategory(region as CorridorInstance, defaultCategory as CorridorCategory);
 		}
 		else{
 			category = (region as RoomInstance).category;
+			newRegion = this.regenerateRoomShapeFromCategory(region as RoomInstance, defaultCategory as RoomCategory);
 		}
-
-		var newRegion = cloneDeep(region);
+		
 		newRegion.tileSet = category.tileSets ? category.tileSets.randPickOne()! : defaultCategory.tileSets!.randPickOne()!;
 		var entranceTypes = category.entranceTypes ? category.entranceTypes : defaultCategory.entranceTypes!
 		newRegion.entrances.forEach((entrance, index, array) => {
@@ -290,7 +292,7 @@ export class DungeonGenerator {
 		return newRegion;
 	}
 
-	static regenerateRoomShape(region: RoomInstance, defaultCategory: RoomCategory){
+	static regenerateRoomShapeFromCategory(region: RoomInstance, defaultCategory: RoomCategory){
 		var category = region.category;
 		
 		var newRegion = cloneDeep(region);
@@ -305,11 +307,37 @@ export class DungeonGenerator {
 		return newRegion
 	}
 
-	static regenerateCorridorShape(region: CorridorInstance, defaultCategory: CorridorCategory){
+	static regenerateRoomShape(region: RoomInstance){
+		var newRegion = cloneDeep(region);
+		if (newRegion.entrances.length > 0){
+			newRegion.entrances = [newRegion.entrances[0]];
+		}
+		var sizeModifier = newRegion.getRoomSizeModifier();
+		newRegion.locations = this.getRoomLocations(newRegion.shape, newRegion.start, sizeModifier, region.locations.length > 1 ? region.start.getDirectionTo(region.locations[1]) : Direction.right);
+
+		return newRegion
+	}
+
+	static regenerateCorridorShapeFromCategory(region: CorridorInstance, defaultCategory: CorridorCategory){
 		var category = region.category;
 		
 		var newRegion = cloneDeep(region);
 		newRegion.width = category.widths ? category.widths!.randPickOne()! : defaultCategory.widths!.randPickOne()!;
+		if (newRegion.entrances.length > 0){
+			newRegion.entrances = [newRegion.entrances[0]];
+		}
+		if (newRegion.entrances.length > 1){
+			newRegion.entrances.push(newRegion.entrances[1]);
+		}
+
+		var endDirection = newRegion.path.length >= 2 ? newRegion.path[newRegion.path.length - 2].getDirectionTo(newRegion.path[newRegion.path.length - 1]) : Direction.right;
+		var widthModifier = newRegion.getWidthModifier();
+		newRegion.locations = this.getCorridorLocations(newRegion.path, endDirection, widthModifier);
+		return newRegion
+	}
+
+	static regenerateCorridorShape(region: CorridorInstance){
+		var newRegion = cloneDeep(region);
 		if (newRegion.entrances.length > 0){
 			newRegion.entrances = [newRegion.entrances[0]];
 		}
