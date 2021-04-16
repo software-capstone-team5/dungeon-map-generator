@@ -1,3 +1,14 @@
+// REQ-29: Edit.CorridorCategory.Width - The system should allow the user to edit the possible widths of a corridor category and their probabilities. The available options are Small, Medium, and Large.
+// REQ-30: Edit.CorridorCategory.TileAssets - The system should allow the user to edit the image assets that will be used when displaying the corridor .
+// REQ-31: Edit.CorridorCategory.Monsters - The system should allow the user to edit the monsters/enemies that can appear in the corridor, along with their probabilities.
+// REQ-32: Edit.CorridorCategory.MonsterStates - The system should allow the user to edit the possible states that the monsters/enemies can be in, and their probabilities. The states are from a predefined list.
+// REQ-33: Edit.CorridorCategory.Items - The system should allow the user to edit the possible items that can appear in the corridor, and their probabilities.
+// REQ-34: Edit.CorridorCategory.Entrances - The system should allow the user to edit the types of entrances that are possible in a corridor, and their probabilities. The possible entrances are Regular, Locked, and Secret.
+// REQ-35: Edit.CorridorCategory.Traps- The system should allow the user to edit the types of traps that are possible in a corridor, and their probabilities. The types of traps available will be from a predefined list.
+// REQ-36: Edit.DefaultCorridorCategory - The system should allow the user to edit the various options for the Default Corridor Category. A Corridor Category will use the default’s properties if their properties are not specified.
+// REQ-37: Save.CorridorCategory - The system should allow the user to save a Corridor Category that they have created in the database. The user should be able to access the saved Corridor Category in other Presets and in future log-ins.
+
+
 import { makeStyles } from '@material-ui/core';
 import Button from '@material-ui/core/Button';
 import Checkbox from '@material-ui/core/Checkbox';

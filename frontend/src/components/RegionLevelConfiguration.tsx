@@ -1,3 +1,8 @@
+// REQ-16: Edit.RegionLevelConfiguration.RoomCategories
+// REQ-17: Edit.RegionLevelConfiguration.CorridorCategories
+// REQ-27: Edit.DefaultRoomCategory
+// REQ-36: Edit.DefaultCorridorCategory
+
 import { makeStyles } from '@material-ui/core';
 import FormLabel from '@material-ui/core/FormLabel';
 import IconButton from '@material-ui/core/IconButton';

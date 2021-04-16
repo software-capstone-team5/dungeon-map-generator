@@ -1,3 +1,13 @@
+// REQ-12: Edit.MapLevelConfiguration.DifficultyLevel
+// REQ-13: Edit.MapLevelConfiguration.Size
+// REQ-14: Edit.MapLevelConfiguration.CorridorComplexity
+// REQ-15: Edit.MapLevelConfiguration.CorridorLength
+// REQ-16: Edit.RegionLevelConfiguration.RoomCategories
+// REQ-17: Edit.RegionLevelConfiguration.CorridorCategories
+// REQ-27: Edit.DefaultRoomCategory
+// REQ-36: Edit.DefaultCorridorCategory
+// REQ-18: Save.MapConfiguration
+
 import MuiAccordion from '@material-ui/core/Accordion';
 import AccordionDetails from '@material-ui/core/AccordionDetails';
 import MuiAccordionSummary from '@material-ui/core/AccordionSummary';

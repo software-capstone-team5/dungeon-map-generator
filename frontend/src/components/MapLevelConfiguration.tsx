@@ -1,3 +1,8 @@
+// REQ-12: Edit.MapLevelConfiguration.DifficultyLevel
+// REQ-13: Edit.MapLevelConfiguration.Size
+// REQ-14: Edit.MapLevelConfiguration.CorridorComplexity
+// REQ-15: Edit.MapLevelConfiguration.CorridorLength
+
 import React from 'react';
 import { CorridorComplexity } from "../constants/CorridorComplexity";
 import { CorridorLength } from "../constants/CorridorLength";
