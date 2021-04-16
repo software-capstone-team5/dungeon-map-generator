@@ -199,7 +199,7 @@ export class DB {
         }
     }
 
-    // REQ-10: Add.Monster - The systems shall allow a logged in user to fill out and submit a form to add a new monster to the database.
+    // REQ-11: Import.Monsters
     static async saveMonsters(monsters: Monster[]) {
         try {
             var token = await Authenticator.getIDToken();
@@ -353,6 +353,7 @@ export class DB {
         }
     }
 
+    // REQ-8: Upload.Tiles
     static async saveTileSets(name: string, files: File[], tileTypes: TileType[]) {
         try {
             var tokens = await Authenticator.getAllTokens();

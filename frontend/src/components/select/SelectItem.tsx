@@ -1,3 +1,6 @@
+// REQ-24: Edit.RoomCategory.Items
+// REQ-33: Edit.CorridorCategory.Items
+
 import Button from '@material-ui/core/Button';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import Dialog from '@material-ui/core/Dialog';

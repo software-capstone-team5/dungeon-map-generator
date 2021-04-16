@@ -1,3 +1,6 @@
+// REQ-26: Edit.RoomCategory.Traps
+// REQ-35: Edit.CorridorCategory.Traps
+
 import { FormLabel, IconButton, makeStyles, Slider, Typography } from '@material-ui/core';
 import Button from '@material-ui/core/Button';
 import Dialog from '@material-ui/core/Dialog';

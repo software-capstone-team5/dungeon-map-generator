@@ -1,3 +1,7 @@
+// REQ-13: Edit.MapLevelConfiguration.Size
+// REQ-14: Edit.MapLevelConfiguration.CorridorComplexity
+// REQ-15: Edit.MapLevelConfiguration.CorridorLength
+
 import FormControl from '@material-ui/core/FormControl';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import FormLabel from '@material-ui/core/FormLabel';

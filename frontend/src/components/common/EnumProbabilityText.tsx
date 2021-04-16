@@ -1,3 +1,8 @@
+// REQ-29: Edit.CorridorCategory.Width - The system should allow the user to edit the possible widths of a corridor category and their probabilities. The available options are Small, Medium, and Large.
+// REQ-19: Edit.RoomCategory.Size - The system should allow the user to edit the possible sizes of a room category and their probabilities. The available options are Small, Medium, and Large.
+// REQ-20: Edit.RoomCategory.Shape - The system should allow the user to edit the possible shapes of a room category and their probabilities. The available shapes will be from a predetermined list.
+// REQ-23: Edit.RoomCategory.MonsterStates - The system should allow the user to edit the possible states that the monsters/enemies can be in, and their probabilities. The states are from a predefined list.
+// REQ-25: Edit.RoomCategory.Entrances - The system should allow the user to edit the types of entrances that are possible in a room, and their probabilities. The possible entrances are Regular, Locked, and Secret.
 
 import { makeStyles } from '@material-ui/core';
 import Checkbox from '@material-ui/core/Checkbox';

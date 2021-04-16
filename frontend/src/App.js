@@ -1,3 +1,6 @@
+// REQ-1: Request.Registration - The system will allow the user to register a DMG account through a linked Google Account.
+// REQ-2: Request.Login - The system will compare the provided Google Account login with the database to see if there is a matching registered user.
+
 import { AppBar, Button, Grid, Toolbar, Typography } from '@material-ui/core';
 import Backdrop from '@material-ui/core/Backdrop';
 import CircularProgress from '@material-ui/core/CircularProgress';
@@ -11,8 +14,8 @@ import { useEffect, useState } from 'react';
 import './App.css';
 import { Authenticator } from './Authenticator';
 import ConfigurationEditor from "./components/ConfigurationEditor";
-import DungeonDisplay from './components/modify_menu/DungeonDisplay';
 import ImportMonsters from './components/ImportMonsters';
+import DungeonDisplay from './components/modify_menu/DungeonDisplay';
 import SelectConfiguration from "./components/select/SelectConfiguration";
 import TileSetEditor from './components/content_editors/TileSetEditor';
 import { TileType } from './constants/TileType';
@@ -55,6 +58,8 @@ function App() {
   const [dungeonMap, setDungeonMap] = useState();
   const [isLoading, setIsLoading] = useState(false);
 
+  // REQ-1: Request.Registration - The system will allow the user to register a DMG account through a linked Google Account.
+  // REQ-2: Request.Login - The system will compare the provided Google Account login with the database to see if there is a matching registered user.
   useEffect(() => {
     Authenticator.init();
     Authenticator.onAuthListener((result) => {

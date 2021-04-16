@@ -1,3 +1,5 @@
+// REQ-12: Edit.MapLevelConfiguration.DifficultyLevel
+
 import FormLabel from '@material-ui/core/FormLabel';
 import Slider from '@material-ui/core/Slider';
 import { Configuration } from '../models/Configuration';

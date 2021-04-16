@@ -1,8 +1,11 @@
-import { default as firebaseKey } from "./certs/firebase_key.json"
+// REQ-1: Request.Registration - The system will allow the user to register a DMG account through a linked Google Account.
+// REQ-2: Request.Login - The system will compare the provided Google Account login with the database to see if there is a matching registered user.
+
 import firebase from "firebase/app";
 import "firebase/auth";
 import "firebase/firestore";
-import { BACKEND_URL } from "./constants/Backend"
+import { default as firebaseKey } from "./certs/firebase_key.json";
+import { BACKEND_URL } from "./constants/Backend";
 
 export class AuthKeys {
     accessToken: string | null;
