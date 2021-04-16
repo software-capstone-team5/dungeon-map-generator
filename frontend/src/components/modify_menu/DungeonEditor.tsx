@@ -333,7 +333,7 @@ function DungeonEditor(props: Props) {
 		if (map){
 			var original = name === nameOf<DungeonMap>("rooms") ? map.rooms[index] : map.corridors[index];
 
-			var reloadRequired = !lodash.isEqual(original.tileSet, value.tileSet);
+			var reloadRequired = !lodash.isEqual(original.tileSet, value.tileSet) || !lodash.isEqual(original.entrances, value.entrances);
 			if (!reloadRequired){
 				if (name === nameOf<DungeonMap>("rooms")){
 					let originalInst = original as RoomInstance;

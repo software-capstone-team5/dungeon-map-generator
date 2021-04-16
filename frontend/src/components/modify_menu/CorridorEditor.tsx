@@ -24,13 +24,13 @@ import { Trap } from '../../models/Trap';
 import { nameOf, valueOf } from '../../utils/util';
 import EnumRadio from '../common/EnumRadio';
 import NameList from '../common/NameList';
-import ItemEditor from '../ItemEditor';
-import MonsterEditor from '../MonsterEditor';
+import ItemEditor from '../content_editors/ItemEditor';
+import MonsterEditor from '../content_editors/MonsterEditor';
 import SelectItem from '../select/SelectItem';
 import SelectMonster from '../select/SelectMonster';
 import SelectTileSet from '../select/SelectTileSet';
 import SelectTrap from '../select/SelectTrap';
-import TrapEditor from '../TrapEditor';
+import TrapEditor from '../content_editors/TrapEditor';
 import { CorridorWidth } from '../../constants/CorridorWidth';
 
 

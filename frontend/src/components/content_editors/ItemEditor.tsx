@@ -10,11 +10,10 @@ import Typography from '@material-ui/core/Typography';
 import EditIcon from '@material-ui/icons/Edit';
 import cloneDeep from 'lodash/cloneDeep';
 import { useState } from 'react';
-import { Authenticator } from '../Authenticator';
-import { DB } from '../DB';
-import { Item } from '../models/Item';
-import { nameOf, valueOf } from '../utils/util';
-
+import { Authenticator } from '../../Authenticator';
+import { DB } from '../../DB';
+import { Item } from '../../models/Item';
+import { nameOf, valueOf } from '../../utils/util';
 
 const useStyles = makeStyles((theme) => ({
   root: {

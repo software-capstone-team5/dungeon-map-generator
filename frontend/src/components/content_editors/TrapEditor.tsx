@@ -8,10 +8,11 @@ import TextField from '@material-ui/core/TextField';
 import EditIcon from '@material-ui/icons/Edit';
 import cloneDeep from 'lodash/cloneDeep';
 import { useState } from 'react';
-import { Authenticator } from '../Authenticator';
-import { DB } from '../DB';
-import { Monster } from '../models/Monster';
-import { nameOf, valueOf } from '../utils/util';
+import { Authenticator } from '../../Authenticator';
+import { DB } from '../../DB';
+import { Trap } from '../../models/Trap';
+import { nameOf, valueOf } from '../../utils/util';
+
 
 
 const useStyles = makeStyles((theme) => ({
@@ -30,37 +31,37 @@ const useStyles = makeStyles((theme) => ({
 type Props = {
   open: boolean;
   viewOnly?: boolean;
-  monster?: Monster;
+  trap?: Trap;
   onCancelClick: () => void;
-  onSave?: (rc: Monster) => void;
+  onSave?: (trap: Trap) => void;
 }
 
 type Errors = {
   name: boolean;
 }
 
-MonsterEditor.defaultProps = {
+TrapEditor.defaultProps = {
   viewOnly: false
 }
 
-export default function MonsterEditor(props: Props) {
-  const editMode: boolean = props.monster !== undefined && !props.monster.premade;
+export default function TrapEditor(props: Props) {
+  const editMode: boolean = props.trap !== undefined && !props.trap.premade;
   const classes = useStyles();
 
   const [viewMode, setViewMode] = useState(props.viewOnly);
   const [errors, setErrors] = useState<Errors>({
     name: false
   });
-  const [monster, setMonster] = useState<Monster>(() => {
-    if (props.monster !== undefined) {
-      return cloneDeep(props.monster);
+  const [trap, setTrap] = useState<Trap>(() => {
+    if (props.trap !== undefined) {
+      return cloneDeep(props.trap);
     } else {
-      return new Monster();
+      return new Trap();
     }
   });
 
-  const handleChange = (name: keyof Monster, value: valueOf<Monster>) => {
-    if (name === nameOf<Monster>("name")) {
+  const handleChange = (name: keyof Trap, value: valueOf<Trap>) => {
+    if (name === nameOf<Trap>("name")) {
       if (value) {
         setErrors({
           ...errors,
@@ -68,7 +69,7 @@ export default function MonsterEditor(props: Props) {
         })
       }
     }
-    setMonster(Object.assign(Object.create(Object.getPrototypeOf(monster)), monster, { [name]: value }));
+    setTrap(Object.assign(Object.create(Object.getPrototypeOf(trap)), trap, { [name]: value }));
   }
 
   const handleEditClick = () => {
@@ -76,15 +77,15 @@ export default function MonsterEditor(props: Props) {
   }
 
   const handleSaveClick = async () => {
-    if (!monster.name) {
+    if (!trap.name) {
       return;
     }
 
     if (Authenticator.isLoggedIn()) {
-      var result = await DB.saveMonster(monster);
+      var result = await DB.saveTrap(trap);
       if (result && result.valid) {
         var id = result.response;
-        monster.id = id;
+        trap.id = id;
       } else {
         if (result) {
           window.alert(result.response);
@@ -92,11 +93,11 @@ export default function MonsterEditor(props: Props) {
       }
     }
 
-    props.onSave!(monster);
+    props.onSave!(trap);
   }
 
   const handleNameBlur = () => {
-    if (!monster.name) {
+    if (!trap.name) {
       setErrors({
         ...errors,
         name: true
@@ -111,7 +112,7 @@ export default function MonsterEditor(props: Props) {
           className={classes.root}
           disableTypography
           id="form-dialog-title">
-          <Typography component={'span'} variant="h6">{editMode ? "Edit" : viewMode ? "View" : "Add"} Monster</Typography>
+          <Typography component={'span'} variant="h6">{editMode ? "Edit" : viewMode ? "View" : "Add"} Trap</Typography>
           {viewMode && editMode &&
             <IconButton aria-label="edit" className={classes.editButton} onClick={handleEditClick}>
               <EditIcon />
@@ -133,8 +134,8 @@ export default function MonsterEditor(props: Props) {
               shrink: true,
             }}
             fullWidth
-            value={monster.name}
-            onChange={(e) => handleChange(nameOf<Monster>("name"), e.target.value)}
+            value={trap.name}
+            onChange={(e) => handleChange(nameOf<Trap>("name"), e.target.value)}
           />
           <TextField
             disabled={viewMode}
@@ -147,23 +148,24 @@ export default function MonsterEditor(props: Props) {
               shrink: true,
             }}
             fullWidth
-            value={monster.description}
-            onChange={(e) => handleChange(nameOf<Monster>("description"), e.target.value)}
+            value={trap.description}
+            onChange={(e) => handleChange(nameOf<Trap>("description"), e.target.value)}
           />
           <FormLabel id="challenge-slider">
-            Challenge Rating
+            Difficulty Challenge
             </FormLabel>
           <Slider
             aria-labelledby="challenge-slider"
             disabled={viewMode}
-            value={monster.challenge}
-            onChange={(e, v) => handleChange(nameOf<Monster>("challenge"), v as number)}
+            value={trap.difficulty}
+            onChange={(e, v) => handleChange(nameOf<Trap>("difficulty"), v as number)}
             valueLabelDisplay="auto"
             step={1}
             marks
-            min={Monster.minChallenge}
-            max={Monster.maxChallenge}
+            min={Trap.minDifficulty}
+            max={Trap.maxDifficulty}
           />
+
         </DialogContent>
 
         <DialogActions>
