@@ -21,7 +21,7 @@ Dependencies:
 In the `frontend` directory, run `npm install` to install the dependencies.
 
 ### Firebase Certificates
-Download `firebase_key.json` from Team Google Drive.\
+Download `firebase_key.json` from our Team Google Drive, in folder "certs".\
 In the `frontend/src` directory, create a directory named `certs` and add `firebase_key.json` to this folder.
 
 ### Running the frontend
@@ -36,14 +36,14 @@ Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
 ## Backend Setup
 
 Dependencies:
-- `python3` (v3.9 is in the Pipfile. v3.8 works but you will get a warning when running the backend. It will still run fine.)
+- `python3` (v3.8)
 - `pipenv`
    - Run `sudo apt install pipenv` on Ubuntu to install
 
 In the `backend` directory, run `pipenv install` to install the project dependencies.
 
 ### Firebase Certificates
-Download `.env.firebase` and `.env.google_key` from Team Google Drive.
+Download `.env.firebase` and `.env.google_key` from our Team Google Drive, in folder "certs".\
 In the `backend` directory, add both files to this folder.
 
 Be careful, as sometimes Google Drive will rename the file when downloading. Make sure it has the exact
