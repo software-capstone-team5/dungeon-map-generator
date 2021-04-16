@@ -45,11 +45,10 @@ import EnumProbabilityText from './common/EnumProbabilityText';
 import ProbabilityNameList from './common/ProbabilityNameList';
 import ItemEditor from './content_editors/ItemEditor';
 import MonsterEditor from './content_editors/MonsterEditor';
+import TrapEditor from './content_editors/TrapEditor';
 import SelectItem from './select/SelectItem';
 import SelectMonster from './select/SelectMonster';
-import SelectTileSet from './select/SelectTileSet';
 import SelectTrap from './select/SelectTrap';
-import TrapEditor from './content_editors/TrapEditor';
 
 
 const useStyles = makeStyles((theme) => ({
@@ -131,7 +130,7 @@ export default function CorridorCategoryEditor(props: Props) {
   const [trapEditorOpen, setTrapEditorOpen] = useState<boolean>(false);
   const [selectTrapDialogOpen, setSelectTrapDialogOpen] = useState<boolean>(false);
 
-  const [selectTileSetDialogOpen, setSelectTileSetDialogOpen] = useState<boolean>(false);
+  // const [selectTileSetDialogOpen, setSelectTileSetDialogOpen] = useState<boolean>(false);
 
   const handleChange = (name: keyof CorridorCategory, value: valueOf<CorridorCategory>) => {
     if (name === nameOf<CorridorCategory>("name")) {
@@ -244,17 +243,17 @@ export default function CorridorCategoryEditor(props: Props) {
     setTrapToEdit(undefined);
   }
 
-  const handleTileSetDefaultChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.checked) {
-      handleChange(nameOf<CorridorCategory>("tileSets"), null);
-    } else {
-      handleChange(nameOf<CorridorCategory>("tileSets"), new Probabilities<TileSet>(null));
-    }
-  }
+  // const handleTileSetDefaultChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  //   if (event.target.checked) {
+  //     handleChange(nameOf<CorridorCategory>("tileSets"), null);
+  //   } else {
+  //     handleChange(nameOf<CorridorCategory>("tileSets"), new Probabilities<TileSet>(null));
+  //   }
+  // }
 
-  const handleAddTileSetClick = () => {
-    setSelectTileSetDialogOpen(true);
-  }
+  // const handleAddTileSetClick = () => {
+  //   setSelectTileSetDialogOpen(true);
+  // }
 
   const handleEditClick = () => {
     setViewMode(false);
@@ -370,7 +369,7 @@ export default function CorridorCategoryEditor(props: Props) {
               probs={corridorCategory.widths}
               onProbUpdate={(newList: Probabilities<CorridorWidth> | null) => handleChange(nameOf<CorridorCategory>("widths"), newList)}
             />
-            <div className={classes.listLabel}>
+            {/* <div className={classes.listLabel}>
               <FormControl disabled={viewMode || !Boolean(corridorCategory.tileSets) || !Authenticator.isLoggedIn()}>
                 <FormLabel>Tile Sets</FormLabel>
               </FormControl>
@@ -391,7 +390,7 @@ export default function CorridorCategoryEditor(props: Props) {
                   label="Use Default"
                 />
               }
-            </div>
+            </div> */}
             <div className={classes.listLabel}>
               <FormControl disabled={viewMode || !Boolean(corridorCategory.monsters)}>
                 <FormLabel>Monsters</FormLabel>
@@ -568,14 +567,14 @@ export default function CorridorCategoryEditor(props: Props) {
           onCancelClick={() => setTrapEditorOpen(false)}
         />
       }
-      {selectTileSetDialogOpen &&
+      {/* {selectTileSetDialogOpen &&
         <SelectTileSet
           open={selectTileSetDialogOpen}
           exclude={corridorCategory.tileSets ? corridorCategory.tileSets.objects : []}
           onSelect={(i) => handleSelect(nameOf<CorridorCategory>("tileSets"), i)}
           onCancelClick={() => setSelectTileSetDialogOpen(false)}
         />
-      }
+      } */}
     </div>
   );
 }

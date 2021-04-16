@@ -14,10 +14,10 @@ import { useEffect, useState } from 'react';
 import './App.css';
 import { Authenticator } from './Authenticator';
 import ConfigurationEditor from "./components/ConfigurationEditor";
+import TileSetEditor from './components/content_editors/TileSetEditor';
 import ImportMonsters from './components/ImportMonsters';
 import DungeonDisplay from './components/modify_menu/DungeonDisplay';
 import SelectConfiguration from "./components/select/SelectConfiguration";
-import TileSetEditor from './components/content_editors/TileSetEditor';
 import { TileType } from './constants/TileType';
 import DB from './DB';
 import { DungeonGenerator } from './generator/DungeonGenerator';
@@ -170,9 +170,9 @@ function App() {
     setConfigToEdit(config);
   }
 
-  const findTileSets = () => {
-    // TODO: Call the backend for this
-  }
+  // const findTileSets = () => {
+  //   // TODO: Call the backend for this
+  // }
 
   const updateAndRetrieveTileSets = (dungeonMap) => {
     var defaultSet = TileSet.getDefault();
@@ -229,7 +229,7 @@ function App() {
       >
         <MenuItem onClick={importMonstersClick}>Import Monsters</MenuItem>
         <MenuItem onClick={uploadTilesetClick}>Upload TileSet</MenuItem>
-        <MenuItem onClick={findTileSets}>Find TileSets in Drive</MenuItem>
+        {/* <MenuItem onClick={findTileSets}>Find TileSets in Drive</MenuItem> */}
       </Menu>
       {importMonstersOpen &&
         <ImportMonsters open={importMonstersOpen} onCancelClick={() => setImportMonstersOpen(false)}></ImportMonsters>

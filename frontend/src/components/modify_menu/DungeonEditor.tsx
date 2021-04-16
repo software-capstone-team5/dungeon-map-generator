@@ -11,34 +11,34 @@
 // REQ-51: Modify.SingleCorridor - Any property in an individual corridor can be changed, or the corridor can be assigned to a different category. The user will be prompted if any aspects of the corridor would need to be regenerated.
 
 import MuiAccordion from '@material-ui/core/Accordion';
+import AccordionDetails from '@material-ui/core/AccordionDetails';
 import MuiAccordionSummary from '@material-ui/core/AccordionSummary';
 import Button from '@material-ui/core/Button';
 import Grid from '@material-ui/core/Grid';
 import Paper from '@material-ui/core/Paper';
 import Snackbar from '@material-ui/core/Snackbar';
 import { makeStyles, Theme, withStyles } from '@material-ui/core/styles';
+import Typography from '@material-ui/core/Typography';
 import MuiAlert, { AlertProps, Color } from '@material-ui/lab/Alert';
+import lodash from 'lodash';
 import cloneDeep from 'lodash/cloneDeep';
 import React, { useEffect, useState } from 'react';
-import { DungeonMap } from '../../models/DungeonMap';
-import DownloadDungeon from './DownloadDungeon';
-import DifficultySlider from '../DifficultySlider';
-import Typography from '@material-ui/core/Typography';
-import AccordionDetails from '@material-ui/core/AccordionDetails';
 import { DungeonGenerator } from '../../generator/DungeonGenerator';
-import { Configuration } from '../../models/Configuration';
-import { nameOf } from '../../utils/util';
-import { RegionCategory } from '../../models/RegionCategory';
-import ConfirmChange from './ConfirmChange';
-import RegionCategoryModify from './RegionCategoryModify';
-import lodash from 'lodash';
-import { RoomInstance } from '../../models/RoomInstance';
-import { RoomCategory } from '../../models/RoomCategory';
-import { CorridorInstance } from '../../models/CorridorInstance';
 import { Probabilities } from '../../generator/Probabilities';
-import RegionInstanceModify from './RegionInstanceModify';
-import { RegionInstance } from '../../models/RegionInstance';
+import { Configuration } from '../../models/Configuration';
 import { CorridorCategory } from '../../models/CorridorCategory';
+import { CorridorInstance } from '../../models/CorridorInstance';
+import { DungeonMap } from '../../models/DungeonMap';
+import { RegionCategory } from '../../models/RegionCategory';
+import { RegionInstance } from '../../models/RegionInstance';
+import { RoomCategory } from '../../models/RoomCategory';
+import { RoomInstance } from '../../models/RoomInstance';
+import { nameOf } from '../../utils/util';
+import DifficultySlider from '../DifficultySlider';
+import ConfirmChange from './ConfirmChange';
+import DownloadDungeon from './DownloadDungeon';
+import RegionCategoryModify from './RegionCategoryModify';
+import RegionInstanceModify from './RegionInstanceModify';
 
 const styles = (theme: Theme) => ({
     root: {
@@ -559,10 +559,15 @@ function DungeonEditor(props: Props) {
 							<Typography>Map Level Options</Typography>
 						</AccordionSummary>
 						<AccordionDetails>
+							<div>
 							<DifficultySlider
 								disabled={isDownloading}
 								onChange={handleDifficultyChange}
 								value={changes.difficulty ? changes.difficulty : map.config.difficulty}/>
+							<div className={classes.button}>
+								<Button disabled={isDownloading} onClick={handleApplyClick} variant="contained" color="secondary">Apply Changes</Button>
+							</div>
+							</div>
 						</AccordionDetails>
 					</Accordion>
 					<Accordion expanded={true}>
@@ -606,9 +611,6 @@ function DungeonEditor(props: Props) {
 					</Accordion>
 			   </Paper>
 			   <Grid container direction="row" justify="center">
-				   <div className={classes.button}>
-					   <Button disabled={isDownloading} onClick={handleApplyClick} variant="contained" color="secondary">Apply Changes</Button>
-				   </div>
 				   <div className={classes.button}>
 					   <Button disabled={isDownloading} onClick={handleDownloadClick} variant="contained" color="primary">Download</Button>
 				   </div>
